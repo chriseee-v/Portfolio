@@ -1,37 +1,16 @@
-const experiences = [
-  {
-    year: "2025",
-    title: "Software Development Engineer I",
-    company: "Healthflex",
-    description: "Building AI-powered healthcare solutions with RAG pipelines, computer vision, and real-time analytics. Deployed systems serving 200+ concurrent users across 50+ clinics.",
-    technologies: ["Python", "FastAPI", "OpenCV", "AWS", "Docker", "LangChain"],
-    highlight: true,
-  },
-  {
-    year: "2024",
-    title: "Algorithms and Backend Intern",
-    company: "Healthflex",
-    description: "Developed AI pipelines for image/video analysis and automated data extraction. Improved tracking accuracy by 30% and reduced data acquisition time by 70%.",
-    technologies: ["Florence-2", "SAM", "Puppeteer", "Angular", "MongoDB"],
-    highlight: true,
-  },
-  {
-    year: "2022",
-    title: "Python Developer Intern",
-    company: "CISCO",
-    description: "Completed 80+ hours of programming coursework. Developed IP validation tool reducing vulnerabilities by 20% for 500+ enterprise devices.",
-    technologies: ["Python", "Networking", "Security"],
-    highlight: false,
-  },
-  {
-    year: "2021-2025",
-    title: "Bachelor of Technology",
-    company: "Karunya Institute of Technology",
-    description: "Computer Science and Engineering. Focused on AI, IoT, and embedded systems. Built multiple award-winning projects.",
-    technologies: ["Data Structures", "Machine Learning", "IoT", "Embedded Systems"],
-    highlight: false,
-  },
-];
+import experiencesData from "@/data/experiences.json";
+
+// Type definition for experiences
+type Experience = {
+  year: string;
+  title: string;
+  company: string;
+  description: string;
+  technologies: string[];
+  highlight: boolean;
+};
+
+const experiences = experiencesData as Experience[];
 
 const TimelinePage = () => {
   return (

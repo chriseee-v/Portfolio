@@ -1,64 +1,23 @@
 import { useState } from "react";
 import { ExternalLink, Github } from "lucide-react";
+import projectsData from "@/data/projects.json";
 
 const filters = ["All", "Web", "3D", "Experiments", "Client"];
 
-const projects = [
-  {
-    id: 1,
-    title: "Clinician Agent for Stance Health",
-    role: "AI Developer",
-    year: "2025",
-    stack: ["RAG", "Redis", "Phoenix Tracer", "Docker", "AWS"],
-    category: "Web",
-    description: "RAG-powered agent that reduced form-filling time by 40% for physiotherapy workflows. Scaled to 200+ concurrent users across 50+ clinics.",
-  },
-  {
-    id: 2,
-    title: "MCP Server & Client",
-    role: "Backend Developer",
-    year: "2025",
-    stack: ["ChromaDB", "Flask", "LangChain", "BGE"],
-    category: "Web",
-    description: "Medical knowledge retrieval system with 95% accuracy. Processes 5,000+ queries daily with 99% API uptime.",
-  },
-  {
-    id: 3,
-    title: "Exercise Monitoring System",
-    role: "Computer Vision Engineer",
-    year: "2025",
-    stack: ["OpenCV", "Pose Estimation", "DINO", "SAM 2"],
-    category: "Experiments",
-    description: "Real-time pose estimation system that improved form accuracy by 35%. Processes 500+ video frames per second.",
-  },
-  {
-    id: 4,
-    title: "Healthflex One-View",
-    role: "Full Stack Developer",
-    year: "2025",
-    stack: ["FastAPI", "WebSocket", "MongoDB", "Plotly"],
-    category: "Web",
-    description: "Real-time athlete analytics platform integrating VALD data. Reduced data latency by 50% for 100+ users.",
-  },
-  {
-    id: 5,
-    title: "EEG-Controlled Prosthetic Arm",
-    role: "IoT & ML Engineer",
-    year: "2024",
-    stack: ["Python", "Scikit-Learn", "Raspberry Pi", "3D Printing"],
-    category: "Experiments",
-    description: "Brain-controlled prosthetic arm with 85% action accuracy. Patent pending for commercial development.",
-  },
-  {
-    id: 6,
-    title: "Smart Streetlight Management",
-    role: "IoT Developer",
-    year: "2024",
-    stack: ["Arduino", "LoRaWAN", "Python", "Firebase"],
-    category: "Client",
-    description: "IoT solution for centralized streetlight control. Reduced maintenance response times by 20%. Smart India Hackathon 24' Semi-Finalist.",
-  },
-];
+// Type definition for projects
+type Project = {
+  id: number;
+  title: string;
+  role: string;
+  year: string;
+  stack: string[];
+  category: string;
+  description: string;
+  url?: string;
+  github?: string;
+};
+
+const projects = projectsData as Project[];
 
 const ProjectsPage = () => {
   const [activeFilter, setActiveFilter] = useState("All");
@@ -140,14 +99,28 @@ const ProjectsPage = () => {
 
               {/* Hover Actions */}
               <div className="flex gap-3 pt-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button className="flex items-center gap-1 text-sm text-primary hover:underline">
-                  <ExternalLink className="w-3 h-3" />
-                  View
-                </button>
-                <button className="flex items-center gap-1 text-sm text-foreground/60 hover:text-foreground">
-                  <Github className="w-3 h-3" />
-                  Code
-                </button>
+                {project.url && (
+                  <a 
+                    href={project.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-sm text-primary hover:underline"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    View
+                  </a>
+                )}
+                {project.github && (
+                  <a 
+                    href={project.github} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-sm text-foreground/60 hover:text-foreground"
+                  >
+                    <Github className="w-3 h-3" />
+                    Code
+                  </a>
+                )}
               </div>
             </div>
           </article>

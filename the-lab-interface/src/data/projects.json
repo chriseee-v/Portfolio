@@ -1,0 +1,69 @@
+[
+  {
+    "id": 1,
+    "title": "Clinician Agent for Stance Health",
+    "role": "AI Developer",
+    "year": "2025",
+    "stack": ["RAG", "Redis", "Phoenix Tracer", "Docker", "AWS"],
+    "category": "Web",
+    "description": "RAG-powered agent that reduced form-filling time by 40% for physiotherapy workflows. Scaled to 200+ concurrent users across 50+ clinics.",
+    "url": "",
+    "github": ""
+  },
+  {
+    "id": 2,
+    "title": "MCP Server & Client",
+    "role": "Backend Developer",
+    "year": "2025",
+    "stack": ["ChromaDB", "Flask", "LangChain", "BGE"],
+    "category": "Web",
+    "description": "Medical knowledge retrieval system with 95% accuracy. Processes 5,000+ queries daily with 99% API uptime.",
+    "url": "",
+    "github": ""
+  },
+  {
+    "id": 3,
+    "title": "Exercise Monitoring System",
+    "role": "Computer Vision Engineer",
+    "year": "2025",
+    "stack": ["OpenCV", "Pose Estimation", "DINO", "SAM 2"],
+    "category": "Experiments",
+    "description": "Real-time pose estimation system that improved form accuracy by 35%. Processes 500+ video frames per second.",
+    "url": "",
+    "github": ""
+  },
+  {
+    "id": 4,
+    "title": "Healthflex One-View",
+    "role": "Full Stack Developer",
+    "year": "2025",
+    "stack": ["FastAPI", "WebSocket", "MongoDB", "Plotly"],
+    "category": "Web",
+    "description": "Real-time athlete analytics platform integrating VALD data. Reduced data latency by 50% for 100+ users.",
+    "url": "",
+    "github": ""
+  },
+  {
+    "id": 5,
+    "title": "EEG-Controlled Prosthetic Arm",
+    "role": "IoT & ML Engineer",
+    "year": "2024",
+    "stack": ["Python", "Scikit-Learn", "Raspberry Pi", "3D Printing"],
+    "category": "Experiments",
+    "description": "Brain-controlled prosthetic arm with 85% action accuracy. Patent pending for commercial development.",
+    "url": "",
+    "github": ""
+  },
+  {
+    "id": 6,
+    "title": "Smart Streetlight Management",
+    "role": "IoT Developer",
+    "year": "2024",
+    "stack": ["Arduino", "LoRaWAN", "Python", "Firebase"],
+    "category": "Client",
+    "description": "IoT solution for centralized streetlight control. Reduced maintenance response times by 20%. Smart India Hackathon 24' Semi-Finalist.",
+    "url": "",
+    "github": ""
+  }
+]
+

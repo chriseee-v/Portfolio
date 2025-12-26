@@ -1,0 +1,48 @@
+[
+  {
+    "id": 1,
+    "title": "The Art of Micro-Interactions",
+    "date": "Dec 15, 2024",
+    "readTime": "5 min",
+    "tags": ["Design", "UX"],
+    "summary": "How subtle animations and feedback loops create delightful user experiences that feel natural and intuitive.",
+    "url": ""
+  },
+  {
+    "id": 2,
+    "title": "WebGL Performance Optimization",
+    "date": "Nov 28, 2024",
+    "readTime": "8 min",
+    "tags": ["WebGL", "Performance"],
+    "summary": "Deep dive into shader optimization, geometry instancing, and efficient rendering pipelines for smooth 60fps experiences.",
+    "url": ""
+  },
+  {
+    "id": 3,
+    "title": "Building Design Systems at Scale",
+    "date": "Nov 12, 2024",
+    "readTime": "6 min",
+    "tags": ["Design Systems", "React"],
+    "summary": "Lessons learned from building and maintaining design systems for large distributed teams.",
+    "url": ""
+  },
+  {
+    "id": 4,
+    "title": "The Future of CSS: Container Queries",
+    "date": "Oct 30, 2024",
+    "readTime": "4 min",
+    "tags": ["CSS", "Frontend"],
+    "summary": "Exploring the new CSS container queries and how they change the way we think about responsive design.",
+    "url": ""
+  },
+  {
+    "id": 5,
+    "title": "GSAP vs Framer Motion: A Comparison",
+    "date": "Oct 15, 2024",
+    "readTime": "7 min",
+    "tags": ["Animation", "React"],
+    "summary": "An in-depth comparison of the two most popular animation libraries for modern web development.",
+    "url": ""
+  }
+]
+

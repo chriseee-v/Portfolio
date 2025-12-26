@@ -1,47 +1,18 @@
 import { Calendar, Clock, ArrowRight } from "lucide-react";
+import blogsData from "@/data/blogs.json";
 
-const posts = [
-  {
-    id: 1,
-    title: "The Art of Micro-Interactions",
-    date: "Dec 15, 2024",
-    readTime: "5 min",
-    tags: ["Design", "UX"],
-    summary: "How subtle animations and feedback loops create delightful user experiences that feel natural and intuitive.",
-  },
-  {
-    id: 2,
-    title: "WebGL Performance Optimization",
-    date: "Nov 28, 2024",
-    readTime: "8 min",
-    tags: ["WebGL", "Performance"],
-    summary: "Deep dive into shader optimization, geometry instancing, and efficient rendering pipelines for smooth 60fps experiences.",
-  },
-  {
-    id: 3,
-    title: "Building Design Systems at Scale",
-    date: "Nov 12, 2024",
-    readTime: "6 min",
-    tags: ["Design Systems", "React"],
-    summary: "Lessons learned from building and maintaining design systems for large distributed teams.",
-  },
-  {
-    id: 4,
-    title: "The Future of CSS: Container Queries",
-    date: "Oct 30, 2024",
-    readTime: "4 min",
-    tags: ["CSS", "Frontend"],
-    summary: "Exploring the new CSS container queries and how they change the way we think about responsive design.",
-  },
-  {
-    id: 5,
-    title: "GSAP vs Framer Motion: A Comparison",
-    date: "Oct 15, 2024",
-    readTime: "7 min",
-    tags: ["Animation", "React"],
-    summary: "An in-depth comparison of the two most popular animation libraries for modern web development.",
-  },
-];
+// Type definition for blog posts
+type BlogPost = {
+  id: number;
+  title: string;
+  date: string;
+  readTime: string;
+  tags: string[];
+  summary: string;
+  url?: string;
+};
+
+const posts = blogsData as BlogPost[];
 
 const BlogPage = () => {
   return (
@@ -64,6 +35,7 @@ const BlogPage = () => {
         {posts.map((post) => (
           <article
             key={post.id}
+            onClick={() => post.url && window.open(post.url, '_blank')}
             className="group p-6 rounded-xl border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-md cursor-pointer relative overflow-hidden"
           >
             {/* Accent Line */}
