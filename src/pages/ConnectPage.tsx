@@ -11,7 +11,7 @@ const XIcon = ({ className }: { className?: string }) => (
 
 const socialLinks = [
   { icon: Github, label: "GitHub", href: "https://github.com/Chris-healthflex" },
-  { icon: XIcon, label: "Twitter", href: "https://x.com/chris___xo" },
+  { icon: XIcon, label: "X", href: "https://x.com/chris___xo" },
   { icon: Linkedin, label: "LinkedIn", href: "https://linkedin.com/in/itsmechris" },
   { icon: Mail, label: "Email", href: "mailto:thechris241103@gmail.com" },
 ];
