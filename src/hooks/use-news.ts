@@ -37,46 +37,40 @@ const useNews = (query: string = "technology", limit: number = 10) => {
       console.log("Trying Google Gemini...");
       
       const genAI = new GoogleGenerativeAI(apiKey);
-      // Using gemini-2.5-flash as requested
+      // Using gemini-2.5-flash with Google Search enabled for real-time news
       // If this model is not available, try: gemini-1.5-flash, gemini-1.5-pro, or gemini-2.0-flash-exp
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const model = genAI.getGenerativeModel({ 
+        model: "gemini-flash-lite-latest",
+        tools: [{ googleSearch: {} } as any] // Type assertion needed for google_search tool
+      });
 
-      // Create a prompt that asks for recent news articles in JSON format
-      const prompt = `Provide me with ${limit} recent news articles about ${query}. 
-      IMPORTANT: For the "url" field, you MUST provide REAL, WORKING URLs from actual news websites.
-      Use URLs from reputable tech news sources like:
-      - TechCrunch (techcrunch.com)
-      - The Verge (theverge.com)
-      - Ars Technica (arstechnica.com)
-      - Wired (wired.com)
-      - Engadget (engadget.com)
-      - BBC Technology (bbc.com/news/technology)
-      - Reuters Technology (reuters.com/technology)
-      - Or other well-known tech news sites
+      // Create a prompt that uses Google Search to find the latest news
+      const prompt = `Search the web for the ${limit} most recent news articles about "${query}" published in the last 7 days.
       
-      If you cannot provide a real URL, use a Google search URL in this format:
-      https://www.google.com/search?q=[article title with + instead of spaces]
-      
-      Return the response as a JSON array with the following structure:
+      Return ONLY a JSON array with this exact structure (no other text, no markdown):
       [
         {
           "title": "Article title",
-          "description": "Brief description or summary",
-          "url": "REAL URL from a news website or Google search URL",
-          "urlToImage": "Image URL if available, otherwise empty string",
-          "publishedAt": "Publication date in ISO format (use recent dates)",
-          "source": { "name": "Source name (e.g., TechCrunch, The Verge)" },
-          "author": "Author name if available"
+          "description": "Brief summary",
+          "url": "Full article URL",
+          "urlToImage": "",
+          "publishedAt": "2024-01-15T00:00:00Z",
+          "source": { "name": "Source Name" },
+          "author": "Author name"
         }
       ]
       
-      Make sure the articles are recent (within the last few weeks) and relevant to ${query}. 
-      Focus on technology, programming, AI, software development, and related topics.
-      Return ONLY valid JSON, no markdown formatting, no code blocks.`;
+      Requirements:
+      - Only articles from the last 7 days
+      - Real URLs from actual news websites
+      - Technology/programming/AI topics
+      - Valid JSON only, no markdown code blocks`;
 
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const text = response.text();
+
+      console.log("Gemini raw response:", text.substring(0, 500)); // Log first 500 chars for debugging
 
       // Try to extract JSON from the response
       // Gemini might wrap JSON in markdown code blocks
@@ -93,28 +87,57 @@ const useNews = (query: string = "technology", limit: number = 10) => {
       let parsedArticles: any[];
       try {
         parsedArticles = JSON.parse(jsonText);
+        console.log("Parsed articles count:", parsedArticles?.length);
       } catch (parseError) {
+        console.error("JSON parse error:", parseError);
+        console.log("Attempting to extract JSON from text...");
         // If parsing fails, try to extract JSON array from the text
         const jsonMatch = jsonText.match(/\[[\s\S]*\]/);
         if (jsonMatch) {
-          parsedArticles = JSON.parse(jsonMatch[0]);
+          try {
+            parsedArticles = JSON.parse(jsonMatch[0]);
+            console.log("Successfully extracted JSON from text");
+          } catch (e) {
+            console.error("Failed to parse extracted JSON:", e);
+            throw new Error(`Failed to parse Gemini response as JSON: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`);
+          }
         } else {
-          throw new Error("Failed to parse Gemini response as JSON");
+          console.error("No JSON array found in response");
+          throw new Error(`Failed to parse Gemini response as JSON. Response preview: ${text.substring(0, 200)}`);
         }
       }
 
       // Validate and transform the articles
       if (Array.isArray(parsedArticles) && parsedArticles.length > 0) {
+        console.log("Processing articles:", parsedArticles.length);
         const articles: NewsArticle[] = parsedArticles.slice(0, limit).map((article: any, index: number) => {
-          // If URL is invalid or placeholder, create a Google search URL
+          // Use the URL from Gemini's search results if available and valid
           let articleUrl = article.url || "";
+          
+          // Validate URL - if it's invalid, create a Google search URL as fallback
           if (!articleUrl || 
               articleUrl.includes("example.com") || 
               articleUrl.includes("placeholder") ||
               !articleUrl.startsWith("http")) {
-            // Create Google search URL for the article title
-            const searchQuery = encodeURIComponent(article.title || query);
+            // Fallback: Create Google search URL for the article title
+            const searchTerms = [
+              article.title || query,
+              article.source?.name || article.source || ""
+            ].filter(Boolean).join(" ");
+            const searchQuery = encodeURIComponent(searchTerms);
             articleUrl = `https://www.google.com/search?q=${searchQuery}`;
+          }
+          
+          // Validate and format the published date
+          let publishedDate = article.publishedAt || article.published_at || new Date().toISOString();
+          try {
+            const date = new Date(publishedDate);
+            // If date is more than 30 days old, use current date (likely invalid)
+            if (date < new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)) {
+              publishedDate = new Date().toISOString();
+            }
+          } catch {
+            publishedDate = new Date().toISOString();
           }
           
           return {
@@ -123,7 +146,7 @@ const useNews = (query: string = "technology", limit: number = 10) => {
             description: article.description || article.summary || "",
             url: articleUrl,
             urlToImage: article.urlToImage || article.image || "",
-            publishedAt: article.publishedAt || article.published_at || new Date().toISOString(),
+            publishedAt: publishedDate,
             source: {
               name: article.source?.name || article.source || "Gemini News",
             },
@@ -137,10 +160,14 @@ const useNews = (query: string = "technology", limit: number = 10) => {
           setLoading(false);
           console.log(`✓ Successfully fetched ${articles.length} articles from Google Gemini`);
           return;
+        } else {
+          console.warn("Articles array is empty after processing");
         }
+      } else {
+        console.warn("Parsed articles is not an array or is empty:", parsedArticles);
       }
 
-      throw new Error("Gemini returned invalid or empty article data");
+      throw new Error(`Gemini returned invalid or empty article data. Parsed: ${JSON.stringify(parsedArticles).substring(0, 200)}`);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
       setError(`Failed to fetch news from Gemini: ${errorMessage}`);
