@@ -503,7 +503,7 @@ const CircularGallery = () => {
   };
 
   return (
-    <div className="relative min-h-[70vh] flex items-center justify-center overflow-x-hidden overflow-y-visible py-12 md:py-16">
+    <div className="relative min-h-[50vh] flex items-center justify-center overflow-x-hidden overflow-y-visible">
       {/* Center Text */}
       <div className="absolute z-10 text-center pointer-events-none">
         <h2 className="text-xl md:text-2xl font-light text-foreground mb-2">
@@ -556,13 +556,13 @@ const ExplorePage = () => {
   return (
     <div className="overflow-x-hidden overflow-y-visible">
       {/* Header */}
-      <div className="mb-8 pt-8">
-        <div className="flex items-center gap-4 mb-6">
+      <div className="mb-0 pt-4">
+        <div className="flex items-center gap-4 mb-2">
           <span className="lab-label">Tech Radar</span>
           <div className="flex-1 h-px bg-border" />
           <span className="font-mono text-xs text-muted-foreground">CIRCULAR GALLERY</span>
         </div>
-        <h1 className="lab-title mb-4">explore.</h1>
+        <h1 className="lab-title mb-2">explore.</h1>
         <p className="text-muted-foreground max-w-2xl">
           Drag to rotate the gallery. Hover over cards to flip them. Click to expand and read in detail.
         </p>
