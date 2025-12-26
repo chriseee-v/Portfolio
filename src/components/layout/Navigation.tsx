@@ -23,7 +23,7 @@ export const Navigation = () => {
       {/* Logo */}
       <Link to="/" className="flex items-center gap-2">
         <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-          <span className="text-primary-foreground font-bold text-sm">L.</span>
+          <span className="text-primary-foreground font-bold text-sm">C.</span>
         </div>
       </Link>
 
