@@ -1,12 +1,12 @@
 import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import gsap from "gsap";
-import { X, Cpu, Globe, Layers, Zap, Box, Code, Database, Cloud, Sparkles, Palette, Terminal, Wifi } from "lucide-react";
+import { X, Brain, Eye, Box, Zap, Code2, Database, Cloud, BarChart3, Bot, Terminal, Radio } from "lucide-react";
 
 const techTopics = [
   { 
     id: 1, 
     title: "Computer Vision", 
-    icon: Globe, 
+    icon: Eye, 
     shortDesc: "Image Processing",
     description: "Real-time video analysis and pose estimation for healthcare applications.",
     fullContent: "Computer vision enables machines to interpret and understand visual information from the world. Using OpenCV, DINO, SAM, and pose estimation models, I've built systems that process 500+ video frames per second for exercise monitoring and clothing detection, improving accuracy by 35% for fitness applications.",
@@ -16,7 +16,7 @@ const techTopics = [
   { 
     id: 2, 
     title: "RAG Systems", 
-    icon: Cpu, 
+    icon: Brain, 
     shortDesc: "AI Retrieval",
     description: "Retrieval-Augmented Generation for intelligent knowledge systems.",
     fullContent: "RAG systems combine the power of large language models with efficient information retrieval. I've built medical knowledge systems using ChromaDB, BGE embeddings, and LangChain that achieve 95% accuracy and process 5,000+ queries daily. The Clinician Agent reduced form-filling time by 40% for physiotherapy workflows.",
@@ -46,7 +46,7 @@ const techTopics = [
   { 
     id: 5, 
     title: "Full-Stack Web", 
-    icon: Layers, 
+    icon: Code2, 
     shortDesc: "Modern Frameworks",
     description: "React, Angular, and FastAPI for building complete web applications.",
     fullContent: "Modern full-stack development combines powerful frontend frameworks with efficient backend APIs. I've built real-time analytics dashboards with React and Angular, WebSocket services with FastAPI, and data visualization platforms using Plotly. Reduced visualization load time by 50% and data latency by 50%.",
@@ -76,7 +76,7 @@ const techTopics = [
   { 
     id: 8, 
     title: "Machine Learning", 
-    icon: Code, 
+    icon: Brain, 
     shortDesc: "AI Models",
     description: "PyTorch, TensorFlow, and Scikit-Learn for intelligent systems.",
     fullContent: "Machine learning enables computers to learn from data and make predictions. I've developed EEG signal processing models with 85% accuracy, speaker diarization systems improving transcription by 25%, and trained models in Google Cloud Workbench with GPU support, speeding up training by 40%.",
@@ -86,7 +86,7 @@ const techTopics = [
   { 
     id: 9, 
     title: "Data Visualization", 
-    icon: Sparkles, 
+    icon: BarChart3, 
     shortDesc: "Analytics",
     description: "Plotly, Pandas, and NumPy for interactive data insights.",
     fullContent: "Data visualization transforms complex data into actionable insights. I've built interactive dashboards using Plotly JSON outputs, ETL pipelines with Pandas and NumPy, and analytics platforms that reduced visualization load time by 50% for clinicians monitoring athlete performance.",
@@ -96,7 +96,7 @@ const techTopics = [
   { 
     id: 10, 
     title: "Web Automation", 
-    icon: Palette, 
+    icon: Bot, 
     shortDesc: "Data Extraction",
     description: "Puppeteer and automation for efficient data acquisition.",
     fullContent: "Web automation streamlines repetitive tasks and data collection. I've automated data extraction from VALD, Runscribe, and PhysioPlusTech using Puppeteer and Angular, cutting data acquisition time by 70% and enabling efficient decision-making with 500+ daily API requests.",
@@ -116,7 +116,7 @@ const techTopics = [
   { 
     id: 12, 
     title: "Signal Processing", 
-    icon: Wifi, 
+    icon: Radio, 
     shortDesc: "EEG & Audio",
     description: "Brain signals and audio analysis for innovative applications.",
     fullContent: "Signal processing enables interpretation of complex biological and audio data. I've developed EEG-controlled prosthetic systems with 85% accuracy, speaker diarization systems improving transcription by 25%, and real-time audio processing pipelines handling 200+ hours monthly.",

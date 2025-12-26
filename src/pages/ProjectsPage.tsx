@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { ExternalLink, Github } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useInView } from "react-intersection-observer";
 import projectsData from "@/data/projects.json";
+import { staggerContainer, staggerItem, filterTransition, buttonHoverVariants } from "@/lib/motion";
 
 const filters = ["All", "AI", "Full Stack", "Computer Vision", "IoT"];
 
@@ -21,6 +24,10 @@ const projects = projectsData as Project[];
 
 const ProjectsPage = () => {
   const [activeFilter, setActiveFilter] = useState("All");
+  const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true });
+  
+  // Featured projects (first 2)
+  const featuredIds = [1, 2];
 
   const filteredProjects = activeFilter === "All" 
     ? projects 
@@ -44,88 +51,145 @@ const ProjectsPage = () => {
       {/* Filters */}
       <div className="flex flex-wrap gap-2 mb-12">
         {filters.map((filter) => (
-          <button
+          <motion.button
             key={filter}
             onClick={() => setActiveFilter(filter)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+            className={`px-4 py-2 rounded-full text-sm font-medium ${
               activeFilter === filter
                 ? "bg-primary text-primary-foreground"
                 : "bg-muted text-foreground hover:bg-muted/80"
             }`}
+            variants={buttonHoverVariants}
+            whileHover="hover"
+            whileTap="tap"
+            layout
           >
             {filter}
-          </button>
+          </motion.button>
         ))}
       </div>
 
       {/* Projects Grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredProjects.map((project) => (
-          <article
-            key={project.id}
-            className="project-card group relative overflow-hidden"
-          >
-            {/* Accent Corner */}
-            <div className="absolute top-0 right-0 w-16 h-16">
-              <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
-
-            {/* Content */}
-            <div className="space-y-4">
-              <div className="flex items-start justify-between">
-                <span className="font-mono text-xs text-muted-foreground">{project.year}</span>
-                <span className="tech-tag">{project.category}</span>
-              </div>
-
-              <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
-                {project.title}
-              </h3>
-
-              <p className="text-sm text-muted-foreground line-clamp-2">
-                {project.description}
-              </p>
-
-              <div className="pt-2 border-t border-border/50">
-                <span className="text-xs font-medium text-foreground/60">{project.role}</span>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {project.stack.map((tech) => (
-                  <span key={tech} className="tech-tag text-xs">
-                    {tech}
+      <motion.div
+        ref={ref}
+        className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+        variants={staggerContainer}
+        initial="initial"
+        animate={inView ? "animate" : "initial"}
+      >
+        <AnimatePresence mode="wait">
+          {filteredProjects.map((project, index) => (
+            <motion.article
+              key={project.id}
+              layout
+              variants={staggerItem}
+              className="project-card group relative overflow-hidden"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+              whileHover={{ 
+                y: -8, 
+                transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] }
+              }}
+            >
+              {/* Featured badge */}
+              {featuredIds.includes(project.id) && (
+                <motion.div
+                  className="absolute top-2 right-2 z-10"
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ 
+                    delay: 0.5,
+                    type: "spring",
+                    stiffness: 200
+                  }}
+                >
+                  <span className="px-2 py-1 bg-primary text-primary-foreground text-xs font-mono rounded">
+                    NEW
                   </span>
-                ))}
+                </motion.div>
+              )}
+              
+              {/* Accent Corner */}
+              <div className="absolute top-0 right-0 w-16 h-16">
+                <motion.div 
+                  className="absolute top-4 right-4 w-2 h-2 rounded-full bg-primary"
+                  initial={{ opacity: 0, scale: 0 }}
+                  whileHover={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.2 }}
+                />
               </div>
 
-              {/* Hover Actions */}
-              <div className="flex gap-3 pt-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                {project.url && (
-                  <a 
-                    href={project.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-sm text-primary hover:underline"
-                  >
-                    <ExternalLink className="w-3 h-3" />
-                    View
-                  </a>
-                )}
-                {project.github && (
-                  <a 
-                    href={project.github} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-sm text-foreground/60 hover:text-foreground"
-                  >
-                    <Github className="w-3 h-3" />
-                    Code
-                  </a>
-                )}
+              {/* Content */}
+              <div className="space-y-4">
+                <div className="flex items-start justify-between">
+                  <span className="font-mono text-xs text-muted-foreground">{project.year}</span>
+                  <span className="tech-tag">{project.category}</span>
+                </div>
+
+                <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
+                  {project.title}
+                </h3>
+
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {project.description}
+                </p>
+
+                <div className="pt-2 border-t border-border/50">
+                  <span className="text-xs font-medium text-foreground/60">{project.role}</span>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {project.stack.map((tech) => (
+                    <motion.span 
+                      key={tech} 
+                      className="tech-tag text-xs"
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      {tech}
+                    </motion.span>
+                  ))}
+                </div>
+
+                {/* Hover Actions */}
+                <motion.div 
+                  className="flex gap-3 pt-4"
+                  initial={{ opacity: 0 }}
+                  whileHover={{ opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {project.url && (
+                    <motion.a 
+                      href={project.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-sm text-primary hover:underline"
+                      whileHover={{ x: 2 }}
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      View
+                    </motion.a>
+                  )}
+                  {project.github && (
+                    <motion.a 
+                      href={project.github} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-sm text-foreground/60 hover:text-foreground"
+                      whileHover={{ x: 2 }}
+                    >
+                      <Github className="w-3 h-3" />
+                      Code
+                    </motion.a>
+                  )}
+                </motion.div>
               </div>
-            </div>
-          </article>
-        ))}
-      </div>
+            </motion.article>
+          ))}
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 };

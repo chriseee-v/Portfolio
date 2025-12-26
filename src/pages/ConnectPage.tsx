@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Send, Github, Linkedin, Mail, MapPin } from "lucide-react";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
+import { useInView } from "react-intersection-observer";
+import { sectionVariants, buttonHoverVariants } from "@/lib/motion";
 
 // X (formerly Twitter) icon component
 const XIcon = ({ className }: { className?: string }) => (
@@ -22,17 +25,53 @@ const ConnectPage = () => {
     email: "",
     message: "",
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const { ref: headerRef, inView: headerInView } = useInView({ threshold: 0.3, triggerOnce: true });
+  
+  const validateEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    
+    // Validation
+    const newErrors: Record<string, string> = {};
+    if (!formData.name.trim()) newErrors.name = "Name is required";
+    if (!validateEmail(formData.email)) newErrors.email = "Invalid email address";
+    if (!formData.message.trim()) newErrors.message = "Message is required";
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setIsSubmitting(false);
+      return;
+    }
+    
+    // Simulate submission
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    setIsSuccess(true);
     toast.success("Message sent! I'll get back to you soon.");
     setFormData({ name: "", email: "", message: "" });
+    setErrors({});
+    setIsSubmitting(false);
+    
+    setTimeout(() => setIsSuccess(false), 3000);
   };
 
   return (
     <div>
       {/* Header */}
-      <div className="mb-12 pt-8">
+      <motion.div 
+        ref={headerRef}
+        className="mb-12 pt-8"
+        variants={sectionVariants}
+        initial="initial"
+        animate={headerInView ? "animate" : "initial"}
+      >
         <div className="flex items-center gap-4 mb-6">
           <span className="lab-label">Get in Touch</span>
           <div className="flex-1 h-px bg-border" />
@@ -42,52 +81,149 @@ const ConnectPage = () => {
         <p className="text-muted-foreground max-w-2xl">
           Interested in AI, IoT, or full-stack development? Let's collaborate and build innovative solutions together.
         </p>
-      </div>
+      </motion.div>
 
       <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
         {/* Contact Form */}
         <div>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
+            <motion.div
+              animate={errors.name ? { x: [0, -10, 10, -10, 0] } : {}}
+              transition={{ duration: 0.4 }}
+            >
               <label className="lab-label block mb-2">Name</label>
-              <input
+              <motion.input
                 type="text"
                 required
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-border bg-card focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                onChange={(e) => {
+                  setFormData({ ...formData, name: e.target.value });
+                  if (errors.name) setErrors({ ...errors, name: "" });
+                }}
+                className={`w-full px-4 py-3 rounded-xl border bg-card focus:outline-none focus:ring-2 transition-all ${
+                  errors.name
+                    ? "border-destructive focus:ring-destructive/50"
+                    : "border-border focus:ring-primary/50"
+                }`}
+                whileFocus={{ scale: 1.02 }}
+                transition={{ duration: 0.2 }}
                 placeholder="Your name"
               />
-            </div>
+              <AnimatePresence>
+                {errors.name && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="text-destructive text-xs mt-1"
+                  >
+                    {errors.name}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </motion.div>
             
-            <div>
+            <motion.div
+              animate={errors.email ? { x: [0, -10, 10, -10, 0] } : {}}
+              transition={{ duration: 0.4 }}
+            >
               <label className="lab-label block mb-2">Email</label>
-              <input
+              <motion.input
                 type="email"
                 required
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-border bg-card focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                onChange={(e) => {
+                  setFormData({ ...formData, email: e.target.value });
+                  if (errors.email) setErrors({ ...errors, email: "" });
+                }}
+                className={`w-full px-4 py-3 rounded-xl border bg-card focus:outline-none focus:ring-2 transition-all ${
+                  errors.email
+                    ? "border-destructive focus:ring-destructive/50"
+                    : "border-border focus:ring-primary/50"
+                }`}
+                whileFocus={{ scale: 1.02 }}
+                transition={{ duration: 0.2 }}
                 placeholder="your@email.com"
               />
-            </div>
+              <AnimatePresence>
+                {errors.email && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="text-destructive text-xs mt-1"
+                  >
+                    {errors.email}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </motion.div>
             
-            <div>
+            <motion.div
+              animate={errors.message ? { x: [0, -10, 10, -10, 0] } : {}}
+              transition={{ duration: 0.4 }}
+            >
               <label className="lab-label block mb-2">Message</label>
-              <textarea
+              <motion.textarea
                 required
                 rows={5}
                 value={formData.message}
-                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-border bg-card focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all resize-none"
+                onChange={(e) => {
+                  setFormData({ ...formData, message: e.target.value });
+                  if (errors.message) setErrors({ ...errors, message: "" });
+                }}
+                className={`w-full px-4 py-3 rounded-xl border bg-card focus:outline-none focus:ring-2 transition-all resize-none ${
+                  errors.message
+                    ? "border-destructive focus:ring-destructive/50"
+                    : "border-border focus:ring-primary/50"
+                }`}
+                whileFocus={{ scale: 1.02 }}
+                transition={{ duration: 0.2 }}
                 placeholder="Tell me about your project..."
               />
-            </div>
+              <AnimatePresence>
+                {errors.message && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="text-destructive text-xs mt-1"
+                  >
+                    {errors.message}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </motion.div>
 
-            <button type="submit" className="lab-button-primary w-full flex items-center justify-center gap-2">
-              Send Message
+            <motion.button 
+              type="submit" 
+              className="lab-button-primary w-full flex items-center justify-center gap-2"
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ duration: 0.15 }}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Sending..." : "Send Message"}
               <Send className="w-4 h-4" />
-            </button>
+            </motion.button>
+            
+            {/* Success animation */}
+            <AnimatePresence>
+              {isSuccess && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ 
+                    opacity: 1, 
+                    scale: 1,
+                    boxShadow: "0 0 30px rgba(34, 197, 94, 0.5)"
+                  }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="p-4 bg-green-500/10 border border-green-500/50 rounded-xl text-green-600 dark:text-green-400 text-center"
+                >
+                  Message sent! I'll get back to you soon.
+                </motion.div>
+              )}
+            </AnimatePresence>
           </form>
         </div>
 
@@ -114,16 +250,19 @@ const ConnectPage = () => {
               {socialLinks.map((social) => {
                 const Icon = social.icon;
                 return (
-                  <a
+                  <motion.a
                     key={social.label}
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-12 h-12 rounded-xl border border-border flex items-center justify-center hover:border-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300"
                     aria-label={social.label}
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
                   >
                     <Icon className="w-5 h-5" />
-                  </a>
+                  </motion.a>
                 );
               })}
             </div>

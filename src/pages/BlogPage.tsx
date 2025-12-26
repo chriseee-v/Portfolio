@@ -1,5 +1,8 @@
 import { Calendar, Clock, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { useInView } from "react-intersection-observer";
 import blogsData from "@/data/blogs.json";
+import { sectionVariants, staggerContainer, staggerItem } from "@/lib/motion";
 
 // Type definition for blog posts
 type BlogPost = {
@@ -15,10 +18,18 @@ type BlogPost = {
 const posts = blogsData as BlogPost[];
 
 const BlogPage = () => {
+  const { ref: headerRef, inView: headerInView } = useInView({ threshold: 0.3, triggerOnce: true });
+
   return (
     <div>
       {/* Header */}
-      <div className="mb-12 pt-8">
+      <motion.div 
+        ref={headerRef}
+        className="mb-12 pt-8"
+        variants={sectionVariants}
+        initial="initial"
+        animate={headerInView ? "animate" : "initial"}
+      >
         <div className="flex items-center gap-4 mb-6">
           <span className="lab-label">Thoughts & Writings</span>
           <div className="flex-1 h-px bg-border" />
@@ -28,13 +39,19 @@ const BlogPage = () => {
         <p className="text-muted-foreground max-w-2xl">
           Technical deep-dives, design explorations, and lessons learned from building digital experiences.
         </p>
-      </div>
+      </motion.div>
 
       {/* Posts List */}
-      <div className="space-y-6">
+      <motion.div
+        className="space-y-6"
+        variants={staggerContainer}
+        initial="initial"
+        animate={headerInView ? "animate" : "initial"}
+      >
         {posts.map((post) => (
-          <article
+          <motion.article
             key={post.id}
+            variants={staggerItem}
             onClick={() => post.url && window.open(post.url, '_blank')}
             className="group p-6 rounded-xl border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-md cursor-pointer relative overflow-hidden"
           >
@@ -79,9 +96,9 @@ const BlogPage = () => {
               <span className="text-sm font-medium">Read article</span>
               <ArrowRight className="w-4 h-4" />
             </div>
-          </article>
+          </motion.article>
         ))}
-      </div>
+      </motion.div>
 
       {/* Newsletter CTA */}
       <section className="mt-16 p-8 rounded-2xl bg-muted/30 border border-border">
