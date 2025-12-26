@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export interface NewsArticle {
   id: string;
@@ -13,265 +14,6 @@ export interface NewsArticle {
   author?: string;
 }
 
-// API Providers in order of preference (with fallback chain)
-const API_PROVIDERS = {
-  NEWSDATA: {
-    name: "NewsData.io",
-    fetch: async (query: string, limit: number, apiKey: string) => {
-      // NewsData.io free tier - try different parameter combinations
-      // Free tier might require 'q' parameter instead of 'category'
-      const attempts = [
-        // Try with 'q' parameter (most likely for free tier)
-        `https://newsdata.io/api/1/news?apikey=${apiKey}&q=technology&language=en&size=${limit}`,
-        // Try with category and country
-        `https://newsdata.io/api/1/news?apikey=${apiKey}&category=technology&country=us&language=en&size=${limit}`,
-        // Try with just category
-        `https://newsdata.io/api/1/news?apikey=${apiKey}&category=technology&language=en&size=${limit}`,
-        // Try with q and country
-        `https://newsdata.io/api/1/news?apikey=${apiKey}&q=technology&country=us&language=en&size=${limit}`,
-      ];
-      
-      let lastError: Error | null = null;
-      
-      for (const url of attempts) {
-        try {
-          const response = await fetch(url);
-          
-          if (response.ok) {
-            const data = await response.json();
-            if (data.results && data.results.length > 0) {
-              return data.results.map((article: any, index: number) => ({
-                id: article.article_id || `newsdata-${index}`,
-                title: article.title || "",
-                description: article.description || "",
-                url: article.link || "",
-                urlToImage: article.image_url,
-                publishedAt: article.pubDate || new Date().toISOString(),
-                source: { name: article.source_id || "News" },
-                author: article.creator?.[0] || article.source_id,
-              }));
-            }
-          } else {
-            // Try to get error message
-            const errorData = await response.json().catch(() => ({}));
-            lastError = new Error(errorData.message || `HTTP ${response.status}`);
-            // Continue to next attempt
-            continue;
-          }
-        } catch (err) {
-          lastError = err instanceof Error ? err : new Error("Network error");
-          continue;
-        }
-      }
-      
-      // All attempts failed
-      throw lastError || new Error("NewsData.io failed: All parameter combinations failed");
-    },
-  },
-  NEWSAPI: {
-    name: "News API",
-    fetch: async (query: string, limit: number, apiKey: string) => {
-      // News API free tier only works on localhost
-      // On production (Vercel), it returns 426 (Upgrade Required)
-      // Check if we're on production
-      const isProduction = window.location.hostname !== 'localhost' && 
-                          window.location.hostname !== '127.0.0.1' &&
-                          !window.location.hostname.includes('localhost');
-      
-      if (isProduction) {
-        throw new Error("News API free tier only works on localhost. Upgrade to paid plan for production use.");
-      }
-      
-      // Try headlines endpoint (works on localhost)
-      const response = await fetch(
-        `https://newsapi.org/v2/top-headlines?category=technology&pageSize=${limit}&apiKey=${apiKey}`
-      );
-      
-      if (!response.ok) {
-        // 426 means upgrade required (paid plan needed)
-        if (response.status === 426) {
-          throw new Error("News API requires paid plan for production domains");
-        }
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "News API failed");
-      }
-      
-      const data = await response.json();
-      if (data.articles && data.articles.length > 0) {
-        return data.articles.map((article: any, index: number) => ({
-          id: article.url || `newsapi-${index}`,
-          title: article.title || "",
-          description: article.description || "",
-          url: article.url || "",
-          urlToImage: article.urlToImage,
-          publishedAt: article.publishedAt || new Date().toISOString(),
-          source: { name: article.source?.name || "News" },
-          author: article.author,
-        }));
-      }
-      throw new Error("News API invalid response");
-    },
-  },
-  GNEWS: {
-    name: "GNews API",
-    fetch: async (query: string, limit: number, apiKey: string) => {
-      // GNews has CORS issues from browser, skip for now or use backend proxy
-      // For now, we'll skip it as it requires backend proxy
-      throw new Error("GNews API requires backend proxy due to CORS");
-    },
-  },
-  MEDIASTACK: {
-    name: "Media Stack API",
-    fetch: async (query: string, limit: number, apiKey: string) => {
-      // Skip if API key is invalid (shows as "...")
-      if (!apiKey || apiKey === "..." || apiKey.length < 10) {
-        throw new Error("Media Stack API key invalid");
-      }
-      
-      const response = await fetch(
-        `https://api.mediastack.com/v1/news?access_key=${apiKey}&categories=technology&limit=${limit}&languages=en`
-      );
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error("Media Stack API key invalid or expired");
-        }
-        throw new Error("Media Stack API failed");
-      }
-      const data = await response.json();
-      if (data.data && data.data.length > 0) {
-        return data.data.map((article: any, index: number) => ({
-          id: article.url || `mediastack-${index}`,
-          title: article.title || "",
-          description: article.description || "",
-          url: article.url || "",
-          urlToImage: article.image,
-          publishedAt: article.published_at || new Date().toISOString(),
-          source: { name: article.source || "News" },
-          author: article.author,
-        }));
-      }
-      throw new Error("Media Stack API invalid response");
-    },
-  },
-  RSS_FALLBACK: {
-    name: "RSS Feed",
-    fetch: async (query: string, limit: number) => {
-      // Try multiple CORS proxies and RSS feeds
-      const corsProxies = [
-        'https://api.allorigins.win/raw?url=',
-        'https://corsproxy.io/?',
-        'https://api.codetabs.com/v1/proxy?quest=',
-      ];
-      
-      const rssFeeds = [
-        { url: 'https://techcrunch.com/feed/', name: 'TechCrunch' },
-        { url: 'https://www.theverge.com/rss/index.xml', name: 'The Verge' },
-        { url: 'https://feeds.arstechnica.com/arstechnica/index', name: 'Ars Technica' },
-        { url: 'https://rss.cnn.com/rss/edition.rss', name: 'CNN' },
-      ];
-      
-      // Try each proxy with each feed
-      for (const proxy of corsProxies) {
-        for (const feed of rssFeeds) {
-          try {
-            const proxyUrl = proxy === 'https://corsproxy.io/?' 
-              ? `${proxy}${encodeURIComponent(feed.url)}`
-              : `${proxy}${encodeURIComponent(feed.url)}`;
-            
-            const response = await fetch(proxyUrl, {
-              headers: {
-                'Accept': 'application/xml, text/xml, */*',
-              },
-            });
-            
-            if (response.ok) {
-              const xmlText = await response.text();
-              
-              // Parse RSS XML
-              const parser = new DOMParser();
-              const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-              
-              // Check for parsing errors
-              const parseError = xmlDoc.querySelector('parsererror');
-              if (parseError) {
-                console.log(`RSS parse error for ${feed.name}:`, parseError.textContent);
-                continue;
-              }
-              
-              const items = xmlDoc.querySelectorAll('item');
-              
-              if (items.length > 0) {
-                const articles = Array.from(items).slice(0, limit).map((item: Element, index: number) => {
-                  const getText = (selector: string) => {
-                    const el = item.querySelector(selector);
-                    return el?.textContent?.trim() || '';
-                  };
-                  
-                  const getAttr = (selector: string, attr: string) => {
-                    const el = item.querySelector(selector);
-                    return el?.getAttribute(attr) || '';
-                  };
-                  
-                  // Try different namespace variations for link
-                  const getLink = () => {
-                    return getText('link') || 
-                           getText('guid') || 
-                           item.querySelector('link')?.textContent?.trim() || '';
-                  };
-                  
-                  const title = getText('title');
-                  const link = getLink();
-                  const description = getText('description')?.replace(/<[^>]*>/g, "").substring(0, 200) || '';
-                  const pubDate = getText('pubDate') || getText('dc:date') || new Date().toISOString();
-                  
-                  // Try multiple ways to get image
-                  const image = getAttr('enclosure', 'url') || 
-                              getAttr('media:content', 'url') ||
-                              getAttr('media:thumbnail', 'url') ||
-                              item.querySelector('media\\:content, content')?.getAttribute('url') || '';
-                  
-                  return {
-                    id: link || `rss-${index}`,
-                    title,
-                    description,
-                    url: link,
-                    urlToImage: image,
-                    publishedAt: pubDate,
-                    source: { name: feed.name },
-                    author: getText('author') || getText('dc:creator') || feed.name,
-                  };
-                });
-                
-                if (articles.length > 0) {
-                  return articles;
-                }
-              }
-            }
-          } catch (err) {
-            // Try next combination
-            continue;
-          }
-        }
-      }
-      
-      // Final fallback: Return mock data so the page doesn't look broken
-      // This is better than showing an error
-      return [
-        {
-          id: 'fallback-1',
-          title: 'Tech News Feed',
-          description: 'News feeds are temporarily unavailable. Please check back later or configure API keys for better results.',
-          url: 'https://github.com/chriseee-v/Portfolio',
-          urlToImage: '',
-          publishedAt: new Date().toISOString(),
-          source: { name: 'System' },
-          author: 'Portfolio',
-        },
-      ];
-    },
-  },
-};
-
 const useNews = (query: string = "technology", limit: number = 10) => {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -283,62 +25,100 @@ const useNews = (query: string = "technology", limit: number = 10) => {
     setError(null);
     setActiveProvider(null);
 
-    // Get API keys from environment
-    const apiKeys = {
-      newsdata: import.meta.env.VITE_NEWSDATA_API_KEY,
-      newsapi: import.meta.env.VITE_NEWS_API_KEY,
-      mediastack: import.meta.env.VITE_MEDIASTACK_API_KEY,
-    };
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
-    // Try each API provider in order until one succeeds
-    // Skip GNews due to CORS issues (requires backend proxy)
-    // Skip NewsAPI.ai due to domain resolution issues
-    const providers = [
-      { key: "newsdata", provider: API_PROVIDERS.NEWSDATA, apiKey: apiKeys.newsdata },
-      { key: "mediastack", provider: API_PROVIDERS.MEDIASTACK, apiKey: apiKeys.mediastack },
-      { key: "newsapi", provider: API_PROVIDERS.NEWSAPI, apiKey: apiKeys.newsapi }, // Try News API last since it doesn't work on production
-      // RSS removed - user wants APIs only
-    ];
-
-    let lastError: Error | null = null;
-
-    for (const { key, provider, apiKey } of providers) {
-      // Skip if API key is required but not provided (except RSS)
-      if (key !== "rss" && !apiKey) {
-        continue;
-      }
-
-      try {
-        console.log(`Trying ${provider.name}...`);
-        const fetchedArticles = await provider.fetch(query, limit, apiKey || "");
-        
-        if (fetchedArticles && fetchedArticles.length > 0) {
-          setArticles(fetchedArticles);
-          setActiveProvider(provider.name);
-          setLoading(false);
-          console.log(`✓ Successfully fetched from ${provider.name}`);
-          return;
-        } else {
-          // Empty results - try next provider
-          console.log(`⚠ ${provider.name} returned empty results, trying next...`);
-          continue;
-        }
-      } catch (err) {
-        lastError = err instanceof Error ? err : new Error("Unknown error");
-        console.log(`✗ ${provider.name} failed:`, lastError.message);
-        // Continue to next provider
-        continue;
-      }
+    if (!apiKey) {
+      setError("Gemini API key not found. Please add VITE_GEMINI_API_KEY to your environment variables.");
+      setLoading(false);
+      return;
     }
 
-    // All providers failed
-    setError(
-      lastError?.message || 
-      "All news APIs failed. Please check your API keys or try again later."
-    );
-    setArticles([]);
-    setLoading(false);
-    console.error("All news API providers failed");
+    try {
+      console.log("Trying Google Gemini...");
+      
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+      // Create a prompt that asks for recent news articles in JSON format
+      const prompt = `Provide me with ${limit} recent news articles about ${query}. 
+      Return the response as a JSON array with the following structure:
+      [
+        {
+          "title": "Article title",
+          "description": "Brief description or summary",
+          "url": "Source URL if available, otherwise a placeholder",
+          "urlToImage": "Image URL if available, otherwise empty string",
+          "publishedAt": "Publication date in ISO format",
+          "source": { "name": "Source name" },
+          "author": "Author name if available"
+        }
+      ]
+      
+      Make sure the articles are recent (within the last few weeks) and relevant to ${query}. 
+      Focus on technology, programming, AI, software development, and related topics.
+      Return ONLY valid JSON, no markdown formatting, no code blocks.`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+
+      // Try to extract JSON from the response
+      // Gemini might wrap JSON in markdown code blocks
+      let jsonText = text.trim();
+      
+      // Remove markdown code blocks if present
+      if (jsonText.startsWith("```json")) {
+        jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "");
+      } else if (jsonText.startsWith("```")) {
+        jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "");
+      }
+
+      // Parse the JSON
+      let parsedArticles: any[];
+      try {
+        parsedArticles = JSON.parse(jsonText);
+      } catch (parseError) {
+        // If parsing fails, try to extract JSON array from the text
+        const jsonMatch = jsonText.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          parsedArticles = JSON.parse(jsonMatch[0]);
+        } else {
+          throw new Error("Failed to parse Gemini response as JSON");
+        }
+      }
+
+      // Validate and transform the articles
+      if (Array.isArray(parsedArticles) && parsedArticles.length > 0) {
+        const articles: NewsArticle[] = parsedArticles.slice(0, limit).map((article: any, index: number) => ({
+          id: article.url || article.id || `gemini-${index}-${Date.now()}`,
+          title: article.title || "Untitled Article",
+          description: article.description || article.summary || "",
+          url: article.url || `https://example.com/article-${index}`,
+          urlToImage: article.urlToImage || article.image || "",
+          publishedAt: article.publishedAt || article.published_at || new Date().toISOString(),
+          source: {
+            name: article.source?.name || article.source || "Gemini News",
+          },
+          author: article.author || article.source?.name || "Unknown",
+        }));
+
+        if (articles.length > 0) {
+          setArticles(articles);
+          setActiveProvider("Google Gemini");
+          setLoading(false);
+          console.log(`✓ Successfully fetched ${articles.length} articles from Google Gemini`);
+          return;
+        }
+      }
+
+      throw new Error("Gemini returned invalid or empty article data");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+      setError(`Failed to fetch news from Gemini: ${errorMessage}`);
+      setArticles([]);
+      setLoading(false);
+      console.error("Gemini API failed:", errorMessage);
+    }
   };
 
   useEffect(() => {
