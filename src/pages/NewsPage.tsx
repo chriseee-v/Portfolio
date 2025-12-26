@@ -1,4 +1,4 @@
-import { ExternalLink, Calendar, Clock, Loader2, RefreshCw } from "lucide-react";
+import { ExternalLink, Calendar, Clock, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
@@ -68,38 +68,19 @@ const NewsPage = () => {
         </p>
 
         {/* Search/Filter */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="mb-6">
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search news topics..."
-            className="flex-1 px-4 py-2 rounded-full border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="w-full px-4 py-2 rounded-full border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 refetch();
               }
             }}
           />
-          <motion.button
-            onClick={() => refetch()}
-            className="lab-button-primary px-6 flex items-center gap-2"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Loading...
-              </>
-            ) : (
-              <>
-                <RefreshCw className="w-4 h-4" />
-                Refresh
-              </>
-            )}
-          </motion.button>
         </div>
 
         {/* Popular Queries */}
@@ -110,7 +91,6 @@ const NewsPage = () => {
               key={q}
               onClick={() => {
                 setQuery(q);
-                setTimeout(() => refetch(), 100);
               }}
               className="px-3 py-1 rounded-full text-xs bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
             >
