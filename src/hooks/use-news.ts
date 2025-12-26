@@ -18,14 +18,24 @@ const API_PROVIDERS = {
   NEWSDATA: {
     name: "NewsData.io",
     fetch: async (query: string, limit: number, apiKey: string) => {
-      // NewsData.io free tier requires country parameter
-      const response = await fetch(
-        `https://newsdata.io/api/1/news?apikey=${apiKey}&category=technology&country=us&language=en&size=${limit}`
+      // NewsData.io free tier - try with just category first (simpler)
+      let response = await fetch(
+        `https://newsdata.io/api/1/news?apikey=${apiKey}&category=technology&language=en&size=${limit}`
       );
+      
+      // If that fails, try with country
+      if (!response.ok && response.status === 422) {
+        response = await fetch(
+          `https://newsdata.io/api/1/news?apikey=${apiKey}&category=technology&country=us&language=en&size=${limit}`
+        );
+      }
+      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(`NewsData.io failed: ${errorData.message || response.statusText}`);
+        const errorMsg = errorData.message || errorData.status || response.statusText;
+        throw new Error(`NewsData.io failed: ${errorMsg}`);
       }
+      
       const data = await response.json();
       if (data.results && data.results.length > 0) {
         return data.results.map((article: any, index: number) => ({
@@ -116,86 +126,118 @@ const API_PROVIDERS = {
   RSS_FALLBACK: {
     name: "RSS Feed",
     fetch: async (query: string, limit: number) => {
-      // Use CORS proxy to fetch RSS feeds
-      const corsProxy = 'https://api.allorigins.win/raw?url=';
+      // Try multiple CORS proxies and RSS feeds
+      const corsProxies = [
+        'https://api.allorigins.win/raw?url=',
+        'https://corsproxy.io/?',
+        'https://api.codetabs.com/v1/proxy?quest=',
+      ];
+      
       const rssFeeds = [
         { url: 'https://techcrunch.com/feed/', name: 'TechCrunch' },
         { url: 'https://www.theverge.com/rss/index.xml', name: 'The Verge' },
         { url: 'https://feeds.arstechnica.com/arstechnica/index', name: 'Ars Technica' },
+        { url: 'https://rss.cnn.com/rss/edition.rss', name: 'CNN' },
       ];
       
-      for (const feed of rssFeeds) {
-        try {
-          const response = await fetch(`${corsProxy}${encodeURIComponent(feed.url)}`);
-          if (response.ok) {
-            const xmlText = await response.text();
+      // Try each proxy with each feed
+      for (const proxy of corsProxies) {
+        for (const feed of rssFeeds) {
+          try {
+            const proxyUrl = proxy === 'https://corsproxy.io/?' 
+              ? `${proxy}${encodeURIComponent(feed.url)}`
+              : `${proxy}${encodeURIComponent(feed.url)}`;
             
-            // Parse RSS XML
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+            const response = await fetch(proxyUrl, {
+              headers: {
+                'Accept': 'application/xml, text/xml, */*',
+              },
+            });
             
-            // Check for parsing errors
-            const parseError = xmlDoc.querySelector('parsererror');
-            if (parseError) {
-              continue;
-            }
-            
-            const items = xmlDoc.querySelectorAll('item');
-            
-            if (items.length > 0) {
-              const articles = Array.from(items).slice(0, limit).map((item: Element, index: number) => {
-                const getText = (selector: string) => {
-                  const el = item.querySelector(selector);
-                  return el?.textContent?.trim() || '';
-                };
-                
-                const getAttr = (selector: string, attr: string) => {
-                  const el = item.querySelector(selector);
-                  return el?.getAttribute(attr) || '';
-                };
-                
-                // Try different namespace variations for link
-                const getLink = () => {
-                  return getText('link') || 
-                         getText('guid') || 
-                         item.querySelector('link')?.textContent?.trim() || '';
-                };
-                
-                const title = getText('title');
-                const link = getLink();
-                const description = getText('description')?.replace(/<[^>]*>/g, "").substring(0, 200) || '';
-                const pubDate = getText('pubDate') || getText('dc:date') || new Date().toISOString();
-                
-                // Try multiple ways to get image
-                const image = getAttr('enclosure', 'url') || 
-                            getAttr('media:content', 'url') ||
-                            getAttr('media:thumbnail', 'url') ||
-                            item.querySelector('media\\:content, content')?.getAttribute('url') || '';
-                
-                return {
-                  id: link || `rss-${index}`,
-                  title,
-                  description,
-                  url: link,
-                  urlToImage: image,
-                  publishedAt: pubDate,
-                  source: { name: feed.name },
-                  author: getText('author') || getText('dc:creator') || feed.name,
-                };
-              });
+            if (response.ok) {
+              const xmlText = await response.text();
               
-              if (articles.length > 0) {
-                return articles;
+              // Parse RSS XML
+              const parser = new DOMParser();
+              const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+              
+              // Check for parsing errors
+              const parseError = xmlDoc.querySelector('parsererror');
+              if (parseError) {
+                console.log(`RSS parse error for ${feed.name}:`, parseError.textContent);
+                continue;
+              }
+              
+              const items = xmlDoc.querySelectorAll('item');
+              
+              if (items.length > 0) {
+                const articles = Array.from(items).slice(0, limit).map((item: Element, index: number) => {
+                  const getText = (selector: string) => {
+                    const el = item.querySelector(selector);
+                    return el?.textContent?.trim() || '';
+                  };
+                  
+                  const getAttr = (selector: string, attr: string) => {
+                    const el = item.querySelector(selector);
+                    return el?.getAttribute(attr) || '';
+                  };
+                  
+                  // Try different namespace variations for link
+                  const getLink = () => {
+                    return getText('link') || 
+                           getText('guid') || 
+                           item.querySelector('link')?.textContent?.trim() || '';
+                  };
+                  
+                  const title = getText('title');
+                  const link = getLink();
+                  const description = getText('description')?.replace(/<[^>]*>/g, "").substring(0, 200) || '';
+                  const pubDate = getText('pubDate') || getText('dc:date') || new Date().toISOString();
+                  
+                  // Try multiple ways to get image
+                  const image = getAttr('enclosure', 'url') || 
+                              getAttr('media:content', 'url') ||
+                              getAttr('media:thumbnail', 'url') ||
+                              item.querySelector('media\\:content, content')?.getAttribute('url') || '';
+                  
+                  return {
+                    id: link || `rss-${index}`,
+                    title,
+                    description,
+                    url: link,
+                    urlToImage: image,
+                    publishedAt: pubDate,
+                    source: { name: feed.name },
+                    author: getText('author') || getText('dc:creator') || feed.name,
+                  };
+                });
+                
+                if (articles.length > 0) {
+                  return articles;
+                }
               }
             }
+          } catch (err) {
+            // Try next combination
+            continue;
           }
-        } catch (err) {
-          // Try next feed
-          continue;
         }
       }
       
-      throw new Error("RSS feed failed");
+      // Final fallback: Return mock data so the page doesn't look broken
+      // This is better than showing an error
+      return [
+        {
+          id: 'fallback-1',
+          title: 'Tech News Feed',
+          description: 'News feeds are temporarily unavailable. Please check back later or configure API keys for better results.',
+          url: 'https://github.com/chriseee-v/Portfolio',
+          urlToImage: '',
+          publishedAt: new Date().toISOString(),
+          source: { name: 'System' },
+          author: 'Portfolio',
+        },
+      ];
     },
   },
 };
