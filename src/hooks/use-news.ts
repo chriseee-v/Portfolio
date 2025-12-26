@@ -14,13 +14,74 @@ export interface NewsArticle {
   author?: string;
 }
 
+const CACHE_KEY_PREFIX = "gemini_news_cache_";
+const CACHE_DURATION = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
+
+interface CachedNews {
+  articles: NewsArticle[];
+  timestamp: number;
+  query: string;
+  limit: number;
+}
+
 const useNews = (query: string = "technology", limit: number = 10) => {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeProvider, setActiveProvider] = useState<string | null>(null);
 
-  const fetchNews = async () => {
+  // Check cache first
+  const getCachedNews = (): NewsArticle[] | null => {
+    try {
+      const cacheKey = `${CACHE_KEY_PREFIX}${query}_${limit}`;
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const data: CachedNews = JSON.parse(cached);
+        const now = Date.now();
+        // Check if cache is still valid (less than 4 hours old)
+        if (now - data.timestamp < CACHE_DURATION && data.query === query && data.limit === limit) {
+          console.log("Using cached news data");
+          return data.articles;
+        } else {
+          // Cache expired, remove it
+          localStorage.removeItem(cacheKey);
+        }
+      }
+    } catch (err) {
+      console.error("Error reading cache:", err);
+    }
+    return null;
+  };
+
+  // Save to cache
+  const saveToCache = (articles: NewsArticle[]) => {
+    try {
+      const cacheKey = `${CACHE_KEY_PREFIX}${query}_${limit}`;
+      const data: CachedNews = {
+        articles,
+        timestamp: Date.now(),
+        query,
+        limit,
+      };
+      localStorage.setItem(cacheKey, JSON.stringify(data));
+      console.log("News data cached");
+    } catch (err) {
+      console.error("Error saving cache:", err);
+    }
+  };
+
+  const fetchNews = async (forceRefresh: boolean = false) => {
+    // Check cache first (unless forcing refresh)
+    if (!forceRefresh) {
+      const cachedArticles = getCachedNews();
+      if (cachedArticles) {
+        setArticles(cachedArticles);
+        setActiveProvider("Google Gemini (Cached)");
+        setLoading(false);
+        return;
+      }
+    }
+
     setLoading(true);
     setError(null);
     setActiveProvider(null);
@@ -44,27 +105,25 @@ const useNews = (query: string = "technology", limit: number = 10) => {
         tools: [{ googleSearch: {} } as any] // Type assertion needed for google_search tool
       });
 
-      // Create a prompt that uses Google Search to find the latest news
-      const prompt = `Search the web for the ${limit} most recent news articles about "${query}" published in the last 7 days.
+      // Create a more flexible prompt that doesn't demand real-time search
+      const prompt = `Provide ${limit} recent technology news articles about "${query}".
       
-      Return ONLY a JSON array with this exact structure (no other text, no markdown):
+      Format your response as a JSON array. You can include a brief explanation before the JSON if needed, but make sure the JSON array is clearly marked.
+      
+      JSON structure:
       [
         {
           "title": "Article title",
-          "description": "Brief summary",
-          "url": "Full article URL",
+          "description": "Brief summary or description",
+          "url": "Article URL or Google search URL",
           "urlToImage": "",
-          "publishedAt": "2024-01-15T00:00:00Z",
+          "publishedAt": "2024-12-15T00:00:00Z",
           "source": { "name": "Source Name" },
-          "author": "Author name"
+          "author": "Author name or source name"
         }
       ]
       
-      Requirements:
-      - Only articles from the last 7 days
-      - Real URLs from actual news websites
-      - Technology/programming/AI topics
-      - Valid JSON only, no markdown code blocks`;
+      Focus on technology, programming, AI, and software development topics.`;
 
       const result = await model.generateContent(prompt);
       const response = await result.response;
@@ -73,37 +132,75 @@ const useNews = (query: string = "technology", limit: number = 10) => {
       console.log("Gemini raw response:", text.substring(0, 500)); // Log first 500 chars for debugging
 
       // Try to extract JSON from the response
-      // Gemini might wrap JSON in markdown code blocks
+      // Gemini might include explanatory text before/after the JSON
       let jsonText = text.trim();
       
       // Remove markdown code blocks if present
-      if (jsonText.startsWith("```json")) {
-        jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "");
-      } else if (jsonText.startsWith("```")) {
-        jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "");
+      if (jsonText.includes("```json")) {
+        const jsonBlock = jsonText.match(/```json\s*([\s\S]*?)\s*```/);
+        if (jsonBlock) {
+          jsonText = jsonBlock[1].trim();
+        }
+      } else if (jsonText.includes("```")) {
+        const jsonBlock = jsonText.match(/```\s*([\s\S]*?)\s*```/);
+        if (jsonBlock) {
+          jsonText = jsonBlock[1].trim();
+        }
       }
 
-      // Parse the JSON
-      let parsedArticles: any[];
+      // Try to find JSON array in the text (might be embedded in explanatory text)
+      let parsedArticles: any[] = [];
+      
+      // First, try parsing the whole text
       try {
         parsedArticles = JSON.parse(jsonText);
-        console.log("Parsed articles count:", parsedArticles?.length);
+        if (Array.isArray(parsedArticles)) {
+          console.log("Parsed articles count:", parsedArticles.length);
+        } else {
+          throw new Error("Response is not an array");
+        }
       } catch (parseError) {
-        console.error("JSON parse error:", parseError);
-        console.log("Attempting to extract JSON from text...");
-        // If parsing fails, try to extract JSON array from the text
-        const jsonMatch = jsonText.match(/\[[\s\S]*\]/);
+        console.log("Direct parse failed, searching for JSON array...");
+        
+        // Try to find JSON array pattern in the text
+        // Look for array that starts with [ and ends with ]
+        const jsonArrayPattern = /\[\s*\{[\s\S]*\}\s*\]/;
+        const jsonMatch = jsonText.match(jsonArrayPattern);
+        
         if (jsonMatch) {
           try {
             parsedArticles = JSON.parse(jsonMatch[0]);
-            console.log("Successfully extracted JSON from text");
+            console.log("Successfully extracted JSON array from text");
           } catch (e) {
             console.error("Failed to parse extracted JSON:", e);
-            throw new Error(`Failed to parse Gemini response as JSON: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`);
+            // Try a more lenient extraction - find anything between [ and ]
+            const bracketMatch = jsonText.match(/\[([\s\S]*)\]/);
+            if (bracketMatch) {
+              try {
+                parsedArticles = JSON.parse(`[${bracketMatch[1]}]`);
+                console.log("Successfully parsed with bracket extraction");
+              } catch (e2) {
+                console.error("All JSON extraction methods failed");
+                throw new Error(`Failed to parse Gemini response. Response preview: ${text.substring(0, 300)}`);
+              }
+            } else {
+              throw new Error(`No JSON array found in response. Preview: ${text.substring(0, 300)}`);
+            }
           }
         } else {
-          console.error("No JSON array found in response");
-          throw new Error(`Failed to parse Gemini response as JSON. Response preview: ${text.substring(0, 200)}`);
+          // Last resort: try to extract individual objects and build array
+          const objectPattern = /\{[\s\S]*?\}/g;
+          const objects = jsonText.match(objectPattern);
+          if (objects && objects.length > 0) {
+            try {
+              parsedArticles = objects.map(obj => JSON.parse(obj));
+              console.log(`Extracted ${parsedArticles.length} articles from individual objects`);
+            } catch (e) {
+              throw new Error(`Failed to parse response. Preview: ${text.substring(0, 300)}`);
+            }
+          } else {
+            throw new Error(`No JSON structure found. Response preview: ${text.substring(0, 300)}`);
+          }
         }
       }
 
@@ -140,8 +237,13 @@ const useNews = (query: string = "technology", limit: number = 10) => {
             publishedDate = new Date().toISOString();
           }
           
+          // Generate a unique ID - combine index, timestamp, and a hash of the title
+          // This ensures uniqueness even if URLs are duplicated
+          const uniqueId = article.id || 
+            `gemini-${index}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}-${(article.title || "").substring(0, 20).replace(/\s/g, "-")}`;
+          
           return {
-            id: articleUrl || article.id || `gemini-${index}-${Date.now()}`,
+            id: uniqueId,
             title: article.title || "Untitled Article",
             description: article.description || article.summary || "",
             url: articleUrl,
@@ -158,6 +260,7 @@ const useNews = (query: string = "technology", limit: number = 10) => {
           setArticles(articles);
           setActiveProvider("Google Gemini");
           setLoading(false);
+          saveToCache(articles); // Cache the results
           console.log(`✓ Successfully fetched ${articles.length} articles from Google Gemini`);
           return;
         } else {
@@ -178,11 +281,11 @@ const useNews = (query: string = "technology", limit: number = 10) => {
   };
 
   useEffect(() => {
-    fetchNews();
+    fetchNews(false); // Don't force refresh on mount
   }, [query, limit]);
 
   const refetch = () => {
-    fetchNews();
+    fetchNews(true); // Force refresh when manually called
   };
 
   return { articles, loading, error, refetch, activeProvider };
