@@ -15,31 +15,6 @@ export interface NewsArticle {
 
 // API Providers in order of preference (with fallback chain)
 const API_PROVIDERS = {
-  NEWSAPI_AI: {
-    name: "NewsAPI.ai",
-    fetch: async (query: string, limit: number, apiKey: string) => {
-      // NewsAPI.ai uses eventregistry.org domain
-      const response = await fetch(
-        `https://eventregistry.org/api/v1/article/getArticles?query=${encodeURIComponent(query)}&resultType=articles&articlesCount=${limit}&apiKey=${apiKey}`,
-        { mode: 'cors' }
-      );
-      if (!response.ok) throw new Error("NewsAPI.ai failed");
-      const data = await response.json();
-      if (data.articles?.results) {
-        return data.articles.results.map((article: any, index: number) => ({
-          id: article.uri || `newsapi-ai-${index}`,
-          title: article.title || "",
-          description: article.body?.substring(0, 200) || "",
-          url: article.url || "",
-          urlToImage: article.image,
-          publishedAt: article.date || new Date().toISOString(),
-          source: { name: article.source?.title || "News" },
-          author: article.author,
-        }));
-      }
-      throw new Error("NewsAPI.ai invalid response");
-    },
-  },
   NEWSDATA: {
     name: "NewsData.io",
     fetch: async (query: string, limit: number, apiKey: string) => {
@@ -238,10 +213,8 @@ const useNews = (query: string = "technology", limit: number = 10) => {
 
     // Get API keys from environment
     const apiKeys = {
-      newsapiAi: import.meta.env.VITE_NEWSAPI_AI_KEY,
       newsdata: import.meta.env.VITE_NEWSDATA_API_KEY,
       newsapi: import.meta.env.VITE_NEWS_API_KEY,
-      gnews: import.meta.env.VITE_GNEWS_API_KEY,
       mediastack: import.meta.env.VITE_MEDIASTACK_API_KEY,
     };
 
