@@ -15,9 +15,10 @@ load_dotenv()
 app = FastAPI(title="Portfolio Admin API", version="1.0.0")
 
 # CORS configuration
+cors_origins = os.getenv("CORS_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify your frontend URLs
+    allow_origins=cors_origins if cors_origins != ["*"] else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
