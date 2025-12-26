@@ -18,56 +18,86 @@ const API_PROVIDERS = {
   NEWSDATA: {
     name: "NewsData.io",
     fetch: async (query: string, limit: number, apiKey: string) => {
-      // NewsData.io free tier - try with just category first (simpler)
-      let response = await fetch(
-        `https://newsdata.io/api/1/news?apikey=${apiKey}&category=technology&language=en&size=${limit}`
-      );
+      // NewsData.io free tier - try different parameter combinations
+      // Free tier might require 'q' parameter instead of 'category'
+      const attempts = [
+        // Try with 'q' parameter (most likely for free tier)
+        `https://newsdata.io/api/1/news?apikey=${apiKey}&q=technology&language=en&size=${limit}`,
+        // Try with category and country
+        `https://newsdata.io/api/1/news?apikey=${apiKey}&category=technology&country=us&language=en&size=${limit}`,
+        // Try with just category
+        `https://newsdata.io/api/1/news?apikey=${apiKey}&category=technology&language=en&size=${limit}`,
+        // Try with q and country
+        `https://newsdata.io/api/1/news?apikey=${apiKey}&q=technology&country=us&language=en&size=${limit}`,
+      ];
       
-      // If that fails, try with country
-      if (!response.ok && response.status === 422) {
-        response = await fetch(
-          `https://newsdata.io/api/1/news?apikey=${apiKey}&category=technology&country=us&language=en&size=${limit}`
-        );
+      let lastError: Error | null = null;
+      
+      for (const url of attempts) {
+        try {
+          const response = await fetch(url);
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.results && data.results.length > 0) {
+              return data.results.map((article: any, index: number) => ({
+                id: article.article_id || `newsdata-${index}`,
+                title: article.title || "",
+                description: article.description || "",
+                url: article.link || "",
+                urlToImage: article.image_url,
+                publishedAt: article.pubDate || new Date().toISOString(),
+                source: { name: article.source_id || "News" },
+                author: article.creator?.[0] || article.source_id,
+              }));
+            }
+          } else {
+            // Try to get error message
+            const errorData = await response.json().catch(() => ({}));
+            lastError = new Error(errorData.message || `HTTP ${response.status}`);
+            // Continue to next attempt
+            continue;
+          }
+        } catch (err) {
+          lastError = err instanceof Error ? err : new Error("Network error");
+          continue;
+        }
       }
       
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMsg = errorData.message || errorData.status || response.statusText;
-        throw new Error(`NewsData.io failed: ${errorMsg}`);
-      }
-      
-      const data = await response.json();
-      if (data.results && data.results.length > 0) {
-        return data.results.map((article: any, index: number) => ({
-          id: article.article_id || `newsdata-${index}`,
-          title: article.title || "",
-          description: article.description || "",
-          url: article.link || "",
-          urlToImage: article.image_url,
-          publishedAt: article.pubDate || new Date().toISOString(),
-          source: { name: article.source_id || "News" },
-          author: article.creator?.[0] || article.source_id,
-        }));
-      }
-      throw new Error("NewsData.io invalid response");
+      // All attempts failed
+      throw lastError || new Error("NewsData.io failed: All parameter combinations failed");
     },
   },
   NEWSAPI: {
     name: "News API",
     fetch: async (query: string, limit: number, apiKey: string) => {
-      // News API requires backend proxy due to CORS, but let's try headlines endpoint
+      // News API free tier only works on localhost
+      // On production (Vercel), it returns 426 (Upgrade Required)
+      // Check if we're on production
+      const isProduction = window.location.hostname !== 'localhost' && 
+                          window.location.hostname !== '127.0.0.1' &&
+                          !window.location.hostname.includes('localhost');
+      
+      if (isProduction) {
+        throw new Error("News API free tier only works on localhost. Upgrade to paid plan for production use.");
+      }
+      
+      // Try headlines endpoint (works on localhost)
       const response = await fetch(
         `https://newsapi.org/v2/top-headlines?category=technology&pageSize=${limit}&apiKey=${apiKey}`
       );
+      
       if (!response.ok) {
         // 426 means upgrade required (paid plan needed)
         if (response.status === 426) {
-          throw new Error("News API requires paid plan");
+          throw new Error("News API requires paid plan for production domains");
         }
-        throw new Error("News API failed");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "News API failed");
       }
+      
       const data = await response.json();
-      if (data.articles) {
+      if (data.articles && data.articles.length > 0) {
         return data.articles.map((article: any, index: number) => ({
           id: article.url || `newsapi-${index}`,
           title: article.title || "",
@@ -265,9 +295,9 @@ const useNews = (query: string = "technology", limit: number = 10) => {
     // Skip NewsAPI.ai due to domain resolution issues
     const providers = [
       { key: "newsdata", provider: API_PROVIDERS.NEWSDATA, apiKey: apiKeys.newsdata },
-      { key: "newsapi", provider: API_PROVIDERS.NEWSAPI, apiKey: apiKeys.newsapi },
       { key: "mediastack", provider: API_PROVIDERS.MEDIASTACK, apiKey: apiKeys.mediastack },
-      { key: "rss", provider: API_PROVIDERS.RSS_FALLBACK, apiKey: null }, // No API key needed
+      { key: "newsapi", provider: API_PROVIDERS.NEWSAPI, apiKey: apiKeys.newsapi }, // Try News API last since it doesn't work on production
+      // RSS removed - user wants APIs only
     ];
 
     let lastError: Error | null = null;
