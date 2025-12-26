@@ -558,9 +558,9 @@ const ExplorePage = () => {
       {/* Header */}
       <div className="mb-0 pt-4">
         <div className="flex items-center gap-4 mb-2">
-          <span className="lab-label">Tech Radar</span>
+          <span className="lab-label">Tech Stack</span>
           <div className="flex-1 h-px bg-border" />
-          <span className="font-mono text-xs text-muted-foreground">CIRCULAR GALLERY</span>
+          <span className="font-mono text-xs text-muted-foreground">INTERACTIVE GALLERY</span>
         </div>
         <h1 className="lab-title mb-2">explore.</h1>
         <p className="text-muted-foreground max-w-2xl">

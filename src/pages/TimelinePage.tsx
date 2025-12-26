@@ -41,7 +41,7 @@ const TimelinePage = () => {
         <div className="flex items-center gap-4 mb-6">
           <span className="lab-label">Career Path</span>
           <div className="flex-1 h-px bg-border" />
-          <span className="font-mono text-xs text-muted-foreground">{experiences.length} NODES</span>
+          <span className="font-mono text-xs text-muted-foreground">{experiences.length} EXPERIENCES</span>
         </div>
         <h1 className="lab-title mb-4">timeline.</h1>
         <p className="text-muted-foreground max-w-2xl">
