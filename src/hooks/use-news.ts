@@ -37,7 +37,9 @@ const useNews = (query: string = "technology", limit: number = 10) => {
       console.log("Trying Google Gemini...");
       
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+      // Using gemini-2.5-flash as requested
+      // If this model is not available, try: gemini-1.5-flash, gemini-1.5-pro, or gemini-2.0-flash-exp
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
       // Create a prompt that asks for recent news articles in JSON format
       const prompt = `Provide me with ${limit} recent news articles about ${query}. 
