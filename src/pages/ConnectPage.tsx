@@ -1,10 +1,17 @@
 import { useState } from "react";
-import { Send, Github, Twitter, Linkedin, Mail, MapPin } from "lucide-react";
+import { Send, Github, Linkedin, Mail, MapPin } from "lucide-react";
 import { toast } from "sonner";
+
+// X (formerly Twitter) icon component
+const XIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+  </svg>
+);
 
 const socialLinks = [
   { icon: Github, label: "GitHub", href: "https://github.com/Chris-healthflex" },
-  { icon: Twitter, label: "Twitter", href: "https://twitter.com" },
+  { icon: XIcon, label: "X", href: "https://x.com/chris___xo" },
   { icon: Linkedin, label: "LinkedIn", href: "https://linkedin.com/in/itsmechris" },
   { icon: Mail, label: "Email", href: "mailto:thechris241103@gmail.com" },
 ];
@@ -90,7 +97,7 @@ const ConnectPage = () => {
           <div className="space-y-6">
             <div className="flex items-center gap-3">
               <MapPin className="w-5 h-5 text-primary" />
-              <span className="text-muted-foreground">Coimbatore, Tamil Nadu (Remote-friendly)</span>
+              <span className="text-muted-foreground">Bangalore, Karnataka</span>
             </div>
             <div className="flex items-center gap-3">
               <Mail className="w-5 h-5 text-primary" />
