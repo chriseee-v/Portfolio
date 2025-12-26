@@ -469,14 +469,19 @@ const CircularGallery = () => {
     const deltaX = Math.abs(e.touches[0].clientX - touchStartX.current);
     const deltaY = Math.abs(e.touches[0].clientY - touchStartY.current);
     
-    // Only drag if horizontal movement is greater than vertical (swipe gesture)
-    if (deltaX > deltaY && deltaX > 10) {
+    // Only drag if horizontal movement is significantly greater than vertical (swipe gesture)
+    // This prevents interfering with normal page scrolling
+    if (deltaX > deltaY * 2 && deltaX > 20) {
       e.preventDefault();
+      e.stopPropagation();
       const currentX = e.touches[0].clientX;
       const moveDelta = currentX - lastX.current;
       rotationRef.current += moveDelta * 0.3;
       setRotation(rotationRef.current);
       lastX.current = currentX;
+    } else {
+      // If it's more vertical, allow normal scrolling
+      isDragging.current = false;
     }
   };
 
@@ -498,7 +503,7 @@ const CircularGallery = () => {
   };
 
   return (
-    <div className="relative min-h-[70vh] flex items-center justify-center overflow-visible py-12 md:py-16">
+    <div className="relative min-h-[70vh] flex items-center justify-center overflow-x-hidden overflow-y-visible py-12 md:py-16">
       {/* Center Text */}
       <div className="absolute z-10 text-center pointer-events-none">
         <h2 className="text-xl md:text-2xl font-light text-foreground mb-2">
@@ -522,7 +527,7 @@ const CircularGallery = () => {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         className="relative w-[680px] h-[680px] sm:w-[720px] sm:h-[720px] md:w-[820px] md:h-[820px] cursor-grab active:cursor-grabbing mx-auto"
-        style={{ perspective: "1000px", touchAction: "pan-x pan-y" }}
+        style={{ perspective: "1000px" }}
       >
         {techTopics.map((topic, index) => (
           <FlipCard
@@ -549,7 +554,7 @@ const CircularGallery = () => {
 
 const ExplorePage = () => {
   return (
-    <div className="overflow-visible">
+    <div className="overflow-x-hidden overflow-y-visible">
       {/* Header */}
       <div className="mb-8 pt-8">
         <div className="flex items-center gap-4 mb-6">

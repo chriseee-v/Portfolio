@@ -106,18 +106,18 @@ const ScrollableLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="min-h-screen bg-background relative overflow-hidden overflow-x-hidden">
       {/* Main Content Card */}
       <div className="relative z-10 min-h-screen flex flex-col">
         <div className="flex-1 flex flex-col w-full">
           <div className="flex-1 lab-card flex flex-col overflow-hidden">
             <Navigation />
-            <main ref={containerRef} className="flex-1 overflow-y-auto scroll-smooth">
+            <main ref={containerRef} className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth">
               {pages.map(({ path, component: Component }) => (
                 <div 
                   key={path}
                   ref={setPageRef(path)} 
-                  className="min-h-screen px-6 md:px-8 lg:px-12 pb-8"
+                  className="min-h-screen px-6 md:px-8 lg:px-12 pb-8 overflow-x-hidden"
                 >
                   <Component />
                 </div>
