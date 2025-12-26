@@ -50,16 +50,40 @@ const ConnectPage = () => {
       return;
     }
     
-    // Simulate submission
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    setIsSuccess(true);
-    toast.success("Message sent! I'll get back to you soon.");
-    setFormData({ name: "", email: "", message: "" });
-    setErrors({});
-    setIsSubmitting(false);
-    
-    setTimeout(() => setIsSuccess(false), 3000);
+    try {
+      // Send email via API
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          message: formData.message.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send message');
+      }
+
+      // Success
+      setIsSuccess(true);
+      toast.success("Message sent! I'll get back to you soon.");
+      setFormData({ name: "", email: "", message: "" });
+      setErrors({});
+      
+    } catch (error: any) {
+      console.error('Error sending message:', error);
+      toast.error(error.message || "Failed to send message. Please try again.");
+      setErrors({ submit: error.message || "Failed to send message" });
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setIsSuccess(false), 3000);
+    }
   };
 
   return (

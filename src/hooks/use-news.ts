@@ -41,7 +41,27 @@ const useNews = (query: string = "technology", limit: number = 10) => {
         // Check if cache is still valid (less than 4 hours old)
         if (now - data.timestamp < CACHE_DURATION && data.query === query && data.limit === limit) {
           console.log("Using cached news data");
-          return data.articles;
+          // Ensure all cached articles have unique IDs
+          const usedIds = new Set<string>();
+          const articlesWithUniqueIds = data.articles.map((article, index) => {
+            let uniqueId = article.id;
+            // If ID is missing or already used, generate a new one
+            if (!uniqueId || usedIds.has(uniqueId)) {
+              let attempts = 0;
+              do {
+                const randomSuffix = Math.random().toString(36).substring(2, 15);
+                const titleHash = (article.title || `article-${index}`)
+                  .substring(0, 30)
+                  .replace(/\s+/g, "-")
+                  .replace(/[^a-zA-Z0-9-]/g, "");
+                uniqueId = `gemini-cached-${index}-${data.timestamp}-${randomSuffix}-${titleHash}`;
+                attempts++;
+              } while (usedIds.has(uniqueId) && attempts < 10);
+            }
+            usedIds.add(uniqueId);
+            return { ...article, id: uniqueId };
+          });
+          return articlesWithUniqueIds;
         } else {
           // Cache expired, remove it
           localStorage.removeItem(cacheKey);
@@ -207,6 +227,9 @@ const useNews = (query: string = "technology", limit: number = 10) => {
       // Validate and transform the articles
       if (Array.isArray(parsedArticles) && parsedArticles.length > 0) {
         console.log("Processing articles:", parsedArticles.length);
+        const baseTimestamp = Date.now();
+        const usedIds = new Set<string>();
+        
         const articles: NewsArticle[] = parsedArticles.slice(0, limit).map((article: any, index: number) => {
           // Use the URL from Gemini's search results if available and valid
           let articleUrl = article.url || "";
@@ -237,10 +260,20 @@ const useNews = (query: string = "technology", limit: number = 10) => {
             publishedDate = new Date().toISOString();
           }
           
-          // Generate a unique ID - combine index, timestamp, and a hash of the title
-          // This ensures uniqueness even if URLs are duplicated
-          const uniqueId = article.id || 
-            `gemini-${index}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}-${(article.title || "").substring(0, 20).replace(/\s/g, "-")}`;
+          // Generate a unique ID - ensure it's truly unique even if URLs are duplicated
+          let uniqueId: string;
+          let attempts = 0;
+          do {
+            const randomSuffix = Math.random().toString(36).substring(2, 15);
+            const titleHash = (article.title || `article-${index}`)
+              .substring(0, 30)
+              .replace(/\s+/g, "-")
+              .replace(/[^a-zA-Z0-9-]/g, "");
+            uniqueId = `gemini-${index}-${baseTimestamp}-${randomSuffix}-${titleHash}`;
+            attempts++;
+          } while (usedIds.has(uniqueId) && attempts < 10);
+          
+          usedIds.add(uniqueId);
           
           return {
             id: uniqueId,
