@@ -1,0 +1,195 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* LAB. Design System - Futuristic Fashion-Tech Portfolio */
+
+@layer base {
+  :root {
+    --background: 0 0% 92%;
+    --foreground: 0 0% 5%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 5%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 5%;
+
+    --primary: 14 100% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 88%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 14 100% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 14 100% 55%;
+
+    --radius: 1rem;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 5%;
+    --sidebar-primary: 14 100% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 95%;
+    --sidebar-accent-foreground: 0 0% 5%;
+    --sidebar-border: 0 0% 88%;
+    --sidebar-ring: 14 100% 55%;
+
+    --chart-1: 14 100% 55%;
+    --chart-2: 0 0% 20%;
+    --chart-3: 0 0% 40%;
+    --chart-4: 0 0% 60%;
+    --chart-5: 0 0% 80%;
+
+    --shadow-sm: 0 2px 8px 0 hsl(0 0% 0% / 0.04);
+    --shadow: 0 4px 16px 0 hsl(0 0% 0% / 0.06);
+    --shadow-md: 0 8px 24px 0 hsl(0 0% 0% / 0.08);
+    --shadow-lg: 0 16px 48px 0 hsl(0 0% 0% / 0.1);
+    --shadow-xl: 0 24px 64px 0 hsl(0 0% 0% / 0.12);
+
+    --font-sans: 'Space Grotesk', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    --spacing: 0.25rem;
+  }
+
+  .dark {
+    --background: 0 0% 8%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 14 100% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 85%;
+    --secondary-foreground: 0 0% 5%;
+
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 14 100% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 14 100% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-sans tracking-tight;
+  }
+}
+
+@layer components {
+  .lab-card {
+    @apply bg-card rounded-2xl shadow-lg relative overflow-hidden;
+  }
+
+  .lab-button-primary {
+    @apply bg-primary text-primary-foreground px-6 py-3 rounded-full font-medium 
+           transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95;
+  }
+
+  .lab-button-secondary {
+    @apply bg-secondary text-secondary-foreground px-6 py-3 rounded-full font-medium
+           transition-all duration-300 hover:shadow-md hover:scale-105 active:scale-95;
+  }
+
+  .lab-button-outline {
+    @apply border border-foreground/20 bg-transparent text-foreground px-6 py-3 rounded-full font-medium
+           transition-all duration-300 hover:bg-foreground hover:text-background active:scale-95;
+  }
+
+  .lab-label {
+    @apply font-mono text-xs uppercase tracking-widest text-muted-foreground;
+  }
+
+  .lab-title {
+    @apply text-5xl md:text-7xl lg:text-8xl font-bold lowercase tracking-tight;
+  }
+
+  .lab-nav-link {
+    @apply text-sm font-medium text-foreground/70 hover:text-foreground transition-colors duration-200
+           relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-px after:bg-primary
+           after:transition-all after:duration-300 hover:after:w-full;
+  }
+
+  .lab-vertical-text {
+    @apply font-mono text-xs tracking-widest;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+  }
+
+  .project-card {
+    @apply bg-card rounded-xl p-6 transition-all duration-300 
+           hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1 cursor-pointer;
+  }
+
+  .timeline-node {
+    @apply w-4 h-4 rounded-full bg-primary relative
+           before:absolute before:inset-0 before:rounded-full before:bg-primary/30 
+           before:animate-ping before:animation-duration-2000;
+  }
+
+  .tech-tag {
+    @apply px-3 py-1 rounded-full text-xs font-mono bg-muted text-foreground/80
+           transition-colors duration-200 hover:bg-primary hover:text-primary-foreground;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+}
