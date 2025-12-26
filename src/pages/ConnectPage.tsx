@@ -64,7 +64,17 @@ const ConnectPage = () => {
         }),
       });
 
-      const data = await response.json();
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      let data;
+      
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        // If not JSON, read as text for error message
+        const text = await response.text();
+        throw new Error(text || `Server error: ${response.status}`);
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to send message');
