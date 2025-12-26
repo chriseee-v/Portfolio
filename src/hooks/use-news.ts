@@ -18,8 +18,10 @@ const API_PROVIDERS = {
   NEWSAPI_AI: {
     name: "NewsAPI.ai",
     fetch: async (query: string, limit: number, apiKey: string) => {
+      // NewsAPI.ai uses eventregistry.org domain
       const response = await fetch(
-        `https://api.newsapi.ai/v1/article/getArticles?query=${encodeURIComponent(query)}&resultType=articles&articlesCount=${limit}&apiKey=${apiKey}`
+        `https://eventregistry.org/api/v1/article/getArticles?query=${encodeURIComponent(query)}&resultType=articles&articlesCount=${limit}&apiKey=${apiKey}`,
+        { mode: 'cors' }
       );
       if (!response.ok) throw new Error("NewsAPI.ai failed");
       const data = await response.json();
@@ -41,12 +43,16 @@ const API_PROVIDERS = {
   NEWSDATA: {
     name: "NewsData.io",
     fetch: async (query: string, limit: number, apiKey: string) => {
+      // NewsData.io requires category or country, let's use category=technology
       const response = await fetch(
-        `https://newsdata.io/api/1/news?apikey=${apiKey}&q=${encodeURIComponent(query)}&language=en&size=${limit}`
+        `https://newsdata.io/api/1/news?apikey=${apiKey}&category=technology&language=en&size=${limit}`
       );
-      if (!response.ok) throw new Error("NewsData.io failed");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`NewsData.io failed: ${errorData.message || response.statusText}`);
+      }
       const data = await response.json();
-      if (data.results) {
+      if (data.results && data.results.length > 0) {
         return data.results.map((article: any, index: number) => ({
           id: article.article_id || `newsdata-${index}`,
           title: article.title || "",
@@ -64,10 +70,17 @@ const API_PROVIDERS = {
   NEWSAPI: {
     name: "News API",
     fetch: async (query: string, limit: number, apiKey: string) => {
+      // News API requires backend proxy due to CORS, but let's try headlines endpoint
       const response = await fetch(
-        `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&pageSize=${limit}&apiKey=${apiKey}`
+        `https://newsapi.org/v2/top-headlines?category=technology&pageSize=${limit}&apiKey=${apiKey}`
       );
-      if (!response.ok) throw new Error("News API failed");
+      if (!response.ok) {
+        // 426 means upgrade required (paid plan needed)
+        if (response.status === 426) {
+          throw new Error("News API requires paid plan");
+        }
+        throw new Error("News API failed");
+      }
       const data = await response.json();
       if (data.articles) {
         return data.articles.map((article: any, index: number) => ({
@@ -87,31 +100,17 @@ const API_PROVIDERS = {
   GNEWS: {
     name: "GNews API",
     fetch: async (query: string, limit: number, apiKey: string) => {
-      const response = await fetch(
-        `https://gnews.io/api/v4/search?q=${encodeURIComponent(query)}&lang=en&max=${limit}&apikey=${apiKey}`
-      );
-      if (!response.ok) throw new Error("GNews API failed");
-      const data = await response.json();
-      if (data.articles) {
-        return data.articles.map((article: any, index: number) => ({
-          id: article.url || `gnews-${index}`,
-          title: article.title || "",
-          description: article.description || "",
-          url: article.url || "",
-          urlToImage: article.image,
-          publishedAt: article.publishedAt || new Date().toISOString(),
-          source: { name: article.source?.name || "News" },
-          author: article.source?.name,
-        }));
-      }
-      throw new Error("GNews API invalid response");
+      // GNews has CORS issues from browser, skip for now or use backend proxy
+      // For now, we'll skip it as it requires backend proxy
+      throw new Error("GNews API requires backend proxy due to CORS");
     },
   },
   MEDIASTACK: {
     name: "Media Stack API",
     fetch: async (query: string, limit: number, apiKey: string) => {
+      // Fix: Use HTTPS instead of HTTP
       const response = await fetch(
-        `http://api.mediastack.com/v1/news?access_key=${apiKey}&keywords=${encodeURIComponent(query)}&limit=${limit}&languages=en`
+        `https://api.mediastack.com/v1/news?access_key=${apiKey}&keywords=${encodeURIComponent(query)}&limit=${limit}&languages=en`
       );
       if (!response.ok) throw new Error("Media Stack API failed");
       const data = await response.json();
@@ -133,24 +132,39 @@ const API_PROVIDERS = {
   RSS_FALLBACK: {
     name: "RSS Feed",
     fetch: async (query: string, limit: number) => {
-      // RSS fallback doesn't need API key
-      const rssUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://feeds.feedburner.com/oreilly/radar')}&count=${limit}`;
-      const response = await fetch(rssUrl);
-      if (!response.ok) throw new Error("RSS feed failed");
-      const data = await response.json();
-      if (data.status === "ok" && data.items) {
-        return data.items.map((item: any, index: number) => ({
-          id: item.guid || item.link || `rss-${index}`,
-          title: item.title || "",
-          description: item.description?.replace(/<[^>]*>/g, "").substring(0, 200) || "",
-          url: item.link || "",
-          urlToImage: item.enclosure?.link || item.thumbnail,
-          publishedAt: item.pubDate || new Date().toISOString(),
-          source: { name: item.author || "Tech News" },
-          author: item.author,
-        }));
+      // Try multiple RSS feeds as fallback
+      const rssFeeds = [
+        'https://techcrunch.com/feed/',
+        'https://feeds.feedburner.com/oreilly/radar',
+        'https://www.theverge.com/rss/index.xml',
+        'https://feeds.arstechnica.com/arstechnica/index',
+      ];
+      
+      for (const feedUrl of rssFeeds) {
+        try {
+          const rssUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}&count=${limit}`;
+          const response = await fetch(rssUrl);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.status === "ok" && data.items && data.items.length > 0) {
+              return data.items.map((item: any, index: number) => ({
+                id: item.guid || item.link || `rss-${index}`,
+                title: item.title || "",
+                description: item.description?.replace(/<[^>]*>/g, "").substring(0, 200) || "",
+                url: item.link || "",
+                urlToImage: item.enclosure?.link || item.thumbnail,
+                publishedAt: item.pubDate || new Date().toISOString(),
+                source: { name: data.feed?.title || item.author || "Tech News" },
+                author: item.author,
+              }));
+            }
+          }
+        } catch (err) {
+          // Try next feed
+          continue;
+        }
       }
-      throw new Error("RSS feed invalid response");
+      throw new Error("RSS feed failed");
     },
   },
 };
@@ -176,12 +190,12 @@ const useNews = (query: string = "technology", limit: number = 10) => {
     };
 
     // Try each API provider in order until one succeeds
+    // Skip GNews due to CORS issues (requires backend proxy)
     const providers = [
-      { key: "newsapiAi", provider: API_PROVIDERS.NEWSAPI_AI, apiKey: apiKeys.newsapiAi },
       { key: "newsdata", provider: API_PROVIDERS.NEWSDATA, apiKey: apiKeys.newsdata },
-      { key: "newsapi", provider: API_PROVIDERS.NEWSAPI, apiKey: apiKeys.newsapi },
-      { key: "gnews", provider: API_PROVIDERS.GNEWS, apiKey: apiKeys.gnews },
       { key: "mediastack", provider: API_PROVIDERS.MEDIASTACK, apiKey: apiKeys.mediastack },
+      { key: "newsapiAi", provider: API_PROVIDERS.NEWSAPI_AI, apiKey: apiKeys.newsapiAi },
+      { key: "newsapi", provider: API_PROVIDERS.NEWSAPI, apiKey: apiKeys.newsapi },
       { key: "rss", provider: API_PROVIDERS.RSS_FALLBACK, apiKey: null }, // No API key needed
     ];
 
