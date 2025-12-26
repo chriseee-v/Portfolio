@@ -43,9 +43,9 @@ const API_PROVIDERS = {
   NEWSDATA: {
     name: "NewsData.io",
     fetch: async (query: string, limit: number, apiKey: string) => {
-      // NewsData.io requires category or country, let's use category=technology
+      // NewsData.io free tier requires country parameter
       const response = await fetch(
-        `https://newsdata.io/api/1/news?apikey=${apiKey}&category=technology&language=en&size=${limit}`
+        `https://newsdata.io/api/1/news?apikey=${apiKey}&category=technology&country=us&language=en&size=${limit}`
       );
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -108,13 +108,22 @@ const API_PROVIDERS = {
   MEDIASTACK: {
     name: "Media Stack API",
     fetch: async (query: string, limit: number, apiKey: string) => {
-      // Fix: Use HTTPS instead of HTTP
+      // Skip if API key is invalid (shows as "...")
+      if (!apiKey || apiKey === "..." || apiKey.length < 10) {
+        throw new Error("Media Stack API key invalid");
+      }
+      
       const response = await fetch(
-        `https://api.mediastack.com/v1/news?access_key=${apiKey}&keywords=${encodeURIComponent(query)}&limit=${limit}&languages=en`
+        `https://api.mediastack.com/v1/news?access_key=${apiKey}&categories=technology&limit=${limit}&languages=en`
       );
-      if (!response.ok) throw new Error("Media Stack API failed");
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("Media Stack API key invalid or expired");
+        }
+        throw new Error("Media Stack API failed");
+      }
       const data = await response.json();
-      if (data.data) {
+      if (data.data && data.data.length > 0) {
         return data.data.map((article: any, index: number) => ({
           id: article.url || `mediastack-${index}`,
           title: article.title || "",
@@ -132,31 +141,77 @@ const API_PROVIDERS = {
   RSS_FALLBACK: {
     name: "RSS Feed",
     fetch: async (query: string, limit: number) => {
-      // Try multiple RSS feeds as fallback
+      // Use CORS proxy to fetch RSS feeds
+      const corsProxy = 'https://api.allorigins.win/raw?url=';
       const rssFeeds = [
-        'https://techcrunch.com/feed/',
-        'https://feeds.feedburner.com/oreilly/radar',
-        'https://www.theverge.com/rss/index.xml',
-        'https://feeds.arstechnica.com/arstechnica/index',
+        { url: 'https://techcrunch.com/feed/', name: 'TechCrunch' },
+        { url: 'https://www.theverge.com/rss/index.xml', name: 'The Verge' },
+        { url: 'https://feeds.arstechnica.com/arstechnica/index', name: 'Ars Technica' },
       ];
       
-      for (const feedUrl of rssFeeds) {
+      for (const feed of rssFeeds) {
         try {
-          const rssUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}&count=${limit}`;
-          const response = await fetch(rssUrl);
+          const response = await fetch(`${corsProxy}${encodeURIComponent(feed.url)}`);
           if (response.ok) {
-            const data = await response.json();
-            if (data.status === "ok" && data.items && data.items.length > 0) {
-              return data.items.map((item: any, index: number) => ({
-                id: item.guid || item.link || `rss-${index}`,
-                title: item.title || "",
-                description: item.description?.replace(/<[^>]*>/g, "").substring(0, 200) || "",
-                url: item.link || "",
-                urlToImage: item.enclosure?.link || item.thumbnail,
-                publishedAt: item.pubDate || new Date().toISOString(),
-                source: { name: data.feed?.title || item.author || "Tech News" },
-                author: item.author,
-              }));
+            const xmlText = await response.text();
+            
+            // Parse RSS XML
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+            
+            // Check for parsing errors
+            const parseError = xmlDoc.querySelector('parsererror');
+            if (parseError) {
+              continue;
+            }
+            
+            const items = xmlDoc.querySelectorAll('item');
+            
+            if (items.length > 0) {
+              const articles = Array.from(items).slice(0, limit).map((item: Element, index: number) => {
+                const getText = (selector: string) => {
+                  const el = item.querySelector(selector);
+                  return el?.textContent?.trim() || '';
+                };
+                
+                const getAttr = (selector: string, attr: string) => {
+                  const el = item.querySelector(selector);
+                  return el?.getAttribute(attr) || '';
+                };
+                
+                // Try different namespace variations for link
+                const getLink = () => {
+                  return getText('link') || 
+                         getText('guid') || 
+                         item.querySelector('link')?.textContent?.trim() || '';
+                };
+                
+                const title = getText('title');
+                const link = getLink();
+                const description = getText('description')?.replace(/<[^>]*>/g, "").substring(0, 200) || '';
+                const pubDate = getText('pubDate') || getText('dc:date') || new Date().toISOString();
+                
+                // Try multiple ways to get image
+                const image = getAttr('enclosure', 'url') || 
+                            getAttr('media:content', 'url') ||
+                            getAttr('media:thumbnail', 'url') ||
+                            item.querySelector('media\\:content, content')?.getAttribute('url') || '';
+                
+                return {
+                  id: link || `rss-${index}`,
+                  title,
+                  description,
+                  url: link,
+                  urlToImage: image,
+                  publishedAt: pubDate,
+                  source: { name: feed.name },
+                  author: getText('author') || getText('dc:creator') || feed.name,
+                };
+              });
+              
+              if (articles.length > 0) {
+                return articles;
+              }
             }
           }
         } catch (err) {
@@ -164,6 +219,7 @@ const API_PROVIDERS = {
           continue;
         }
       }
+      
       throw new Error("RSS feed failed");
     },
   },

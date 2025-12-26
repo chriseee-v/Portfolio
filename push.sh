@@ -15,6 +15,12 @@ echo ""
 # Get current branch
 CURRENT_BRANCH=$(git branch --show-current)
 echo -e "${BLUE}📍 Current branch: ${GREEN}$CURRENT_BRANCH${NC}"
+
+# Show repository info
+REPO_URL=$(git remote get-url origin 2>/dev/null | sed 's/\.git$//' | sed 's/^.*@github\.com:/https:\/\/github.com\//' | sed 's/^https:\/\/[^@]*@/https:\/\//')
+if [ -n "$REPO_URL" ]; then
+    echo -e "${BLUE}🔗 Repository: ${GREEN}$REPO_URL${NC}"
+fi
 echo ""
 
 # Check if there are any changes
@@ -71,20 +77,38 @@ if [ $? -eq 0 ]; then
     
     # Push to GitHub
     echo -e "${BLUE}📤 Pushing to GitHub (origin/$CURRENT_BRANCH)...${NC}"
-    git push origin "$CURRENT_BRANCH"
+    PUSH_OUTPUT=$(git push origin "$CURRENT_BRANCH" 2>&1)
+    push_exit_code=$?
     
     # Check if push was successful
-    if [ $? -eq 0 ]; then
+    if [ $push_exit_code -eq 0 ]; then
         echo ""
         echo -e "${GREEN}╔════════════════════════════════════╗${NC}"
         echo -e "${GREEN}║  ✅ Successfully pushed to GitHub!  ║${NC}"
         echo -e "${GREEN}╚════════════════════════════════════╝${NC}"
+        
+        # Show repository URL
+        REPO_URL=$(git remote get-url origin | sed 's/\.git$//' | sed 's/^.*@github\.com:/https:\/\/github.com\//' | sed 's/^https:\/\/[^@]*@/https:\/\//')
+        echo -e "${BLUE}🔗 Repository: ${GREEN}$REPO_URL${NC}"
     else
         echo ""
         echo -e "${RED}╔════════════════════════════════════╗${NC}"
         echo -e "${RED}║  ❌ Push failed                    ║${NC}"
         echo -e "${RED}╚════════════════════════════════════╝${NC}"
-        echo -e "${YELLOW}Please check your Git configuration.${NC}"
+        
+        # Check for common errors
+        if echo "$PUSH_OUTPUT" | grep -q "Permission denied\|403\|Authentication failed"; then
+            echo -e "${YELLOW}⚠️  Authentication failed.${NC}"
+            echo -e "${YELLOW}💡 Tip: You may need to use a Personal Access Token.${NC}"
+            echo -e "${YELLOW}   Create one at: https://github.com/settings/tokens${NC}"
+            echo -e "${YELLOW}   When prompted, use your token as the password.${NC}"
+        elif echo "$PUSH_OUTPUT" | grep -q "remote: Permission"; then
+            echo -e "${YELLOW}⚠️  Permission denied to repository.${NC}"
+            echo -e "${YELLOW}💡 Check if you have access to the repository.${NC}"
+        else
+            echo -e "${YELLOW}Error details:${NC}"
+            echo "$PUSH_OUTPUT" | head -5
+        fi
         exit 1
     fi
 else
