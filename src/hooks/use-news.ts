@@ -247,11 +247,11 @@ const useNews = (query: string = "technology", limit: number = 10) => {
 
     // Try each API provider in order until one succeeds
     // Skip GNews due to CORS issues (requires backend proxy)
+    // Skip NewsAPI.ai due to domain resolution issues
     const providers = [
       { key: "newsdata", provider: API_PROVIDERS.NEWSDATA, apiKey: apiKeys.newsdata },
-      { key: "mediastack", provider: API_PROVIDERS.MEDIASTACK, apiKey: apiKeys.mediastack },
-      { key: "newsapiAi", provider: API_PROVIDERS.NEWSAPI_AI, apiKey: apiKeys.newsapiAi },
       { key: "newsapi", provider: API_PROVIDERS.NEWSAPI, apiKey: apiKeys.newsapi },
+      { key: "mediastack", provider: API_PROVIDERS.MEDIASTACK, apiKey: apiKeys.mediastack },
       { key: "rss", provider: API_PROVIDERS.RSS_FALLBACK, apiKey: null }, // No API key needed
     ];
 

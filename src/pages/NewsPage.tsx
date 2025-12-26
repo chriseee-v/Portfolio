@@ -1,6 +1,6 @@
 import { ExternalLink, Calendar, Clock, Loader2, RefreshCw } from "lucide-react";
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import useNews from "@/hooks/use-news";
 import { sectionVariants, staggerContainer, staggerItem } from "@/lib/motion";
@@ -155,25 +155,24 @@ const NewsPage = () => {
       )}
 
       {/* News Grid */}
-      <AnimatePresence>
-        {!loading && articles.length > 0 && (
-          <motion.div
-            className="grid md:grid-cols-2 gap-4"
-            variants={staggerContainer}
-            initial="initial"
-            animate="animate"
-          >
-            {articles.map((article, index) => (
-              <motion.article
-                key={article.id}
-                variants={staggerItem}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ delay: index * 0.05 }}
-                onClick={() => window.open(article.url, '_blank')}
-                className="group p-5 rounded-xl border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-md cursor-pointer relative overflow-hidden"
-              >
+      {!loading && articles.length > 0 && (
+        <motion.div
+          key="news-grid"
+          className="grid md:grid-cols-2 gap-4"
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+        >
+          {articles.map((article, index) => (
+            <motion.article
+              key={article.id}
+              variants={staggerItem}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              onClick={() => window.open(article.url, '_blank')}
+              className="group p-5 rounded-xl border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-md cursor-pointer relative overflow-hidden"
+            >
                 {/* Accent Line */}
                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
 
@@ -222,9 +221,8 @@ const NewsPage = () => {
                 </div>
               </motion.article>
             ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </motion.div>
+      )}
     </div>
   );
 };
