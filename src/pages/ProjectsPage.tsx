@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ExternalLink, Github } from "lucide-react";
 import projectsData from "@/data/projects.json";
 
-const filters = ["All", "Web", "3D", "Experiments", "Client"];
+const filters = ["All", "AI", "Full Stack", "Computer Vision", "IoT"];
 
 // Type definition for projects
 type Project = {

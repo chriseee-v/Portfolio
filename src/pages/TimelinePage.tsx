@@ -84,7 +84,7 @@ const TimelinePage = () => {
       <section className="mt-20 pt-12 border-t border-border">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {[
-            { value: "3+", label: "Years Experience" },
+            { value: "1+", label: "Years Experience" },
             { value: "15+", label: "Projects Delivered" },
             { value: "30+", label: "Technologies" },
             { value: "∞", label: "Innovation" },

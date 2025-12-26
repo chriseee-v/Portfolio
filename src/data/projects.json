@@ -5,7 +5,7 @@
     "role": "AI Developer",
     "year": "2025",
     "stack": ["RAG", "Redis", "Phoenix Tracer", "Docker", "AWS"],
-    "category": "Web",
+    "category": "AI",
     "description": "RAG-powered agent that reduced form-filling time by 40% for physiotherapy workflows. Scaled to 200+ concurrent users across 50+ clinics.",
     "url": "",
     "github": ""
@@ -16,7 +16,7 @@
     "role": "Backend Developer",
     "year": "2025",
     "stack": ["ChromaDB", "Flask", "LangChain", "BGE"],
-    "category": "Web",
+    "category": "AI",
     "description": "Medical knowledge retrieval system with 95% accuracy. Processes 5,000+ queries daily with 99% API uptime.",
     "url": "",
     "github": ""
@@ -27,7 +27,7 @@
     "role": "Computer Vision Engineer",
     "year": "2025",
     "stack": ["OpenCV", "Pose Estimation", "DINO", "SAM 2"],
-    "category": "Experiments",
+    "category": "Computer Vision",
     "description": "Real-time pose estimation system that improved form accuracy by 35%. Processes 500+ video frames per second.",
     "url": "",
     "github": ""
@@ -38,7 +38,7 @@
     "role": "Full Stack Developer",
     "year": "2025",
     "stack": ["FastAPI", "WebSocket", "MongoDB", "Plotly"],
-    "category": "Web",
+    "category": "Full Stack",
     "description": "Real-time athlete analytics platform integrating VALD data. Reduced data latency by 50% for 100+ users.",
     "url": "",
     "github": ""
@@ -49,7 +49,7 @@
     "role": "IoT & ML Engineer",
     "year": "2024",
     "stack": ["Python", "Scikit-Learn", "Raspberry Pi", "3D Printing"],
-    "category": "Experiments",
+    "category": "AI",
     "description": "Brain-controlled prosthetic arm with 85% action accuracy. Patent pending for commercial development.",
     "url": "",
     "github": ""
@@ -60,7 +60,7 @@
     "role": "IoT Developer",
     "year": "2024",
     "stack": ["Arduino", "LoRaWAN", "Python", "Firebase"],
-    "category": "Client",
+    "category": "IoT",
     "description": "IoT solution for centralized streetlight control. Reduced maintenance response times by 20%. Smart India Hackathon 24' Semi-Finalist.",
     "url": "",
     "github": ""
