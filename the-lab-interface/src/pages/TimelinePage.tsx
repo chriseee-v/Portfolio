@@ -1,25 +1,39 @@
-import { useEffect, useState } from "react";
-import { portfolioApi, type Experience } from "@/lib/api";
+const experiences = [
+  {
+    year: "2025",
+    title: "Software Development Engineer I",
+    company: "Healthflex",
+    description: "Building AI-powered healthcare solutions with RAG pipelines, computer vision, and real-time analytics. Deployed systems serving 200+ concurrent users across 50+ clinics.",
+    technologies: ["Python", "FastAPI", "OpenCV", "AWS", "Docker", "LangChain"],
+    highlight: true,
+  },
+  {
+    year: "2024",
+    title: "Algorithms and Backend Intern",
+    company: "Healthflex",
+    description: "Developed AI pipelines for image/video analysis and automated data extraction. Improved tracking accuracy by 30% and reduced data acquisition time by 70%.",
+    technologies: ["Florence-2", "SAM", "Puppeteer", "Angular", "MongoDB"],
+    highlight: true,
+  },
+  {
+    year: "2022",
+    title: "Python Developer Intern",
+    company: "CISCO",
+    description: "Completed 80+ hours of programming coursework. Developed IP validation tool reducing vulnerabilities by 20% for 500+ enterprise devices.",
+    technologies: ["Python", "Networking", "Security"],
+    highlight: false,
+  },
+  {
+    year: "2021-2025",
+    title: "Bachelor of Technology",
+    company: "Karunya Institute of Technology",
+    description: "Computer Science and Engineering. Focused on AI, IoT, and embedded systems. Built multiple award-winning projects.",
+    technologies: ["Data Structures", "Machine Learning", "IoT", "Embedded Systems"],
+    highlight: false,
+  },
+];
 
 const TimelinePage = () => {
-  const [experiences, setExperiences] = useState<Experience[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchExperiences = async () => {
-      try {
-        const data = await portfolioApi.getExperiences();
-        setExperiences(data);
-      } catch (error) {
-        console.error("Error fetching experiences:", error);
-        // Fallback to empty array if API fails
-        setExperiences([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchExperiences();
-  }, []);
   return (
     <div>
       {/* Header */}
@@ -36,18 +50,13 @@ const TimelinePage = () => {
       </div>
 
       {/* Timeline */}
-      {loading ? (
-        <div className="text-center py-12 text-muted-foreground">Loading experiences...</div>
-      ) : experiences.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">No experiences found.</div>
-      ) : (
-        <div className="relative">
-          {/* Vertical Line */}
-          <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px bg-border transform md:-translate-x-1/2" />
+      <div className="relative">
+        {/* Vertical Line */}
+        <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px bg-border transform md:-translate-x-1/2" />
 
-          {/* Timeline Items */}
-          <div className="space-y-12">
-            {experiences.map((exp, index) => (
+        {/* Timeline Items */}
+        <div className="space-y-12">
+          {experiences.map((exp, index) => (
             <div
               key={index}
               className={`relative flex flex-col md:flex-row items-start gap-8 ${
@@ -88,10 +97,9 @@ const TimelinePage = () => {
                 </div>
               </div>
             </div>
-            ))}
-          </div>
+          ))}
         </div>
-      )}
+      </div>
 
       {/* Stats */}
       <section className="mt-20 pt-12 border-t border-border">

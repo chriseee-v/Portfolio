@@ -1,26 +1,49 @@
-import { useEffect, useState } from "react";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
-import { portfolioApi, type Blog } from "@/lib/api";
+
+const posts = [
+  {
+    id: 1,
+    title: "The Art of Micro-Interactions",
+    date: "Dec 15, 2024",
+    readTime: "5 min",
+    tags: ["Design", "UX"],
+    summary: "How subtle animations and feedback loops create delightful user experiences that feel natural and intuitive.",
+  },
+  {
+    id: 2,
+    title: "WebGL Performance Optimization",
+    date: "Nov 28, 2024",
+    readTime: "8 min",
+    tags: ["WebGL", "Performance"],
+    summary: "Deep dive into shader optimization, geometry instancing, and efficient rendering pipelines for smooth 60fps experiences.",
+  },
+  {
+    id: 3,
+    title: "Building Design Systems at Scale",
+    date: "Nov 12, 2024",
+    readTime: "6 min",
+    tags: ["Design Systems", "React"],
+    summary: "Lessons learned from building and maintaining design systems for large distributed teams.",
+  },
+  {
+    id: 4,
+    title: "The Future of CSS: Container Queries",
+    date: "Oct 30, 2024",
+    readTime: "4 min",
+    tags: ["CSS", "Frontend"],
+    summary: "Exploring the new CSS container queries and how they change the way we think about responsive design.",
+  },
+  {
+    id: 5,
+    title: "GSAP vs Framer Motion: A Comparison",
+    date: "Oct 15, 2024",
+    readTime: "7 min",
+    tags: ["Animation", "React"],
+    summary: "An in-depth comparison of the two most popular animation libraries for modern web development.",
+  },
+];
 
 const BlogPage = () => {
-  const [posts, setPosts] = useState<Blog[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        const data = await portfolioApi.getBlogs();
-        setPosts(data);
-      } catch (error) {
-        console.error("Error fetching blogs:", error);
-        // Fallback to empty array if API fails
-        setPosts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchBlogs();
-  }, []);
   return (
     <div>
       {/* Header */}
@@ -37,13 +60,8 @@ const BlogPage = () => {
       </div>
 
       {/* Posts List */}
-      {loading ? (
-        <div className="text-center py-12 text-muted-foreground">Loading blog posts...</div>
-      ) : posts.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">No blog posts found.</div>
-      ) : (
-        <div className="space-y-6">
-          {posts.map((post) => (
+      <div className="space-y-6">
+        {posts.map((post) => (
           <article
             key={post.id}
             className="group p-6 rounded-xl border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-md cursor-pointer relative overflow-hidden"
@@ -79,7 +97,7 @@ const BlogPage = () => {
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock className="w-3 h-3" />
-                  <span className="font-mono text-xs">{post.read_time}</span>
+                  <span className="font-mono text-xs">{post.readTime}</span>
                 </div>
               </div>
             </div>
@@ -90,9 +108,8 @@ const BlogPage = () => {
               <ArrowRight className="w-4 h-4" />
             </div>
           </article>
-          ))}
-        </div>
-      )}
+        ))}
+      </div>
 
       {/* Newsletter CTA */}
       <section className="mt-16 p-8 rounded-2xl bg-muted/30 border border-border">
