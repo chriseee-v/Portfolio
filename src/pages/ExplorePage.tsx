@@ -405,28 +405,8 @@ const CircularGallery = () => {
   const isDragging = useRef(false);
   const lastX = useRef(0);
 
-  // Responsive radius based on screen size
-  const [radius, setRadius] = useState(280);
+  const radius = 280;
   const cardCount = techTopics.length;
-
-  useEffect(() => {
-    const updateRadius = () => {
-      if (window.innerWidth < 640) {
-        // Mobile: smaller radius
-        setRadius(200);
-      } else if (window.innerWidth < 768) {
-        // Small tablets
-        setRadius(240);
-      } else {
-        // Desktop
-        setRadius(280);
-      }
-    };
-
-    updateRadius();
-    window.addEventListener('resize', updateRadius);
-    return () => window.removeEventListener('resize', updateRadius);
-  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -449,7 +429,7 @@ const CircularGallery = () => {
 
       card.setPosition(x, y, cardRotation);
     });
-  }, [rotation, cardCount, radius]);
+  }, [rotation, cardCount]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     isDragging.current = true;
@@ -484,25 +464,29 @@ const CircularGallery = () => {
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging.current || isCardTouch.current) return;
+    if (isCardTouch.current) return;
     
-    const deltaX = Math.abs(e.touches[0].clientX - touchStartX.current);
-    const deltaY = Math.abs(e.touches[0].clientY - touchStartY.current);
-    
-    // Only drag if horizontal movement is significantly greater than vertical (swipe gesture)
-    // This prevents interfering with normal page scrolling
-    if (deltaX > deltaY * 2 && deltaX > 20) {
-      e.preventDefault();
-      e.stopPropagation();
-      const currentX = e.touches[0].clientX;
-      const moveDelta = currentX - lastX.current;
-      rotationRef.current += moveDelta * 0.3;
-      setRotation(rotationRef.current);
-      lastX.current = currentX;
-    } else {
-      // If it's more vertical, allow normal scrolling
-      isDragging.current = false;
+    if (!isDragging.current) {
+      // Check if this is a horizontal swipe to start dragging
+      const deltaX = Math.abs(e.touches[0].clientX - touchStartX.current);
+      const deltaY = Math.abs(e.touches[0].clientY - touchStartY.current);
+      
+      if (deltaX > deltaY && deltaX > 10) {
+        isDragging.current = true;
+        lastX.current = e.touches[0].clientX;
+      } else {
+        return; // Allow vertical scrolling
+      }
     }
+    
+    // Rotate based on horizontal movement
+    e.preventDefault();
+    e.stopPropagation();
+    const currentX = e.touches[0].clientX;
+    const moveDelta = currentX - lastX.current;
+    rotationRef.current += moveDelta * 0.3;
+    setRotation(rotationRef.current);
+    lastX.current = currentX;
   };
 
   const handleTouchEnd = () => {
@@ -523,7 +507,7 @@ const CircularGallery = () => {
   };
 
   return (
-    <div className="relative min-h-[70vh] flex items-center justify-center overflow-x-hidden overflow-y-visible">
+    <div className="relative min-h-[50vh] flex items-center justify-center overflow-x-hidden overflow-y-visible">
       {/* Center Text */}
       <div className="absolute z-10 text-center pointer-events-none">
         <h2 className="text-xl md:text-2xl font-light text-foreground mb-2">
@@ -546,7 +530,7 @@ const CircularGallery = () => {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="relative w-[600px] h-[600px] md:w-[700px] md:h-[700px] cursor-grab active:cursor-grabbing mx-auto"
+        className="relative w-[680px] h-[680px] sm:w-[720px] sm:h-[720px] md:w-[820px] md:h-[820px] cursor-grab active:cursor-grabbing mx-auto"
         style={{ perspective: "1000px" }}
       >
         {techTopics.map((topic, index) => (
