@@ -238,7 +238,7 @@ const FlipCard = forwardRef<FlipCardHandle, FlipCardProps>(({ topic, onClick }, 
           onClick(cardRef.current);
         }
       }}
-      className="flip-card absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-20 sm:w-18 sm:h-24 md:w-24 md:h-32 cursor-pointer"
+      className="flip-card absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-20 sm:w-20 sm:h-28 md:w-24 md:h-32 cursor-pointer"
       style={{ 
         transformStyle: "preserve-3d",
         zIndex: 1,
