@@ -445,7 +445,7 @@ const CircularGallery = () => {
 
       card.setPosition(x, y, cardRotation);
     });
-  }, [rotation, cardCount]);
+  }, [rotation, cardCount, radius]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     isDragging.current = true;
