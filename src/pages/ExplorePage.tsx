@@ -407,25 +407,33 @@ const CircularGallery = () => {
 
   // Responsive radius based on screen size
   const [radius, setRadius] = useState(280);
+  const [containerSize, setContainerSize] = useState(820);
   const cardCount = techTopics.length;
 
   useEffect(() => {
-    const updateRadius = () => {
+    const updateSizes = () => {
       if (window.innerWidth < 640) {
-        // Mobile: smaller radius
-        setRadius(140);
+        // Mobile: smaller radius and container
+        setRadius(90);
+        setContainerSize(280);
       } else if (window.innerWidth < 768) {
         // Small tablets
-        setRadius(200);
+        setRadius(150);
+        setContainerSize(400);
+      } else if (window.innerWidth < 1024) {
+        // Medium screens
+        setRadius(220);
+        setContainerSize(580);
       } else {
         // Desktop
         setRadius(280);
+        setContainerSize(820);
       }
     };
 
-    updateRadius();
-    window.addEventListener('resize', updateRadius);
-    return () => window.removeEventListener('resize', updateRadius);
+    updateSizes();
+    window.addEventListener('resize', updateSizes);
+    return () => window.removeEventListener('resize', updateSizes);
   }, []);
 
   useEffect(() => {
@@ -449,7 +457,7 @@ const CircularGallery = () => {
 
       card.setPosition(x, y, cardRotation);
     });
-  }, [rotation, cardCount]);
+  }, [rotation, cardCount, radius]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     isDragging.current = true;
@@ -546,8 +554,13 @@ const CircularGallery = () => {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="relative w-[320px] h-[320px] sm:w-[480px] sm:h-[480px] md:w-[680px] md:h-[680px] lg:w-[820px] lg:h-[820px] cursor-grab active:cursor-grabbing mx-auto"
-        style={{ perspective: "1000px" }}
+        className="relative cursor-grab active:cursor-grabbing mx-auto"
+        style={{ 
+          perspective: "1000px",
+          width: `${containerSize}px`,
+          height: `${containerSize}px`,
+          maxWidth: '100%',
+        }}
       >
         {techTopics.map((topic, index) => (
           <FlipCard
