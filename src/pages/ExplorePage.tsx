@@ -238,7 +238,7 @@ const FlipCard = forwardRef<FlipCardHandle, FlipCardProps>(({ topic, onClick }, 
           onClick(cardRef.current);
         }
       }}
-      className="flip-card absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-28 md:w-24 md:h-32 cursor-pointer"
+      className="flip-card absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-20 sm:w-20 sm:h-28 md:w-24 md:h-32 cursor-pointer"
       style={{ 
         transformStyle: "preserve-3d",
         zIndex: 1,
@@ -405,8 +405,28 @@ const CircularGallery = () => {
   const isDragging = useRef(false);
   const lastX = useRef(0);
 
-  const radius = 280;
+  // Responsive radius based on screen size
+  const [radius, setRadius] = useState(280);
   const cardCount = techTopics.length;
+
+  useEffect(() => {
+    const updateRadius = () => {
+      if (window.innerWidth < 640) {
+        // Mobile: smaller radius
+        setRadius(140);
+      } else if (window.innerWidth < 768) {
+        // Small tablets
+        setRadius(200);
+      } else {
+        // Desktop
+        setRadius(280);
+      }
+    };
+
+    updateRadius();
+    window.addEventListener('resize', updateRadius);
+    return () => window.removeEventListener('resize', updateRadius);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -503,16 +523,16 @@ const CircularGallery = () => {
   };
 
   return (
-    <div className="relative min-h-[50vh] flex items-center justify-center overflow-x-hidden overflow-y-visible">
+    <div className="relative min-h-[400px] sm:min-h-[500px] md:min-h-[50vh] flex items-center justify-center overflow-x-hidden overflow-y-visible px-4">
       {/* Center Text */}
-      <div className="absolute z-10 text-center pointer-events-none">
-        <h2 className="text-xl md:text-2xl font-light text-foreground mb-2">
+      <div className="absolute z-10 text-center pointer-events-none px-4">
+        <h2 className="text-base sm:text-xl md:text-2xl font-light text-foreground mb-1 sm:mb-2">
           The future is built on
         </h2>
-        <p className="text-2xl md:text-3xl font-bold text-primary">
+        <p className="text-lg sm:text-2xl md:text-3xl font-bold text-primary">
           Creative Technology.
         </p>
-        <p className="mt-4 font-mono text-xs text-muted-foreground uppercase tracking-widest">
+        <p className="mt-2 sm:mt-4 font-mono text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest">
           Drag to explore
         </p>
       </div>
@@ -526,7 +546,7 @@ const CircularGallery = () => {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="relative w-[680px] h-[680px] sm:w-[720px] sm:h-[720px] md:w-[820px] md:h-[820px] cursor-grab active:cursor-grabbing mx-auto"
+        className="relative w-[320px] h-[320px] sm:w-[480px] sm:h-[480px] md:w-[680px] md:h-[680px] lg:w-[820px] lg:h-[820px] cursor-grab active:cursor-grabbing mx-auto"
         style={{ perspective: "1000px" }}
       >
         {techTopics.map((topic, index) => (
