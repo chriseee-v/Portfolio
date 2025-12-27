@@ -95,7 +95,7 @@ const TimelinePage = () => {
                       transition={{ duration: 0.3 }}
                     >
                       <div 
-                        className="w-4 h-4 rounded-full bg-primary relative flex items-center justify-center" 
+                        className="w-4 h-4 rounded-full bg-primary relative" 
                         style={{ 
                           border: 'none', 
                           boxShadow: 'none', 
@@ -110,13 +110,16 @@ const TimelinePage = () => {
                               height: '16px',
                               left: '50%',
                               top: '50%',
-                              transform: 'translate(-50%, -50%)',
+                              marginLeft: '-8px',
+                              marginTop: '-8px',
                               zIndex: -1,
                               pointerEvents: 'none',
                             }}
                             animate={{ 
                               scale: [1, 3, 1], 
-                              opacity: [0.6, 0, 0.6] 
+                              opacity: [0.6, 0, 0.6],
+                              x: 0,
+                              y: 0,
                             }}
                             transition={{ 
                               duration: 2, 
