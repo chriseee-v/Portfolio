@@ -69,7 +69,7 @@ const MePage = () => {
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center w-full pl-0 lg:pl-12">
           {/* Left: Text Content */}
           <motion.div 
-            className="space-y-8 z-10"
+            className="space-y-8 relative z-30"
             variants={heroVariants}
             initial="initial"
             animate="animate"
@@ -185,17 +185,17 @@ const MePage = () => {
           </motion.div>
 
           {/* Right: Hero Figure */}
-          <div className="relative flex justify-center items-start h-full">
+          <div className="relative flex justify-end items-start h-full z-0">
             {/* Accent Shape Behind */}
             <div 
-              className="absolute right-0 top-1/2 w-80 h-96 lg:w-[500px] lg:h-[600px] bg-primary rounded-3xl opacity-90"
-              style={{ transform: `rotate(6deg) translateY(-50%)` }}
+              className="absolute right-0 top-1/2 w-80 h-96 lg:w-[500px] lg:h-[600px] bg-primary rounded-3xl opacity-90 z-0"
+              style={{ transform: `rotate(6deg) translateY(-120%)` }}
             />
             
             {/* Figure Image */}
             <div 
-              className="relative z-10 mt-4 lg:mt-8 -ml-8 lg:-ml-12 transition-transform duration-75 ease-out"
-              style={{ transform: `translateX(${translateX}px)` }}
+              className="relative z-20 transition-transform duration-75 ease-out"
+              style={{ transform: `translateX(${translateX + 100}px) translateY(-350px)` }}
             >
               <img
                 src={heroFigure}
@@ -249,7 +249,7 @@ const MePage = () => {
                   whileHover={{ opacity: 1 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <p className="text-sm font-medium text-primary text-center">
+                  <p className="text-sm font-medium text-white text-center">
                     {achievements[skill.label] || "Achievement"}
                   </p>
                 </motion.div>
