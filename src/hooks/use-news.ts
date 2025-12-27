@@ -96,7 +96,7 @@ const useNews = (query: string = "technology", limit: number = 10) => {
       const cachedArticles = getCachedNews();
       if (cachedArticles) {
         setArticles(cachedArticles);
-        setActiveProvider("Google Gemini (Cached)");
+        setActiveProvider("Gemini (Cached)");
         setLoading(false);
         return;
       }
@@ -291,7 +291,7 @@ const useNews = (query: string = "technology", limit: number = 10) => {
 
         if (articles.length > 0) {
           setArticles(articles);
-          setActiveProvider("Google Gemini");
+          setActiveProvider("Gemini");
           setLoading(false);
           saveToCache(articles); // Cache the results
           console.log(`✓ Successfully fetched ${articles.length} articles from Google Gemini`);
