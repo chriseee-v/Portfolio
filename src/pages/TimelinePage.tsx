@@ -51,8 +51,11 @@ const TimelinePage = () => {
 
       {/* Timeline */}
       <div ref={containerRef} className="relative">
-        {/* Animated Vertical Line */}
-        <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px bg-border transform md:-translate-x-1/2 overflow-hidden">
+        {/* Animated Vertical Line - Full continuous line */}
+        <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px transform md:-translate-x-1/2 z-10">
+          {/* Background line (full length) */}
+          <div className="absolute top-0 bottom-0 w-full bg-border" />
+          {/* Animated progress line */}
           <motion.div
             className="absolute top-0 left-0 w-full bg-primary"
             style={{
@@ -88,10 +91,7 @@ const TimelinePage = () => {
                   {/* Node with scroll-based scale */}
                   {exp.highlight ? (
                     <motion.div
-                      className="absolute left-4 md:left-1/2 z-20"
-                      style={{
-                        transform: 'translate(-50%, 0)',
-                      }}
+                      className="absolute left-4 md:left-1/2 transform md:-translate-x-1/2 -translate-y-0 z-20"
                       animate={{
                         scale: inView ? 1.3 : 1,
                       }}
@@ -103,7 +103,6 @@ const TimelinePage = () => {
                           border: 'none', 
                           boxShadow: 'none', 
                           background: 'hsl(var(--primary))',
-                          marginLeft: '-8px', // Center the 16px dot on the 1px line
                         }}
                       >
                         {inView && (
@@ -136,21 +135,13 @@ const TimelinePage = () => {
                     </motion.div>
                   ) : (
                     <motion.div
-                      className="absolute left-4 md:left-1/2 z-20"
-                      style={{
-                        transform: 'translate(-50%, 0)',
-                      }}
+                      className="absolute left-4 md:left-1/2 transform md:-translate-x-1/2 -translate-y-0 z-20"
                       animate={{
                         scale: inView ? 1.3 : 1,
                       }}
                       transition={{ duration: 0.3 }}
                     >
-                      <div 
-                        className="w-4 h-4 rounded-full bg-muted border-4 border-card relative z-20"
-                        style={{
-                          marginLeft: '-8px', // Center the 16px dot on the 1px line
-                        }}
-                      />
+                      <div className="w-4 h-4 rounded-full bg-muted border-4 border-card relative z-20" />
                     </motion.div>
                   )}
 
