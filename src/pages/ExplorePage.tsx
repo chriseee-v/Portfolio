@@ -238,7 +238,7 @@ const FlipCard = forwardRef<FlipCardHandle, FlipCardProps>(({ topic, onClick }, 
           onClick(cardRef.current);
         }
       }}
-      className="flip-card absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-20 sm:w-20 sm:h-28 md:w-24 md:h-32 cursor-pointer"
+      className="flip-card absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-28 md:w-24 md:h-32 cursor-pointer"
       style={{ 
         transformStyle: "preserve-3d",
         zIndex: 1,
@@ -407,33 +407,25 @@ const CircularGallery = () => {
 
   // Responsive radius based on screen size
   const [radius, setRadius] = useState(280);
-  const [containerSize, setContainerSize] = useState(820);
   const cardCount = techTopics.length;
 
   useEffect(() => {
-    const updateSizes = () => {
+    const updateRadius = () => {
       if (window.innerWidth < 640) {
-        // Mobile: smaller radius and container
-        setRadius(90);
-        setContainerSize(280);
+        // Mobile: smaller radius
+        setRadius(200);
       } else if (window.innerWidth < 768) {
         // Small tablets
-        setRadius(150);
-        setContainerSize(400);
-      } else if (window.innerWidth < 1024) {
-        // Medium screens
-        setRadius(220);
-        setContainerSize(580);
+        setRadius(240);
       } else {
         // Desktop
         setRadius(280);
-        setContainerSize(820);
       }
     };
 
-    updateSizes();
-    window.addEventListener('resize', updateSizes);
-    return () => window.removeEventListener('resize', updateSizes);
+    updateRadius();
+    window.addEventListener('resize', updateRadius);
+    return () => window.removeEventListener('resize', updateRadius);
   }, []);
 
   useEffect(() => {
@@ -531,16 +523,16 @@ const CircularGallery = () => {
   };
 
   return (
-    <div className="relative min-h-[400px] sm:min-h-[500px] md:min-h-[50vh] flex items-center justify-center overflow-x-hidden overflow-y-visible px-4">
+    <div className="relative min-h-[70vh] flex items-center justify-center overflow-x-hidden overflow-y-visible">
       {/* Center Text */}
-      <div className="absolute z-10 text-center pointer-events-none px-4">
-        <h2 className="text-base sm:text-xl md:text-2xl font-light text-foreground mb-1 sm:mb-2">
+      <div className="absolute z-10 text-center pointer-events-none">
+        <h2 className="text-xl md:text-2xl font-light text-foreground mb-2">
           The future is built on
         </h2>
-        <p className="text-lg sm:text-2xl md:text-3xl font-bold text-primary">
+        <p className="text-2xl md:text-3xl font-bold text-primary">
           Creative Technology.
         </p>
-        <p className="mt-2 sm:mt-4 font-mono text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest">
+        <p className="mt-4 font-mono text-xs text-muted-foreground uppercase tracking-widest">
           Drag to explore
         </p>
       </div>
@@ -554,13 +546,8 @@ const CircularGallery = () => {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="relative cursor-grab active:cursor-grabbing mx-auto"
-        style={{ 
-          perspective: "1000px",
-          width: `${containerSize}px`,
-          height: `${containerSize}px`,
-          maxWidth: '100%',
-        }}
+        className="relative w-[600px] h-[600px] md:w-[700px] md:h-[700px] cursor-grab active:cursor-grabbing mx-auto"
+        style={{ perspective: "1000px" }}
       >
         {techTopics.map((topic, index) => (
           <FlipCard
