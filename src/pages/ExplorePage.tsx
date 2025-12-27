@@ -238,7 +238,7 @@ const FlipCard = forwardRef<FlipCardHandle, FlipCardProps>(({ topic, onClick }, 
           onClick(cardRef.current);
         }
       }}
-      className="flip-card absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-28 md:w-24 md:h-32 cursor-pointer"
+      className="flip-card absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-20 sm:w-18 sm:h-24 md:w-24 md:h-32 cursor-pointer"
       style={{ 
         transformStyle: "preserve-3d",
         zIndex: 1,
@@ -256,7 +256,7 @@ const FlipCard = forwardRef<FlipCardHandle, FlipCardProps>(({ topic, onClick }, 
           className={`absolute inset-0 rounded-xl bg-gradient-to-br ${topic.color} shadow-lg flex items-center justify-center`}
           style={{ backfaceVisibility: "hidden" }}
         >
-          <Icon className="w-8 h-8 text-white" />
+          <Icon className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" />
         </div>
 
         {/* Back */}
@@ -267,7 +267,7 @@ const FlipCard = forwardRef<FlipCardHandle, FlipCardProps>(({ topic, onClick }, 
             transform: "rotateY(180deg)",
           }}
         >
-          <Icon className="w-5 h-5 text-primary mb-1" />
+          <Icon className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 text-primary mb-1" />
           <span className="text-[10px] font-semibold text-center leading-tight">
             {topic.title}
           </span>
@@ -404,8 +404,24 @@ const CircularGallery = () => {
   const rotationRef = useRef(0);
   const isDragging = useRef(false);
   const lastX = useRef(0);
+  const [radius, setRadius] = useState(280);
 
-  const radius = 280;
+  // Responsive radius: smaller on mobile
+  useEffect(() => {
+    const updateRadius = () => {
+      if (window.innerWidth < 640) {
+        setRadius(200); // Mobile: smaller radius
+      } else if (window.innerWidth < 1024) {
+        setRadius(240); // Tablet: medium radius
+      } else {
+        setRadius(280); // Desktop: full radius
+      }
+    };
+
+    updateRadius();
+    window.addEventListener('resize', updateRadius);
+    return () => window.removeEventListener('resize', updateRadius);
+  }, []);
   const cardCount = techTopics.length;
 
   useEffect(() => {
@@ -530,7 +546,7 @@ const CircularGallery = () => {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="relative w-[680px] h-[680px] sm:w-[720px] sm:h-[720px] md:w-[820px] md:h-[820px] cursor-grab active:cursor-grabbing mx-auto"
+        className="relative w-[500px] h-[500px] sm:w-[600px] sm:h-[600px] md:w-[720px] md:h-[720px] lg:w-[820px] lg:h-[820px] cursor-grab active:cursor-grabbing mx-auto"
         style={{ perspective: "1000px" }}
       >
         {techTopics.map((topic, index) => (
