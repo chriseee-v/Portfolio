@@ -52,7 +52,7 @@ const TimelinePage = () => {
       {/* Timeline */}
       <div ref={containerRef} className="relative">
         {/* Animated Vertical Line - Full continuous line */}
-        <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px transform md:-translate-x-1/2 z-10">
+        <div className="absolute left-[14px] md:left-1/2 top-0 bottom-0 w-px transform md:-translate-x-1/2 z-0">
           {/* Background line (full length) */}
           <div className="absolute top-0 bottom-0 w-full bg-border" />
           {/* Animated progress line */}
@@ -91,7 +91,10 @@ const TimelinePage = () => {
                   {/* Node with scroll-based scale */}
                   {exp.highlight ? (
                     <motion.div
-                      className="absolute left-4 md:left-1/2 transform md:-translate-x-1/2 -translate-y-0 z-20"
+                      className="absolute left-[14px] md:left-1/2 transform md:-translate-x-1/2 -translate-y-0 z-10"
+                      style={{
+                        marginLeft: '-8px', // Center the 16px dot on the 1px line
+                      }}
                       animate={{
                         scale: inView ? 1.3 : 1,
                       }}
@@ -135,13 +138,16 @@ const TimelinePage = () => {
                     </motion.div>
                   ) : (
                     <motion.div
-                      className="absolute left-4 md:left-1/2 transform md:-translate-x-1/2 -translate-y-0 z-20"
+                      className="absolute left-[14px] md:left-1/2 transform md:-translate-x-1/2 -translate-y-0 z-10"
+                      style={{
+                        marginLeft: '-8px', // Center the 16px dot on the 1px line
+                      }}
                       animate={{
                         scale: inView ? 1.3 : 1,
                       }}
                       transition={{ duration: 0.3 }}
                     >
-                      <div className="w-4 h-4 rounded-full bg-muted border-4 border-card relative z-20" />
+                      <div className="w-4 h-4 rounded-full bg-muted border-4 border-card relative z-10" />
                     </motion.div>
                   )}
 
