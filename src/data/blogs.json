@@ -1,12 +1,12 @@
 [
   {
     "id": 1,
-    "title": "The Art of Micro-Interactions",
-    "date": "Dec 15, 2024",
-    "readTime": "5 min",
-    "tags": ["Design", "UX"],
-    "summary": "How subtle animations and feedback loops create delightful user experiences that feel natural and intuitive.",
-    "url": ""
+    "title": "Building a LoRaWAN-Powered Smart Street Light Control System with Arduino and Firebase",
+    "date": "Dec 27, 2025",
+    "readTime": "6 min",
+    "tags": ["IoT", "Smart Cities", "LoRaWAN", "Arduino", "Firebase"],
+    "summary": "How we designed a centralized, long-range IoT system to monitor and control streetlights using LoRaWAN, Arduino-based nodes, and a real-time Firebase dashboard.",
+    "url": "https://medium.com/@thechris241103/building-a-lorawan-powered-smart-street-light-control-system-with-arduino-and-firebase-4365c585cf9e"
   },
   {
     "id": 2,
