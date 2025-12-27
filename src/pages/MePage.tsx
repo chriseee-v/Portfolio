@@ -1,4 +1,5 @@
 import heroFigure from "@/assets/hero-figure.png";
+import TypewriterCube from "@/components/TypewriterCube";
 import { ArrowRight, Download, Brain, Code2, Eye, Cloud } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
@@ -16,19 +17,8 @@ const skills = [
 
 const MePage = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
-  
-  // Check if mobile on mount and resize
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
   
   // Scroll-triggered animations
   const { ref: expRef, inView: expInView } = useInView({ threshold: 0.5, triggerOnce: true });
@@ -68,7 +58,7 @@ const MePage = () => {
   return (
     <div>
       {/* Hero Section */}
-      <div ref={heroRef} className="relative min-h-[70vh] flex items-center py-8 md:py-0">
+      <div ref={heroRef} className="relative min-h-[70vh] flex items-center">
         {/* Vertical Label */}
         <div className="absolute left-0 top-1/2 -translate-y-1/2 hidden lg:block">
           <span className="lab-vertical-text text-muted-foreground">
@@ -80,7 +70,7 @@ const MePage = () => {
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center w-full pl-0 lg:pl-12">
           {/* Left: Text Content */}
           <motion.div 
-            className="space-y-8 relative z-30"
+            className="space-y-8 z-10"
             variants={heroVariants}
             initial="initial"
             animate="animate"
@@ -102,8 +92,9 @@ const MePage = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+                style={{ minHeight: "1.2em" }}
               >
-                lab.
+                <TypewriterCube />
               </motion.h1>
             </motion.div>
             
@@ -143,7 +134,9 @@ const MePage = () => {
                   <ArrowRight className="w-4 h-4" />
                 </motion.div>
               </motion.a>
-              <motion.button 
+              <motion.a 
+                href="/Chris_Resume__Copy_.pdf" 
+                download="Chris_Thomas_Varghese_Resume.pdf"
                 className="lab-button-outline inline-flex items-center gap-2"
                 variants={buttonHoverVariants}
                 whileHover="hover"
@@ -151,7 +144,7 @@ const MePage = () => {
               >
                 Download CV
                 <Download className="w-4 h-4" />
-              </motion.button>
+              </motion.a>
             </motion.div>
 
             {/* Tech Labels */}
@@ -196,26 +189,22 @@ const MePage = () => {
           </motion.div>
 
           {/* Right: Hero Figure */}
-          <div className="relative flex justify-center md:justify-end items-center md:items-start h-full z-0 mt-8 lg:mt-0">
-            {/* Accent Shape Behind - Hidden on mobile, smaller on tablet */}
+          <div className="relative flex justify-center items-start h-full">
+            {/* Accent Shape Behind */}
             <div 
-              className="hidden md:block absolute right-0 top-1/2 w-64 h-80 md:w-80 md:h-96 lg:w-[500px] lg:h-[600px] bg-primary rounded-3xl opacity-90 z-0"
-              style={{ transform: `rotate(6deg) translateY(-120%)` }}
+              className="absolute right-0 top-1/2 w-80 h-96 lg:w-[500px] lg:h-[600px] bg-primary rounded-3xl opacity-90"
+              style={{ transform: `rotate(6deg) translateY(-50%)` }}
             />
             
             {/* Figure Image */}
             <div 
-              className="relative z-20 transition-transform duration-75 ease-out"
-              style={{ 
-                transform: isMobile 
-                  ? `translateX(0px) translateY(0px)` 
-                  : `translateX(${translateX + 100}px) translateY(-350px)` 
-              }}
+              className="relative z-10 mt-4 lg:mt-8 -ml-8 lg:-ml-12 transition-transform duration-75 ease-out"
+              style={{ transform: `translateX(${translateX}px)` }}
             >
               <img
                 src={heroFigure}
                 alt="Fashion Tech Figure"
-                className="w-64 h-auto md:w-80 md:h-auto lg:w-[450px] object-contain animate-float rounded-2xl"
+                className="w-80 md:w-96 lg:w-[450px] h-auto object-contain animate-float rounded-2xl"
               />
             </div>
           </div>
@@ -264,7 +253,7 @@ const MePage = () => {
                   whileHover={{ opacity: 1 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <p className="text-sm font-medium text-white text-center">
+                  <p className="text-sm font-medium text-center group-hover:text-white">
                     {achievements[skill.label] || "Achievement"}
                   </p>
                 </motion.div>
