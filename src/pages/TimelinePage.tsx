@@ -95,7 +95,7 @@ const TimelinePage = () => {
                       transition={{ duration: 0.3 }}
                     >
                       <div 
-                        className="w-4 h-4 rounded-full bg-primary relative" 
+                        className="w-4 h-4 rounded-full bg-primary relative flex items-center justify-center" 
                         style={{ 
                           border: 'none', 
                           boxShadow: 'none', 
@@ -104,10 +104,13 @@ const TimelinePage = () => {
                       >
                         {inView && (
                           <motion.div 
-                            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/40"
+                            className="absolute rounded-full bg-primary/40"
                             style={{ 
                               width: '16px',
                               height: '16px',
+                              left: '50%',
+                              top: '50%',
+                              transform: 'translate(-50%, -50%)',
                               zIndex: -1,
                               pointerEvents: 'none',
                             }}
