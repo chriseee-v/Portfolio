@@ -7,42 +7,6 @@
     "tags": ["IoT", "Smart Cities", "LoRaWAN", "Arduino", "Firebase"],
     "summary": "How we designed a centralized, long-range IoT system to monitor and control streetlights using LoRaWAN, Arduino-based nodes, and a real-time Firebase dashboard.",
     "url": "https://medium.com/@thechris241103/building-a-lorawan-powered-smart-street-light-control-system-with-arduino-and-firebase-4365c585cf9e"
-  },
-  {
-    "id": 2,
-    "title": "WebGL Performance Optimization",
-    "date": "Nov 28, 2024",
-    "readTime": "8 min",
-    "tags": ["WebGL", "Performance"],
-    "summary": "Deep dive into shader optimization, geometry instancing, and efficient rendering pipelines for smooth 60fps experiences.",
-    "url": ""
-  },
-  {
-    "id": 3,
-    "title": "Building Design Systems at Scale",
-    "date": "Nov 12, 2024",
-    "readTime": "6 min",
-    "tags": ["Design Systems", "React"],
-    "summary": "Lessons learned from building and maintaining design systems for large distributed teams.",
-    "url": ""
-  },
-  {
-    "id": 4,
-    "title": "The Future of CSS: Container Queries",
-    "date": "Oct 30, 2024",
-    "readTime": "4 min",
-    "tags": ["CSS", "Frontend"],
-    "summary": "Exploring the new CSS container queries and how they change the way we think about responsive design.",
-    "url": ""
-  },
-  {
-    "id": 5,
-    "title": "GSAP vs Framer Motion: A Comparison",
-    "date": "Oct 15, 2024",
-    "readTime": "7 min",
-    "tags": ["Animation", "React"],
-    "summary": "An in-depth comparison of the two most popular animation libraries for modern web development.",
-    "url": ""
   }
 ]
 
