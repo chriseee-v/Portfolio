@@ -94,41 +94,42 @@ const TimelinePage = () => {
                       }}
                       transition={{ duration: 0.3 }}
                     >
+                      {/* Glow effect - positioned behind the dot, centered on the line */}
+                      {inView && (
+                        <motion.div 
+                          className="absolute rounded-full bg-primary/40"
+                          style={{ 
+                            width: '16px',
+                            height: '16px',
+                            left: '50%',
+                            top: '50%',
+                            marginLeft: '-8px',
+                            marginTop: '-8px',
+                            zIndex: 0,
+                            pointerEvents: 'none',
+                          }}
+                          animate={{ 
+                            scale: [1, 3, 1], 
+                            opacity: [0.6, 0, 0.6],
+                          }}
+                          transition={{ 
+                            duration: 2, 
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                        />
+                      )}
+                      {/* Dot - positioned on top of the glow */}
                       <div 
-                        className="w-4 h-4 rounded-full bg-primary relative" 
+                        className="w-4 h-4 rounded-full bg-primary relative z-10" 
                         style={{ 
                           border: 'none', 
                           boxShadow: 'none', 
                           background: 'hsl(var(--primary))',
+                          marginLeft: '-8px',
+                          marginTop: '-8px',
                         }}
-                      >
-                        {inView && (
-                          <motion.div 
-                            className="absolute rounded-full bg-primary/40"
-                            style={{ 
-                              width: '16px',
-                              height: '16px',
-                              left: '50%',
-                              top: '50%',
-                              marginLeft: '-8px',
-                              marginTop: '-8px',
-                              zIndex: -1,
-                              pointerEvents: 'none',
-                            }}
-                            animate={{ 
-                              scale: [1, 3, 1], 
-                              opacity: [0.6, 0, 0.6],
-                              x: 0,
-                              y: 0,
-                            }}
-                            transition={{ 
-                              duration: 2, 
-                              repeat: Infinity,
-                              ease: "easeInOut"
-                            }}
-                          />
-                        )}
-                      </div>
+                      />
                     </motion.div>
                   ) : (
                     <motion.div
