@@ -89,28 +89,17 @@ const TimelinePage = () => {
                   {exp.highlight ? (
                     <motion.div
                       className="absolute left-4 md:left-1/2 transform md:-translate-x-1/2 -translate-y-0 z-20"
-                      style={{ 
-                        background: 'transparent',
-                        border: 'none',
-                        padding: 0,
-                        margin: 0
-                      }}
                       animate={{
                         scale: inView ? 1.3 : 1,
-                        boxShadow: inView 
-                          ? "0 0 20px rgba(251, 146, 60, 0.5)" 
-                          : "0 0 0px rgba(251, 146, 60, 0)",
                       }}
                       transition={{ duration: 0.3 }}
                     >
                       <div 
-                        className="w-4 h-4 rounded-full bg-primary" 
+                        className="w-4 h-4 rounded-full bg-primary relative" 
                         style={{ 
                           border: 'none', 
                           boxShadow: 'none', 
                           background: 'hsl(var(--primary))',
-                          padding: 0,
-                          margin: 0
                         }}
                       >
                         {inView && (
@@ -121,8 +110,6 @@ const TimelinePage = () => {
                               height: '16px',
                               zIndex: -1,
                               pointerEvents: 'none',
-                              border: 'none',
-                              background: 'transparent'
                             }}
                             animate={{ 
                               scale: [1, 3, 1], 
