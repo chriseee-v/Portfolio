@@ -88,58 +88,69 @@ const TimelinePage = () => {
                   {/* Node with scroll-based scale */}
                   {exp.highlight ? (
                     <motion.div
-                      className="absolute left-4 md:left-1/2 transform md:-translate-x-1/2 -translate-y-0 z-20"
+                      className="absolute left-4 md:left-1/2 z-20"
+                      style={{
+                        transform: 'translate(-50%, 0)',
+                      }}
                       animate={{
                         scale: inView ? 1.3 : 1,
                       }}
                       transition={{ duration: 0.3 }}
                     >
-                      {/* Glow effect - positioned behind the dot, centered on the line */}
-                      {inView && (
-                        <motion.div 
-                          className="absolute rounded-full bg-primary/40"
-                          style={{ 
-                            width: '16px',
-                            height: '16px',
-                            left: '50%',
-                            top: '50%',
-                            marginLeft: '-8px',
-                            marginTop: '-8px',
-                            zIndex: 0,
-                            pointerEvents: 'none',
-                          }}
-                          animate={{ 
-                            scale: [1, 3, 1], 
-                            opacity: [0.6, 0, 0.6],
-                          }}
-                          transition={{ 
-                            duration: 2, 
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                          }}
-                        />
-                      )}
-                      {/* Dot - positioned on top of the glow */}
                       <div 
-                        className="w-4 h-4 rounded-full bg-primary relative z-10" 
+                        className="w-4 h-4 rounded-full bg-primary relative" 
                         style={{ 
                           border: 'none', 
                           boxShadow: 'none', 
                           background: 'hsl(var(--primary))',
-                          marginLeft: '-8px',
-                          marginTop: '-8px',
+                          marginLeft: '-8px', // Center the 16px dot on the 1px line
                         }}
-                      />
+                      >
+                        {inView && (
+                          <motion.div 
+                            className="absolute rounded-full bg-primary/40"
+                            style={{ 
+                              width: '16px',
+                              height: '16px',
+                              left: '50%',
+                              top: '50%',
+                              marginLeft: '-8px',
+                              marginTop: '-8px',
+                              zIndex: -1,
+                              pointerEvents: 'none',
+                            }}
+                            animate={{ 
+                              scale: [1, 3, 1], 
+                              opacity: [0.6, 0, 0.6],
+                              x: 0,
+                              y: 0,
+                            }}
+                            transition={{ 
+                              duration: 2, 
+                              repeat: Infinity,
+                              ease: "easeInOut"
+                            }}
+                          />
+                        )}
+                      </div>
                     </motion.div>
                   ) : (
                     <motion.div
-                      className="absolute left-4 md:left-1/2 transform md:-translate-x-1/2 -translate-y-0 z-20"
+                      className="absolute left-4 md:left-1/2 z-20"
+                      style={{
+                        transform: 'translate(-50%, 0)',
+                      }}
                       animate={{
                         scale: inView ? 1.3 : 1,
                       }}
                       transition={{ duration: 0.3 }}
                     >
-                      <div className="w-4 h-4 rounded-full bg-muted border-4 border-card relative z-20" />
+                      <div 
+                        className="w-4 h-4 rounded-full bg-muted border-4 border-card relative z-20"
+                        style={{
+                          marginLeft: '-8px', // Center the 16px dot on the 1px line
+                        }}
+                      />
                     </motion.div>
                   )}
 
