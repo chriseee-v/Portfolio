@@ -16,8 +16,19 @@ const skills = [
 
 const MePage = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
+  
+  // Check if mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   // Scroll-triggered animations
   const { ref: expRef, inView: expInView } = useInView({ threshold: 0.5, triggerOnce: true });
@@ -57,7 +68,7 @@ const MePage = () => {
   return (
     <div>
       {/* Hero Section */}
-      <div ref={heroRef} className="relative min-h-[70vh] flex items-center">
+      <div ref={heroRef} className="relative min-h-[70vh] flex items-center py-8 md:py-0">
         {/* Vertical Label */}
         <div className="absolute left-0 top-1/2 -translate-y-1/2 hidden lg:block">
           <span className="lab-vertical-text text-muted-foreground">
@@ -185,22 +196,26 @@ const MePage = () => {
           </motion.div>
 
           {/* Right: Hero Figure */}
-          <div className="relative flex justify-end items-start h-full z-0">
-            {/* Accent Shape Behind */}
+          <div className="relative flex justify-center md:justify-end items-center md:items-start h-full z-0 mt-8 lg:mt-0">
+            {/* Accent Shape Behind - Hidden on mobile, smaller on tablet */}
             <div 
-              className="absolute right-0 top-1/2 w-80 h-96 lg:w-[500px] lg:h-[600px] bg-primary rounded-3xl opacity-90 z-0"
+              className="hidden md:block absolute right-0 top-1/2 w-64 h-80 md:w-80 md:h-96 lg:w-[500px] lg:h-[600px] bg-primary rounded-3xl opacity-90 z-0"
               style={{ transform: `rotate(6deg) translateY(-120%)` }}
             />
             
             {/* Figure Image */}
             <div 
               className="relative z-20 transition-transform duration-75 ease-out"
-              style={{ transform: `translateX(${translateX + 100}px) translateY(-350px)` }}
+              style={{ 
+                transform: isMobile 
+                  ? `translateX(0px) translateY(0px)` 
+                  : `translateX(${translateX + 100}px) translateY(-350px)` 
+              }}
             >
               <img
                 src={heroFigure}
                 alt="Fashion Tech Figure"
-                className="w-80 md:w-96 lg:w-[450px] h-auto object-contain animate-float rounded-2xl"
+                className="w-64 h-auto md:w-80 md:h-auto lg:w-[450px] object-contain animate-float rounded-2xl"
               />
             </div>
           </div>
