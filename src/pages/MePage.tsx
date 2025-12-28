@@ -85,7 +85,7 @@ const MePage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                Software Development Engineer I
+                SDE - I
               </motion.span>
               <motion.h1 
                 className="lab-title"
