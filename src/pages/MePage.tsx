@@ -192,14 +192,16 @@ const MePage = () => {
           <div className="relative flex justify-center items-start h-full">
             {/* Accent Shape Behind */}
             <div 
-              className="absolute right-0 top-1/2 w-80 h-96 lg:w-[500px] lg:h-[600px] bg-primary rounded-3xl opacity-90"
-              style={{ transform: `rotate(6deg) translateY(-50%)` }}
+              className="absolute right-0 top-1/4 w-60 h-72 lg:w-[350px] lg:h-[450px] bg-primary rounded-3xl opacity-90"
+              style={{ transform: `rotate(6deg) translateY(-30%)` }}
+              data-parallax="0.3"
             />
             
             {/* Figure Image */}
             <div 
               className="relative z-10 mt-4 lg:mt-8 -ml-8 lg:-ml-12 transition-transform duration-75 ease-out"
               style={{ transform: `translateX(${translateX}px)` }}
+              data-parallax="0.5"
             >
               <img
                 src={heroFigure}

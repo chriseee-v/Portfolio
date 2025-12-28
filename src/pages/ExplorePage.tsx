@@ -533,7 +533,7 @@ const CircularGallery = () => {
           Creative Technology.
         </p>
         <p className="mt-4 font-mono text-xs text-muted-foreground uppercase tracking-widest">
-          Drag to explore
+          Swipe to explore
         </p>
       </div>
 
@@ -584,7 +584,7 @@ const ExplorePage = () => {
         </div>
         <h1 className="lab-title mb-2">explore.</h1>
         <p className="text-muted-foreground max-w-2xl">
-          Drag to rotate the gallery. Hover over cards to flip them. Click to expand and read in detail.
+          Swipe to rotate the gallery. Hover over cards to flip them. Click to expand and read in detail.
         </p>
       </div>
 

@@ -302,25 +302,6 @@ const ConnectPage = () => {
             </div>
           </div>
 
-          {/* Mesh Visual */}
-          <div className="relative h-48 rounded-2xl bg-gradient-to-br from-primary/5 to-primary/20 overflow-hidden">
-            <div className="absolute inset-0 grid grid-cols-8 grid-rows-6 gap-4 p-6">
-              {Array.from({ length: 48 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="w-1 h-1 rounded-full bg-primary/30"
-                  style={{
-                    animationDelay: `${i * 50}ms`,
-                    opacity: Math.random() * 0.5 + 0.2,
-                  }}
-                />
-              ))}
-            </div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="font-mono text-xs text-primary/60">CONNECTION_MESH</span>
-            </div>
-          </div>
-
           {/* Availability */}
           <div className="p-6 rounded-xl border border-primary/30 bg-primary/5">
             <div className="flex items-center gap-3 mb-2">

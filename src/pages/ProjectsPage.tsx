@@ -2,8 +2,10 @@ import { useState } from "react";
 import { ExternalLink, Github } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
+import { useNavigate } from "react-router-dom";
 import projectsData from "@/data/projects.json";
 import { staggerContainer, staggerItem, filterTransition, buttonHoverVariants } from "@/lib/motion";
+import { gsap } from "gsap";
 
 const filters = ["All", "AI", "Full Stack", "Computer Vision", "IoT"];
 
@@ -25,9 +27,46 @@ const projects = projectsData as Project[];
 const ProjectsPage = () => {
   const [activeFilter, setActiveFilter] = useState("All");
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true });
+  const navigate = useNavigate();
   
   // Featured projects (first 2)
   const featuredIds = [1, 2];
+
+  // Handle card click with smooth left-to-right transition
+  const handleCardClick = (e: React.MouseEvent, project: Project) => {
+    e.preventDefault();
+    const card = e.currentTarget as HTMLElement;
+    
+    // Create overlay for transition effect
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 bg-background z-[9999]';
+    overlay.style.transform = 'translateX(-100%)';
+    document.body.appendChild(overlay);
+
+    // Animate overlay from left to right
+    gsap.to(overlay, {
+      x: 0,
+      duration: 0.6,
+      ease: "power2.inOut",
+      onComplete: () => {
+        // Navigate or open link after transition
+        if (project.url) {
+          window.open(project.url, '_blank', 'noopener,noreferrer');
+        }
+        // Slide out to the right
+        setTimeout(() => {
+          gsap.to(overlay, {
+            x: '100%',
+            duration: 0.4,
+            ease: "power2.inOut",
+            onComplete: () => {
+              document.body.removeChild(overlay);
+            }
+          });
+        }, 300);
+      }
+    });
+  };
 
   const filteredProjects = activeFilter === "All" 
     ? projects 
@@ -83,7 +122,7 @@ const ProjectsPage = () => {
               key={project.id}
               layout
               variants={staggerItem}
-              className="project-card group relative overflow-hidden"
+              className="project-card group relative overflow-hidden cursor-pointer"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9 }}
@@ -92,6 +131,7 @@ const ProjectsPage = () => {
                 y: -8, 
                 transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] }
               }}
+              onClick={(e) => handleCardClick(e, project)}
             >
               {/* Featured badge */}
               {featuredIds.includes(project.id) && (

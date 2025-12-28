@@ -97,11 +97,11 @@ export const getMotionConfig = () => {
 };
 
 // Button hover variants
-export const buttonHoverVariants = {
+export const buttonHoverVariants: Variants = {
   hover: { 
     scale: 1.05, 
     y: -2,
-    transition: { duration: 0.15, ease: [0.4, 0, 0.2, 1] }
+    transition: { duration: 0.15, ease: "easeOut" }
   },
   tap: { 
     scale: 0.98,

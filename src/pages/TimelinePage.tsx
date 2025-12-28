@@ -1,6 +1,6 @@
 import experiencesData from "@/data/experiences.json";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { motion } from "framer-motion";
+import { useRef, useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { sectionVariants, staggerContainer, staggerItem } from "@/lib/motion";
 
@@ -18,13 +18,71 @@ const experiences = experiencesData as Experience[];
 
 const TimelinePage = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start center", "end center"]
-  });
+  const [lineProgress, setLineProgress] = useState(0);
   
-  // Animate connector line progress
-  const lineProgress = useTransform(scrollYProgress, [0, 1], [0, 100]);
+  // Use Intersection Observer instead of framer-motion scroll for better compatibility
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    let rafId: number | null = null;
+    let isActive = false;
+
+    let lastProgress = 0;
+    const updateProgress = () => {
+      if (!isActive) return;
+      
+      const rect = container.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const containerTop = rect.top;
+      const containerHeight = rect.height;
+      
+      // Calculate how much of the container has scrolled past the top of viewport
+      const scrolledPast = Math.max(0, windowHeight - containerTop);
+      const progress = Math.min(100, Math.max(0, (scrolledPast / (containerHeight + windowHeight)) * 100));
+      
+      // Only update if change is significant (reduce flickering)
+      if (Math.abs(progress - lastProgress) > 0.5) {
+        setLineProgress(progress);
+        lastProgress = progress;
+      }
+      
+      if (isActive) {
+        rafId = requestAnimationFrame(updateProgress);
+      }
+    };
+    
+    // Only update when container is in view
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            isActive = true;
+            if (!rafId) {
+              rafId = requestAnimationFrame(updateProgress);
+            }
+          } else {
+            isActive = false;
+            if (rafId) {
+              cancelAnimationFrame(rafId);
+              rafId = null;
+            }
+          }
+        });
+      },
+      { threshold: 0, rootMargin: '-100px' }
+    );
+    
+    observer.observe(container);
+    
+    return () => {
+      observer.disconnect();
+      isActive = false;
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+    };
+  }, []);
   
   const { ref: headerRef, inView: headerInView } = useInView({ threshold: 0.3, triggerOnce: true });
   
@@ -56,115 +114,88 @@ const TimelinePage = () => {
           {/* Background line (full length) */}
           <div className="absolute top-0 bottom-0 w-full bg-border" />
           {/* Animated progress line */}
-          <motion.div
-            className="absolute top-0 left-0 w-full bg-primary"
+          <div
+            className="absolute top-0 left-0 w-full bg-primary transition-all duration-150 ease-linear"
             style={{
-              height: useTransform(lineProgress, (v) => `${v}%`),
+              height: `${lineProgress}%`,
+              willChange: 'height',
             }}
           />
         </div>
 
         {/* Timeline Items */}
         <div className="space-y-12">
-          {experiences.map((exp, index) => {
-            const TimelineItem = ({ exp, index }: { exp: typeof experiences[0], index: number }) => {
-              const { ref, inView } = useInView({ 
-                threshold: 0.5,
-                triggerOnce: false // Re-trigger on scroll
-              });
-              
-              return (
-                <motion.div
-                  ref={ref}
-                  key={index}
-                  className={`relative flex flex-col md:flex-row items-start gap-8 ${
-                    index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
-                  }`}
-                  initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-                  animate={{ 
-                    opacity: inView ? 1 : 0.4,
-                    x: 0,
-                    scale: inView ? 1 : 0.95
-                  }}
-                  transition={{ duration: 0.5 }}
-                >
-                  {/* Node with scroll-based scale */}
+          {experiences.map((exp, index) => (
+            <div
+              key={index}
+              className={`relative flex flex-col md:flex-row items-start gap-8 ${
+                index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
+              }`}
+            >
+                  {/* Node */}
                   {exp.highlight ? (
-                    <motion.div
+                    <div
                       className="absolute left-[14px] md:left-1/2 transform md:-translate-x-1/2 -translate-y-0 z-10"
                       style={{
                         marginLeft: '-8px', // Center the 16px dot on the 1px line
                       }}
-                      animate={{
-                        scale: inView ? 1.3 : 1,
-                      }}
-                      transition={{ duration: 0.3 }}
                     >
                       <div 
-                        className="w-4 h-4 rounded-full bg-primary relative" 
+                        className="w-4 h-4 rounded-full bg-primary relative scale-130" 
                         style={{ 
                           border: 'none', 
                           boxShadow: 'none', 
                           background: 'hsl(var(--primary))',
+                          transform: 'scale(1.3)',
                         }}
                       >
-                        {inView && (
-                          <motion.div 
-                            className="absolute rounded-full bg-primary/40"
-                            style={{ 
-                              width: '16px',
-                              height: '16px',
-                              left: '50%',
-                              top: '50%',
-                              marginLeft: '-8px',
-                              marginTop: '-8px',
-                              zIndex: -1,
-                              pointerEvents: 'none',
-                            }}
-                            animate={{ 
-                              scale: [1, 3, 1], 
-                              opacity: [0.6, 0, 0.6],
-                              x: 0,
-                              y: 0,
-                            }}
-                            transition={{ 
-                              duration: 2, 
-                              repeat: Infinity,
-                              ease: "easeInOut"
-                            }}
-                          />
-                        )}
+                        <motion.div 
+                          className="absolute rounded-full bg-primary/40"
+                          style={{ 
+                            width: '16px',
+                            height: '16px',
+                            left: '50%',
+                            top: '50%',
+                            marginLeft: '-8px',
+                            marginTop: '-8px',
+                            zIndex: -1,
+                            pointerEvents: 'none',
+                          }}
+                          animate={{ 
+                            scale: [1, 3, 1], 
+                            opacity: [0.6, 0, 0.6],
+                          }}
+                          transition={{ 
+                            duration: 2, 
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                        />
                       </div>
-                    </motion.div>
+                    </div>
                   ) : (
-                    <motion.div
+                    <div
                       className="absolute left-[14px] md:left-1/2 transform md:-translate-x-1/2 -translate-y-0 z-10"
                       style={{
                         marginLeft: '-8px', // Center the 16px dot on the 1px line
                       }}
-                      animate={{
-                        scale: inView ? 1.3 : 1,
-                      }}
-                      transition={{ duration: 0.3 }}
                     >
                       <div className="w-4 h-4 rounded-full bg-muted border-4 border-card relative z-10" />
-                    </motion.div>
+                    </div>
                   )}
 
                   {/* Year Label */}
-                  <motion.div 
+                  <div 
                     className={`flex-1 ${index % 2 === 0 ? "md:text-right md:pr-12" : "md:pl-12"} pl-12 md:pl-0`}
-                    animate={{ opacity: inView ? 1 : 0.6 }}
                   >
                     <div className="inline-block">
                       <span className="font-mono text-2xl font-bold text-primary">{exp.year}</span>
                     </div>
-                  </motion.div>
+                  </div>
 
                   {/* Content Card */}
-                  <motion.div 
+                  <div 
                     className={`flex-1 pl-12 md:pl-0 ${index % 2 === 0 ? "md:pl-12" : "md:pr-12"}`}
-                    whileHover={{ y: -4, transition: { duration: 0.3 } }}
                   >
                     <div className="p-6 rounded-xl border border-border hover:border-primary/30 transition-colors bg-card/50">
                       <h3 className="text-lg font-semibold mb-1">{exp.title}</h3>
@@ -172,24 +203,18 @@ const TimelinePage = () => {
                       <p className="text-sm text-muted-foreground mb-4">{exp.description}</p>
                       <div className="flex flex-wrap gap-2">
                         {exp.technologies.map((tech) => (
-                          <motion.span 
+                          <span 
                             key={tech} 
                             className="tech-tag text-xs"
-                            whileHover={{ scale: 1.05 }}
-                            transition={{ duration: 0.15 }}
                           >
                             {tech}
-                          </motion.span>
+                          </span>
                         ))}
                       </div>
                     </div>
-                  </motion.div>
-                </motion.div>
-              );
-            };
-            
-            return <TimelineItem key={index} exp={exp} index={index} />;
-          })}
+                  </div>
+                </div>
+          ))}
         </div>
       </div>
 
