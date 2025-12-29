@@ -18,6 +18,8 @@ const skills = [
 
 const MePage = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [activeCard, setActiveCard] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
   const navigate = useNavigate();
@@ -29,6 +31,16 @@ const MePage = () => {
   
   // Count-up for EXP
   const expCount = useCountUp(100, 2, expInView);
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -243,24 +255,42 @@ const MePage = () => {
               "Cloud & DevOps": "99% API uptime across 50+ clinics",
             };
             
+            const isActive = activeCard === skill.label;
+            const showOverlay = isMobile ? isActive : false;
+            
             return (
               <motion.div
                 key={skill.label}
                 variants={staggerItem}
-                className="group p-6 rounded-xl border border-border hover:border-primary/50 transition-colors relative overflow-hidden"
-                whileHover={{ y: -4, transition: { duration: 0.3 } }}
+                className="group p-6 rounded-xl border border-border hover:border-primary/50 transition-colors relative overflow-hidden cursor-pointer"
+                whileHover={!isMobile ? { y: -4, transition: { duration: 0.3 } } : {}}
+                onClick={() => {
+                  if (isMobile) {
+                    setActiveCard(isActive ? null : skill.label);
+                  }
+                }}
               >
-                {/* Achievement overlay on hover */}
-                <motion.div
-                  className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 p-6 flex items-center justify-center backdrop-blur-sm"
-                  initial={{ opacity: 0 }}
-                  whileHover={{ opacity: 1 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <p className="text-sm font-medium text-center group-hover:text-white">
-                    {achievements[skill.label] || "Achievement"}
-                  </p>
-                </motion.div>
+                {/* Achievement overlay on hover (desktop) or click (mobile) */}
+                {isMobile ? (
+                  <motion.div
+                    className="absolute inset-0 bg-primary/90 dark:bg-primary/80 p-6 flex items-center justify-center backdrop-blur-sm z-10"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: isActive ? 1 : 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <p className="text-sm font-medium text-center text-white">
+                      {achievements[skill.label] || "Achievement"}
+                    </p>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    className="absolute inset-0 bg-primary/90 dark:bg-primary/80 p-6 flex items-center justify-center backdrop-blur-sm z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  >
+                    <p className="text-sm font-medium text-center text-white">
+                      {achievements[skill.label] || "Achievement"}
+                    </p>
+                  </motion.div>
+                )}
                 
                 <motion.div
                   whileHover={{ scale: 1.1, rotate: 5 }}
