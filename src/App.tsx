@@ -41,8 +41,8 @@ const ScrollableLayout = () => {
   
   // Use smooth scroll hook
   const { containerRef, contentRef, isScrolling: smoothScrollActive, scrollTo, getScrollPosition } = useSmoothScroll({
-    smoothness: 0.08,
-    speed: 1,
+    smoothness: 0.15,
+    speed: 1.5,
     enableParallax: true,
   });
 

@@ -7,6 +7,7 @@ import { useInView } from "react-intersection-observer";
 import { heroVariants, sectionVariants, staggerContainer, staggerItem, buttonHoverVariants, chipVariants } from "@/lib/motion";
 import { useCountUp } from "@/hooks/use-count-up";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useNavigate } from "react-router-dom";
 
 const skills = [
   { icon: Brain, label: "AI & Machine Learning", items: ["PyTorch", "TensorFlow", "LangChain"] },
@@ -19,6 +20,7 @@ const MePage = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const heroRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
+  const navigate = useNavigate();
   
   // Scroll-triggered animations
   const { ref: expRef, inView: expInView } = useInView({ threshold: 0.5, triggerOnce: true });
@@ -119,8 +121,8 @@ const MePage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.8 }}
             >
-              <motion.a 
-                href="/projects" 
+              <motion.button 
+                onClick={() => navigate("/projects")}
                 className="lab-button-primary inline-flex items-center gap-2"
                 variants={buttonHoverVariants}
                 whileHover="hover"
@@ -133,7 +135,7 @@ const MePage = () => {
                 >
                   <ArrowRight className="w-4 h-4" />
                 </motion.div>
-              </motion.a>
+              </motion.button>
               <motion.a 
                 href="/Chris_Resume__Copy_.pdf" 
                 download="Chris_Thomas_Varghese_Resume.pdf"
