@@ -1,192 +1,159 @@
 /**
  * Supabase storage for blog subscriptions
  * 
- * This module handles storing and retrieving email subscriptions from Supabase.
+ * Setup:
+ * 1. Create a Supabase project at https://supabase.com
+ * 2. Create a table called 'blog_subscriptions' with:
+ *    - email (text, primary key)
+ *    - subscribed_at (timestamp, default now())
+ *    - verified (boolean, default true)
+ * 3. Add environment variables:
+ *    - SUPABASE_URL
+ *    - SUPABASE_SERVICE_ROLE_KEY (for server-side operations)
  */
 
-import { createClient } from '@supabase/supabase-js';
-
-export interface Subscription {
+interface Subscription {
   email: string;
   subscribedAt: string;
   verified: boolean;
 }
 
-// Initialize Supabase client
-function getSupabaseClient() {
+// Simple fetch-based Supabase client (no SDK needed)
+async function supabaseRequest(endpoint: string, method: string = 'GET', body?: any) {
   const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
-    console.warn('⚠️  [SUPABASE] Supabase credentials not configured');
+    throw new Error('Supabase credentials not configured');
+  }
+
+  const url = `${supabaseUrl}/rest/v1/${endpoint}`;
+  const headers: Record<string, string> = {
+    'apikey': supabaseKey,
+    'Authorization': `Bearer ${supabaseKey}`,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation'
+  };
+
+  const options: RequestInit = {
+    method,
+    headers,
+  };
+
+  if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+    options.body = JSON.stringify(body);
+  }
+
+  const response = await fetch(url, options);
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Supabase request failed: ${response.status} ${response.statusText} - ${errorText}`);
+  }
+
+  if (response.status === 204 || response.headers.get('content-length') === '0') {
     return null;
   }
 
-  return createClient(supabaseUrl, supabaseKey);
+  return await response.json();
 }
 
-/**
- * Get all subscriptions from Supabase
- */
 export async function getSubscriptions(): Promise<Subscription[]> {
-  console.log('💾 [SUPABASE] Fetching subscriptions from database...');
-  
-  const supabase = getSupabaseClient();
-  if (!supabase) {
-    console.warn('⚠️  [SUPABASE] Supabase not configured, returning empty array');
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  // If Supabase is not configured, return empty array
+  if (!supabaseUrl || !supabaseKey) {
+    console.warn('⚠️  Supabase not configured, using in-memory storage');
     return [];
   }
 
   try {
-    const { data, error } = await supabase
-      .from('blog_subscriptions')
-      .select('email, subscribed_at, verified')
-      .order('subscribed_at', { ascending: false });
-
-    if (error) {
-      console.error('❌ [SUPABASE] Error fetching subscriptions:', error);
-      throw error;
-    }
-
-    console.log('✅ [SUPABASE] Successfully fetched', data?.length || 0, 'subscriptions');
-    if (data && data.length > 0) {
-      console.log('📧 [SUPABASE] Email list:', data.map(s => s.email).join(', '));
-    }
-
-    const mapped = (data || []).map(sub => ({
-      email: sub.email,
-      subscribedAt: sub.subscribed_at,
-      verified: sub.verified || true,
-    }));
+    console.log('📊 [SUPABASE] Fetching subscriptions from database...');
+    const data = await supabaseRequest('blog_subscriptions?select=email,subscribed_at,verified&order=subscribed_at.desc');
     
-    return mapped as Subscription[];
+    if (!data) {
+      return [];
+    }
+
+    const subscriptions: Subscription[] = Array.isArray(data) ? data.map((item: any) => ({
+      email: item.email,
+      subscribedAt: item.subscribed_at || item.subscribedAt,
+      verified: item.verified !== false
+    })) : [];
+
+    console.log(`✅ [SUPABASE] Found ${subscriptions.length} subscriptions`);
+    return subscriptions;
   } catch (error: any) {
-    console.error('❌ [SUPABASE] Failed to fetch subscriptions:', error.message);
-    return [];
-  }
-}
-
-/**
- * Save a subscription to Supabase
- */
-export async function saveSubscription(email: string): Promise<{ success: boolean; alreadyExists: boolean }> {
-  console.log('💾 [SUPABASE] Saving subscription for:', email);
-  
-  const supabase = getSupabaseClient();
-  if (!supabase) {
-    console.error('❌ [SUPABASE] Supabase not configured, cannot save subscription');
-    throw new Error('Supabase not configured');
-  }
-
-  const normalizedEmail = email.toLowerCase().trim();
-  const now = new Date().toISOString();
-
-  try {
-    // Check if email already exists
-    console.log('🔍 [SUPABASE] Checking if email already exists...');
-    const { data: existing, error: checkError } = await supabase
-      .from('blog_subscriptions')
-      .select('email')
-      .eq('email', normalizedEmail)
-      .single();
-
-    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
-      console.error('❌ [SUPABASE] Error checking existing subscription:', checkError);
-      throw checkError;
-    }
-
-    if (existing) {
-      console.log('ℹ️  [SUPABASE] Email already exists in database:', normalizedEmail);
-      return { success: true, alreadyExists: true };
-    }
-
-    // Insert new subscription
-    console.log('➕ [SUPABASE] Inserting new subscription...');
-    const { data, error } = await supabase
-      .from('blog_subscriptions')
-      .insert([
-        {
-          email: normalizedEmail,
-          subscribed_at: now,
-          verified: true,
-        },
-      ])
-      .select()
-      .single();
-
-    if (error) {
-      console.error('❌ [SUPABASE] Error inserting subscription:', error);
-      throw error;
-    }
-
-    console.log('✅ [SUPABASE] Successfully saved subscription to database');
-    console.log('✅ [SUPABASE] Subscription ID:', data?.id);
-    console.log('✅ [SUPABASE] Email saved:', normalizedEmail);
-    console.log('✅ [SUPABASE] Saved at:', now);
-
-    return { success: true, alreadyExists: false };
-  } catch (error: any) {
-    console.error('❌ [SUPABASE] Failed to save subscription:', error.message);
+    console.error('❌ [SUPABASE] Error fetching subscriptions:', error.message);
     throw error;
   }
 }
 
-/**
- * Remove a subscription (unsubscribe)
- */
-export async function removeSubscription(email: string): Promise<boolean> {
-  console.log('🗑️  [SUPABASE] Removing subscription for:', email);
-  
-  const supabase = getSupabaseClient();
-  if (!supabase) {
-    console.error('❌ [SUPABASE] Supabase not configured, cannot remove subscription');
-    return false;
+export async function saveSubscription(email: string): Promise<{ success: boolean; alreadyExists: boolean }> {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  // If Supabase is not configured, throw error
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Supabase not configured. Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
   }
 
   const normalizedEmail = email.toLowerCase().trim();
 
   try {
-    const { error } = await supabase
-      .from('blog_subscriptions')
-      .delete()
-      .eq('email', normalizedEmail);
-
-    if (error) {
-      console.error('❌ [SUPABASE] Error removing subscription:', error);
-      return false;
+    // Check if email already exists
+    console.log('🔍 [SUPABASE] Checking if email exists:', normalizedEmail);
+    const existing = await supabaseRequest(`blog_subscriptions?email=eq.${encodeURIComponent(normalizedEmail)}&select=email`);
+    
+    if (existing && Array.isArray(existing) && existing.length > 0) {
+      console.log('ℹ️  [SUPABASE] Email already exists');
+      return { success: true, alreadyExists: true };
     }
 
-    console.log('✅ [SUPABASE] Successfully removed subscription:', normalizedEmail);
-    return true;
+    // Insert new subscription
+    console.log('💾 [SUPABASE] Inserting new subscription:', normalizedEmail);
+    const newSubscription = {
+      email: normalizedEmail,
+      subscribed_at: new Date().toISOString(),
+      verified: true
+    };
+
+    await supabaseRequest('blog_subscriptions', 'POST', newSubscription);
+    console.log('✅ [SUPABASE] Subscription saved successfully');
+    
+    return { success: true, alreadyExists: false };
   } catch (error: any) {
-    console.error('❌ [SUPABASE] Failed to remove subscription:', error.message);
-    return false;
+    // Check if it's a unique constraint violation (email already exists)
+    if (error.message?.includes('duplicate key') || error.message?.includes('unique constraint')) {
+      console.log('ℹ️  [SUPABASE] Email already exists (caught by constraint)');
+      return { success: true, alreadyExists: true };
+    }
+    
+    console.error('❌ [SUPABASE] Error saving subscription:', error.message);
+    throw error;
   }
 }
 
-/**
- * Get subscription count
- */
-export async function getSubscriptionCount(): Promise<number> {
-  const supabase = getSupabaseClient();
-  if (!supabase) {
-    return 0;
+export async function removeSubscription(email: string): Promise<boolean> {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Supabase not configured');
   }
 
   try {
-    const { count, error } = await supabase
-      .from('blog_subscriptions')
-      .select('*', { count: 'exact', head: true });
-
-    if (error) {
-      console.error('❌ [SUPABASE] Error counting subscriptions:', error);
-      return 0;
-    }
-
-    return count || 0;
+    const normalizedEmail = email.toLowerCase().trim();
+    console.log('🗑️  [SUPABASE] Removing subscription:', normalizedEmail);
+    
+    const result = await supabaseRequest(`blog_subscriptions?email=eq.${encodeURIComponent(normalizedEmail)}`, 'DELETE');
+    console.log('✅ [SUPABASE] Subscription removed');
+    
+    return true;
   } catch (error: any) {
-    console.error('❌ [SUPABASE] Failed to count subscriptions:', error.message);
-    return 0;
+    console.error('❌ [SUPABASE] Error removing subscription:', error.message);
+    throw error;
   }
 }
 
