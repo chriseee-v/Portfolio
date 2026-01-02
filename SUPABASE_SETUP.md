@@ -58,11 +58,33 @@ WITH CHECK (true);
 ## Step 3: Get Your Credentials
 
 1. Go to **Settings** → **API** (left sidebar)
-2. You'll need:
-   - **Project URL** (under "Project URL")
-   - **service_role key** (under "Project API keys" → "service_role" - **NOT** the anon key!)
+2. You'll see two sections:
 
-⚠️ **Important**: Use the `service_role` key, not the `anon` key. The service_role key has full access and is safe to use in serverless functions.
+### Project URL
+- Look for **"Project URL"** section
+- Copy the URL (looks like: `https://xxxxx.supabase.co`)
+- This is your `SUPABASE_URL`
+
+### API Keys
+- Scroll down to **"Project API keys"** section
+- You'll see multiple keys listed:
+  - `anon` `public` - **DON'T USE THIS ONE**
+  - `service_role` `secret` - **USE THIS ONE** ✅
+
+3. To reveal the `service_role` key:
+   - Click the **eye icon** 👁️ next to the `service_role` key to reveal it
+   - Or click **"Reveal"** button
+   - Copy the entire key (it's long, starts with `eyJ...`)
+
+⚠️ **Important**: 
+- Use the `service_role` key (marked as `secret`), **NOT** the `anon` key (marked as `public`)
+- The service_role key has full access and is safe to use in serverless functions
+- Never expose the service_role key in client-side code
+
+**If you can't see the service_role key:**
+- Make sure you're logged in as the project owner
+- Try refreshing the page
+- Check if there's a "Reveal" or eye icon to show hidden keys
 
 ## Step 4: Add Environment Variables to Vercel
 

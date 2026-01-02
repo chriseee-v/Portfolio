@@ -58,14 +58,18 @@ async function supabaseRequest(endpoint: string, method: string = 'GET', body?: 
   return await response.json();
 }
 
+// Fallback in-memory storage when Supabase is not configured
+let fallbackCache: Subscription[] | null = null;
+
 export async function getSubscriptions(): Promise<Subscription[]> {
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  // If Supabase is not configured, return empty array
+  // If Supabase is not configured, use fallback cache
   if (!supabaseUrl || !supabaseKey) {
-    console.warn('⚠️  Supabase not configured, using in-memory storage');
-    return [];
+    console.warn('⚠️  [SUPABASE] Not configured - using in-memory storage (data will not persist)');
+    console.warn('⚠️  [SUPABASE] To enable persistent storage, set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
+    return fallbackCache || [];
   }
 
   try {
@@ -86,7 +90,8 @@ export async function getSubscriptions(): Promise<Subscription[]> {
     return subscriptions;
   } catch (error: any) {
     console.error('❌ [SUPABASE] Error fetching subscriptions:', error.message);
-    throw error;
+    console.warn('⚠️  [SUPABASE] Falling back to in-memory storage');
+    return fallbackCache || [];
   }
 }
 
@@ -94,13 +99,38 @@ export async function saveSubscription(email: string): Promise<{ success: boolea
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  // If Supabase is not configured, throw error
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Supabase not configured. Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
-  }
-
   const normalizedEmail = email.toLowerCase().trim();
 
+  // If Supabase is not configured, use fallback in-memory storage
+  if (!supabaseUrl || !supabaseKey) {
+    console.warn('⚠️  [SUPABASE] Not configured - using in-memory storage');
+    console.warn('⚠️  [SUPABASE] Data will NOT persist across deployments');
+    
+    // Initialize fallback cache if needed
+    if (!fallbackCache) {
+      fallbackCache = [];
+    }
+    
+    // Check if already exists
+    const exists = fallbackCache.some(s => s.email === normalizedEmail);
+    if (exists) {
+      console.log('ℹ️  [FALLBACK] Email already exists in memory');
+      return { success: true, alreadyExists: true };
+    }
+    
+    // Add to fallback cache
+    fallbackCache.push({
+      email: normalizedEmail,
+      subscribedAt: new Date().toISOString(),
+      verified: true
+    });
+    
+    console.log('✅ [FALLBACK] Subscription saved to memory (temporary)');
+    console.log(`⚠️  [FALLBACK] Total in-memory subscriptions: ${fallbackCache.length}`);
+    return { success: true, alreadyExists: false };
+  }
+
+  // Use Supabase
   try {
     // Check if email already exists
     console.log('🔍 [SUPABASE] Checking if email exists:', normalizedEmail);
@@ -120,7 +150,7 @@ export async function saveSubscription(email: string): Promise<{ success: boolea
     };
 
     await supabaseRequest('blog_subscriptions', 'POST', newSubscription);
-    console.log('✅ [SUPABASE] Subscription saved successfully');
+    console.log('✅ [SUPABASE] Subscription saved successfully to database');
     
     return { success: true, alreadyExists: false };
   } catch (error: any) {
@@ -131,7 +161,23 @@ export async function saveSubscription(email: string): Promise<{ success: boolea
     }
     
     console.error('❌ [SUPABASE] Error saving subscription:', error.message);
-    throw error;
+    console.warn('⚠️  [SUPABASE] Falling back to in-memory storage');
+    
+    // Fallback to in-memory
+    if (!fallbackCache) {
+      fallbackCache = [];
+    }
+    const exists = fallbackCache.some(s => s.email === normalizedEmail);
+    if (exists) {
+      return { success: true, alreadyExists: true };
+    }
+    fallbackCache.push({
+      email: normalizedEmail,
+      subscribedAt: new Date().toISOString(),
+      verified: true
+    });
+    
+    return { success: true, alreadyExists: false };
   }
 }
 

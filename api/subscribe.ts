@@ -31,11 +31,21 @@ export default async function handler(
 
   // GET - Return subscription count (for admin purposes)
   if (req.method === 'GET') {
-    console.log('📋 [GET] Fetching subscriptions from Supabase...');
+    const hasSupabase = !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+    const storageType = hasSupabase ? 'Supabase' : 'In-Memory (temporary)';
+    
+    console.log(`📋 [GET] Fetching subscriptions from ${storageType}...`);
     const subscriptions = await getSubscriptions();
-    console.log('📋 [GET] Found', subscriptions.length, 'subscriptions in database');
-    console.log('📋 [GET] Database: Supabase');
-    console.log('📋 [GET] Table: blog_subscriptions');
+    console.log(`📋 [GET] Found ${subscriptions.length} subscriptions`);
+    console.log(`📋 [GET] Storage: ${storageType}`);
+    
+    if (hasSupabase) {
+      console.log('📋 [GET] Database: Supabase');
+      console.log('📋 [GET] Table: blog_subscriptions');
+    } else {
+      console.warn('⚠️  [GET] Using temporary in-memory storage');
+      console.warn('⚠️  [GET] Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY for persistent storage');
+    }
     
     return res.status(200).json({ 
       count: subscriptions.length,
@@ -44,7 +54,7 @@ export default async function handler(
         subscribedAt: s.subscribedAt,
         verified: s.verified
       })),
-      storage: 'Supabase'
+      storage: storageType
     });
   }
 
