@@ -120,33 +120,49 @@ export default async function handler(
 
   // POST - Subscribe email
   if (req.method === 'POST') {
+    console.log('📧 [SUBSCRIBE] POST request received');
     try {
       const { email } = req.body;
+      console.log('📧 [SUBSCRIBE] Request body:', { email: email ? `${email.substring(0, 3)}***` : 'missing' });
 
       // Validate email
       if (!email) {
+        console.log('❌ [SUBSCRIBE] Email is missing');
         return res.status(400).json({ error: 'Email is required' });
       }
 
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
+        console.log('❌ [SUBSCRIBE] Invalid email format:', email);
         return res.status(400).json({ error: 'Invalid email address' });
       }
+      console.log('✅ [SUBSCRIBE] Email format validated:', email);
+
+      // Check Resend configuration
+      console.log('🔍 [SUBSCRIBE] Checking Resend configuration...');
+      console.log('🔍 [SUBSCRIBE] RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY);
+      console.log('🔍 [SUBSCRIBE] Resend instance:', resend ? 'initialized' : 'not initialized');
 
       // Add subscription (handles duplicate check)
+      console.log('💾 [SUBSCRIBE] Adding subscription to storage...');
       const result = await addSubscription(email);
+      console.log('💾 [SUBSCRIBE] Subscription result:', result);
       
       if (result.alreadyExists) {
+        console.log('ℹ️  [SUBSCRIBE] Email already exists, skipping welcome email');
         return res.status(200).json({ 
           success: true, 
           message: 'Email already subscribed',
           alreadySubscribed: true
         });
       }
+      console.log('✅ [SUBSCRIBE] New subscription added successfully');
 
       // Send welcome email (don't fail subscription if email fails)
       let emailSent = false;
+      console.log('📬 [SUBSCRIBE] Preparing to send welcome email...');
+      
       try {
         const primaryColor = '#ff6b35'; // hsl(14 100% 55%)
         const primaryLight = '#ff8c5a';
@@ -156,11 +172,8 @@ export default async function handler(
         const mutedColor = '#666666';
         const borderColor = '#e0e0e0';
 
-        await resend.emails.send({
-          from: 'Portfolio Blog <onboarding@resend.dev>',
-          to: [email],
-          subject: 'Welcome to the Blog Newsletter! 🎉',
-          html: `
+        console.log('📬 [SUBSCRIBE] Building email template...');
+        const emailHtml = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -288,20 +301,65 @@ export default async function handler(
   </table>
 </body>
 </html>
-          `,
+          `;
+        
+        console.log('📬 [SUBSCRIBE] Email template built, length:', emailHtml.length);
+        console.log('📬 [SUBSCRIBE] Attempting to send email via Resend...');
+        console.log('📬 [SUBSCRIBE] Email details:', {
+          from: 'Portfolio Blog <onboarding@resend.dev>',
+          to: email,
+          subject: 'Welcome to the Blog Newsletter! 🎉',
+          htmlLength: emailHtml.length
         });
+
+        const emailResult = await resend.emails.send({
+          from: 'Portfolio Blog <onboarding@resend.dev>',
+          to: [email],
+          subject: 'Welcome to the Blog Newsletter! 🎉',
+          html: emailHtml,
+        });
+
+        console.log('📬 [SUBSCRIBE] Resend API response received');
+        console.log('📬 [SUBSCRIBE] Full email result:', JSON.stringify({
+          hasData: !!emailResult.data,
+          hasError: !!emailResult.error,
+          dataId: emailResult.data?.id,
+          errorType: emailResult.error?.name,
+          errorMessage: emailResult.error?.message,
+          errorCode: emailResult.error?.code
+        }, null, 2));
+
+        if (emailResult.error) {
+          console.error('❌ [SUBSCRIBE] Resend API returned an error');
+          console.error('❌ [SUBSCRIBE] Error details:', JSON.stringify(emailResult.error, null, 2));
+          throw new Error(emailResult.error.message || 'Resend API returned an error');
+        }
+
+        if (!emailResult.data) {
+          console.error('❌ [SUBSCRIBE] Resend API returned no data');
+          throw new Error('Resend API returned no data');
+        }
+
         emailSent = true;
-        console.log('Welcome email sent successfully to:', email);
+        console.log('✅ [SUBSCRIBE] Welcome email sent successfully!');
+        console.log('✅ [SUBSCRIBE] Email ID:', emailResult.data.id);
+        console.log('✅ [SUBSCRIBE] Recipient:', email);
       } catch (emailError: any) {
-        console.error('Error sending welcome email:', emailError);
+        emailSent = false;
+        console.error('❌ [SUBSCRIBE] Error sending welcome email');
+        console.error('❌ [SUBSCRIBE] Error type:', emailError?.constructor?.name);
+        console.error('❌ [SUBSCRIBE] Error message:', emailError?.message);
+        console.error('❌ [SUBSCRIBE] Error name:', emailError?.name);
+        console.error('❌ [SUBSCRIBE] Error code:', emailError?.code);
+        if (emailError?.stack) {
+          console.error('❌ [SUBSCRIBE] Error stack:', emailError.stack);
+        }
         // Don't fail the subscription if welcome email fails, but log it
-        console.error('Email error details:', {
-          message: emailError?.message,
-          name: emailError?.name,
-          stack: emailError?.stack
-        });
       }
 
+      console.log('✅ [SUBSCRIBE] Subscription process completed');
+      console.log('✅ [SUBSCRIBE] Final status:', { emailSent, email });
+      
       return res.status(200).json({ 
         success: true, 
         message: 'Successfully subscribed to blog notifications',
@@ -309,10 +367,14 @@ export default async function handler(
       });
 
     } catch (error: any) {
-      console.error('Error subscribing email:', error);
+      console.error('❌ [SUBSCRIBE] Unhandled error in subscribe handler');
+      console.error('❌ [SUBSCRIBE] Error type:', error?.constructor?.name);
+      console.error('❌ [SUBSCRIBE] Error message:', error?.message);
+      console.error('❌ [SUBSCRIBE] Error stack:', error?.stack);
       return res.status(500).json({ 
         error: 'Internal server error', 
-        details: error.message 
+        details: error?.message || 'Unknown error',
+        stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
       });
     }
   }
