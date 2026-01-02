@@ -325,8 +325,7 @@ export default async function handler(
           hasError: !!emailResult.error,
           dataId: emailResult.data?.id,
           errorType: emailResult.error?.name,
-          errorMessage: emailResult.error?.message,
-          errorCode: emailResult.error?.code
+          errorMessage: emailResult.error?.message
         }, null, 2));
 
         if (emailResult.error) {
