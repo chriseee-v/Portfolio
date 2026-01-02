@@ -1,43 +1,9 @@
 import { Resend } from 'resend';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { getSubscriptions } from './supabase-storage';
 
 // Initialize Resend with API key from environment variable
 const resend = new Resend(process.env.RESEND_API_KEY);
-
-// Inline storage function to avoid import issues
-interface Subscription {
-  email: string;
-  subscribedAt: string;
-  verified: boolean;
-}
-
-let subscriptionsCache: Subscription[] | null = null;
-
-async function getSubscriptions(): Promise<Subscription[]> {
-  // Try to fetch from external storage
-  const storageUrl = process.env.SUBSCRIPTIONS_STORAGE_URL;
-  
-  if (storageUrl) {
-    try {
-      const response = await fetch(storageUrl, {
-        headers: {
-          'Accept': 'application/json',
-        },
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        subscriptionsCache = Array.isArray(data) ? data : [];
-        return subscriptionsCache;
-      }
-    } catch (error) {
-      console.error('Error fetching subscriptions:', error);
-    }
-  }
-  
-  // Return cache or empty array
-  return subscriptionsCache || [];
-}
 
 // Email template matching portfolio design
 function createBlogNotificationEmail(blogPost: {

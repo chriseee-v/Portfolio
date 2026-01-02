@@ -1,89 +1,9 @@
 import { Resend } from 'resend';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { getSubscriptions, saveSubscription } from './supabase-storage';
 
 // Initialize Resend with API key from environment variable
 const resend = new Resend(process.env.RESEND_API_KEY);
-
-// Inline storage functions to avoid import issues
-interface Subscription {
-  email: string;
-  subscribedAt: string;
-  verified: boolean;
-}
-
-let subscriptionsCache: Subscription[] | null = null;
-
-async function getSubscriptions(): Promise<Subscription[]> {
-  // Try to fetch from external storage
-  const storageUrl = process.env.SUBSCRIPTIONS_STORAGE_URL;
-  
-  if (storageUrl) {
-    try {
-      const response = await fetch(storageUrl, {
-        headers: {
-          'Accept': 'application/json',
-        },
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        subscriptionsCache = Array.isArray(data) ? data : [];
-        return subscriptionsCache;
-      }
-    } catch (error) {
-      console.error('Error fetching subscriptions:', error);
-    }
-  }
-  
-  // Return cache or empty array
-  return subscriptionsCache || [];
-}
-
-async function saveSubscriptions(subscriptions: Subscription[]): Promise<void> {
-  // Update cache
-  subscriptionsCache = subscriptions;
-  
-  // Try to save to external storage
-  const storageUrl = process.env.SUBSCRIPTIONS_STORAGE_URL;
-  const storageApiKey = process.env.SUBSCRIPTIONS_STORAGE_API_KEY;
-  
-  if (storageUrl && storageApiKey) {
-    try {
-      await fetch(storageUrl, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${storageApiKey}`,
-        },
-        body: JSON.stringify(subscriptions),
-      });
-    } catch (error) {
-      console.error('Error saving subscriptions:', error);
-      // Continue - at least we have cache
-    }
-  }
-}
-
-async function addSubscription(email: string): Promise<{ success: boolean; alreadyExists: boolean }> {
-  const subscriptions = await getSubscriptions();
-  const normalizedEmail = email.toLowerCase().trim();
-  
-  // Check if already exists
-  const exists = subscriptions.some(s => s.email === normalizedEmail);
-  if (exists) {
-    return { success: true, alreadyExists: true };
-  }
-  
-  // Add new subscription
-  subscriptions.push({
-    email: normalizedEmail,
-    subscribedAt: new Date().toISOString(),
-    verified: true,
-  });
-  
-  await saveSubscriptions(subscriptions);
-  return { success: true, alreadyExists: false };
-}
 
 export default async function handler(
   req: VercelRequest,
@@ -111,10 +31,20 @@ export default async function handler(
 
   // GET - Return subscription count (for admin purposes)
   if (req.method === 'GET') {
+    console.log('📋 [GET] Fetching subscriptions from Supabase...');
     const subscriptions = await getSubscriptions();
+    console.log('📋 [GET] Found', subscriptions.length, 'subscriptions in database');
+    console.log('📋 [GET] Database: Supabase');
+    console.log('📋 [GET] Table: blog_subscriptions');
+    
     return res.status(200).json({ 
       count: subscriptions.length,
-      subscriptions: subscriptions.map(s => ({ email: s.email, subscribedAt: s.subscribedAt }))
+      subscriptions: subscriptions.map(s => ({ 
+        email: s.email, 
+        subscribedAt: s.subscribedAt,
+        verified: s.verified
+      })),
+      storage: 'Supabase'
     });
   }
 
@@ -144,9 +74,13 @@ export default async function handler(
       console.log('🔍 [SUBSCRIBE] RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY);
       console.log('🔍 [SUBSCRIBE] Resend instance:', resend ? 'initialized' : 'not initialized');
 
-      // Add subscription (handles duplicate check)
-      console.log('💾 [SUBSCRIBE] Adding subscription to storage...');
-      const result = await addSubscription(email);
+      // Add subscription to Supabase (handles duplicate check)
+      console.log('💾 [SUBSCRIBE] Saving subscription to Supabase database...');
+      console.log('💾 [SUBSCRIBE] Database: Supabase');
+      console.log('💾 [SUBSCRIBE] Table: blog_subscriptions');
+      console.log('💾 [SUBSCRIBE] Email to save:', email);
+      
+      const result = await saveSubscription(email);
       console.log('💾 [SUBSCRIBE] Subscription result:', result);
       
       if (result.alreadyExists) {
