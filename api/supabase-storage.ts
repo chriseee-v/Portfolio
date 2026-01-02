@@ -44,12 +44,17 @@ async function supabaseRequest(endpoint: string, method: string = 'GET', body?: 
     options.body = JSON.stringify(body);
   }
 
+  console.log(`🌐 [SUPABASE] Making ${method} request to: ${endpoint}`);
   const response = await fetch(url, options);
   
   if (!response.ok) {
     const errorText = await response.text();
+    console.error(`❌ [SUPABASE] Request failed: ${response.status} ${response.statusText}`);
+    console.error(`❌ [SUPABASE] Error response: ${errorText}`);
     throw new Error(`Supabase request failed: ${response.status} ${response.statusText} - ${errorText}`);
   }
+  
+  console.log(`✅ [SUPABASE] Request successful: ${response.status}`);
 
   if (response.status === 204 || response.headers.get('content-length') === '0') {
     return null;
@@ -149,8 +154,20 @@ export async function saveSubscription(email: string): Promise<{ success: boolea
       verified: true
     };
 
-    await supabaseRequest('blog_subscriptions', 'POST', newSubscription);
-    console.log('✅ [SUPABASE] Subscription saved successfully to database');
+    console.log('💾 [SUPABASE] Subscription data:', JSON.stringify(newSubscription, null, 2));
+    
+    try {
+      await supabaseRequest('blog_subscriptions', 'POST', newSubscription);
+      console.log('✅ [SUPABASE] Subscription saved successfully to database');
+    } catch (insertError: any) {
+      // Check if table doesn't exist
+      if (insertError.message?.includes('relation') && insertError.message?.includes('does not exist')) {
+        console.error('❌ [SUPABASE] Table "blog_subscriptions" does not exist!');
+        console.error('❌ [SUPABASE] Please run the SQL script from SUPABASE_SETUP.md to create the table');
+        throw new Error('Database table not found. Please create the blog_subscriptions table in Supabase. See SUPABASE_SETUP.md for instructions.');
+      }
+      throw insertError;
+    }
     
     return { success: true, alreadyExists: false };
   } catch (error: any) {

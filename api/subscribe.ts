@@ -1,6 +1,6 @@
 import { Resend } from 'resend';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getSubscriptions, saveSubscription } from './supabase-storage';
+import { getSubscriptions, saveSubscription } from './supabase-storage.js';
 
 // Initialize Resend with API key from environment variable
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -313,11 +313,23 @@ export default async function handler(
       console.error('❌ [SUBSCRIBE] Unhandled error in subscribe handler');
       console.error('❌ [SUBSCRIBE] Error type:', error?.constructor?.name);
       console.error('❌ [SUBSCRIBE] Error message:', error?.message);
-      console.error('❌ [SUBSCRIBE] Error stack:', error?.stack);
+      console.error('❌ [SUBSCRIBE] Error name:', error?.name);
+      console.error('❌ [SUBSCRIBE] Full error:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+      if (error?.stack) {
+        console.error('❌ [SUBSCRIBE] Error stack:', error.stack);
+      }
+      
+      // Return detailed error for debugging
       return res.status(500).json({ 
+        success: false,
         error: 'Internal server error', 
-        details: error?.message || 'Unknown error',
-        stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+        message: error?.message || 'Unknown error',
+        type: error?.constructor?.name,
+        details: process.env.NODE_ENV === 'development' ? {
+          name: error?.name,
+          message: error?.message,
+          stack: error?.stack
+        } : undefined
       });
     }
   }
