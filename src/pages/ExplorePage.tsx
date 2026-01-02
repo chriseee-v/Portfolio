@@ -1,12 +1,12 @@
 import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import gsap from "gsap";
-import { X, Brain, Eye, Box, Zap, Code2, Database, Cloud, BarChart3, Bot, Terminal, Radio } from "lucide-react";
+import { X, Cpu, Globe, Layers, Zap, Box, Code, Database, Cloud, Sparkles, Palette, Terminal, Wifi } from "lucide-react";
 
 const techTopics = [
   { 
     id: 1, 
     title: "Computer Vision", 
-    icon: Eye, 
+    icon: Globe, 
     shortDesc: "Image Processing",
     description: "Real-time video analysis and pose estimation for healthcare applications.",
     fullContent: "Computer vision enables machines to interpret and understand visual information from the world. Using OpenCV, DINO, SAM, and pose estimation models, I've built systems that process 500+ video frames per second for exercise monitoring and clothing detection, improving accuracy by 35% for fitness applications.",
@@ -16,7 +16,7 @@ const techTopics = [
   { 
     id: 2, 
     title: "RAG Systems", 
-    icon: Brain, 
+    icon: Cpu, 
     shortDesc: "AI Retrieval",
     description: "Retrieval-Augmented Generation for intelligent knowledge systems.",
     fullContent: "RAG systems combine the power of large language models with efficient information retrieval. I've built medical knowledge systems using ChromaDB, BGE embeddings, and LangChain that achieve 95% accuracy and process 5,000+ queries daily. The Clinician Agent reduced form-filling time by 40% for physiotherapy workflows.",
@@ -46,7 +46,7 @@ const techTopics = [
   { 
     id: 5, 
     title: "Full-Stack Web", 
-    icon: Code2, 
+    icon: Layers, 
     shortDesc: "Modern Frameworks",
     description: "React, Angular, and FastAPI for building complete web applications.",
     fullContent: "Modern full-stack development combines powerful frontend frameworks with efficient backend APIs. I've built real-time analytics dashboards with React and Angular, WebSocket services with FastAPI, and data visualization platforms using Plotly. Reduced visualization load time by 50% and data latency by 50%.",
@@ -76,7 +76,7 @@ const techTopics = [
   { 
     id: 8, 
     title: "Machine Learning", 
-    icon: Brain, 
+    icon: Code, 
     shortDesc: "AI Models",
     description: "PyTorch, TensorFlow, and Scikit-Learn for intelligent systems.",
     fullContent: "Machine learning enables computers to learn from data and make predictions. I've developed EEG signal processing models with 85% accuracy, speaker diarization systems improving transcription by 25%, and trained models in Google Cloud Workbench with GPU support, speeding up training by 40%.",
@@ -86,7 +86,7 @@ const techTopics = [
   { 
     id: 9, 
     title: "Data Visualization", 
-    icon: BarChart3, 
+    icon: Sparkles, 
     shortDesc: "Analytics",
     description: "Plotly, Pandas, and NumPy for interactive data insights.",
     fullContent: "Data visualization transforms complex data into actionable insights. I've built interactive dashboards using Plotly JSON outputs, ETL pipelines with Pandas and NumPy, and analytics platforms that reduced visualization load time by 50% for clinicians monitoring athlete performance.",
@@ -96,7 +96,7 @@ const techTopics = [
   { 
     id: 10, 
     title: "Web Automation", 
-    icon: Bot, 
+    icon: Palette, 
     shortDesc: "Data Extraction",
     description: "Puppeteer and automation for efficient data acquisition.",
     fullContent: "Web automation streamlines repetitive tasks and data collection. I've automated data extraction from VALD, Runscribe, and PhysioPlusTech using Puppeteer and Angular, cutting data acquisition time by 70% and enabling efficient decision-making with 500+ daily API requests.",
@@ -116,7 +116,7 @@ const techTopics = [
   { 
     id: 12, 
     title: "Signal Processing", 
-    icon: Radio, 
+    icon: Wifi, 
     shortDesc: "EEG & Audio",
     description: "Brain signals and audio analysis for innovative applications.",
     fullContent: "Signal processing enables interpretation of complex biological and audio data. I've developed EEG-controlled prosthetic systems with 85% accuracy, speaker diarization systems improving transcription by 25%, and real-time audio processing pipelines handling 200+ hours monthly.",
@@ -238,7 +238,7 @@ const FlipCard = forwardRef<FlipCardHandle, FlipCardProps>(({ topic, onClick }, 
           onClick(cardRef.current);
         }
       }}
-      className="flip-card absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-20 sm:w-20 sm:h-28 md:w-24 md:h-32 cursor-pointer"
+      className="flip-card absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-28 md:w-24 md:h-32 cursor-pointer"
       style={{ 
         transformStyle: "preserve-3d",
         zIndex: 1,
@@ -256,7 +256,7 @@ const FlipCard = forwardRef<FlipCardHandle, FlipCardProps>(({ topic, onClick }, 
           className={`absolute inset-0 rounded-xl bg-gradient-to-br ${topic.color} shadow-lg flex items-center justify-center`}
           style={{ backfaceVisibility: "hidden" }}
         >
-          <Icon className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" />
+          <Icon className="w-8 h-8 text-white" />
         </div>
 
         {/* Back */}
@@ -267,7 +267,7 @@ const FlipCard = forwardRef<FlipCardHandle, FlipCardProps>(({ topic, onClick }, 
             transform: "rotateY(180deg)",
           }}
         >
-          <Icon className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 text-primary mb-1" />
+          <Icon className="w-5 h-5 text-primary mb-1" />
           <span className="text-[10px] font-semibold text-center leading-tight">
             {topic.title}
           </span>
@@ -328,12 +328,13 @@ const ExpandedCard = ({ topic, isClosing, onClose }: ExpandedCardProps) => {
   return (
     <div
       ref={modalRef}
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 md:p-4 bg-foreground/20 backdrop-blur-sm"
+      className="absolute inset-0 z-50 flex items-start md:items-center justify-center p-2 md:p-4 overflow-y-auto"
       onClick={onClose}
+      style={{ minHeight: '100%' }}
     >
       <div
         ref={contentRef}
-        className="relative w-[90%] max-w-md md:max-w-2xl bg-card rounded-3xl shadow-2xl overflow-hidden"
+        className="relative w-[90%] max-w-md md:max-w-2xl bg-card rounded-3xl shadow-2xl overflow-hidden my-4 md:my-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header with gradient */}
@@ -404,24 +405,8 @@ const CircularGallery = () => {
   const rotationRef = useRef(0);
   const isDragging = useRef(false);
   const lastX = useRef(0);
-  const [radius, setRadius] = useState(280);
 
-  // Responsive radius: smaller on mobile
-  useEffect(() => {
-    const updateRadius = () => {
-      if (window.innerWidth < 640) {
-        setRadius(200); // Mobile: smaller radius
-      } else if (window.innerWidth < 1024) {
-        setRadius(240); // Tablet: medium radius
-      } else {
-        setRadius(280); // Desktop: full radius
-      }
-    };
-
-    updateRadius();
-    window.addEventListener('resize', updateRadius);
-    return () => window.removeEventListener('resize', updateRadius);
-  }, []);
+  const radius = 280;
   const cardCount = techTopics.length;
 
   useEffect(() => {
@@ -445,7 +430,7 @@ const CircularGallery = () => {
 
       card.setPosition(x, y, cardRotation);
     });
-  }, [rotation, cardCount, radius]);
+  }, [rotation, cardCount]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     isDragging.current = true;
@@ -480,29 +465,20 @@ const CircularGallery = () => {
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (isCardTouch.current) return;
+    if (!isDragging.current || isCardTouch.current) return;
     
-    if (!isDragging.current) {
-      // Check if this is a horizontal swipe to start dragging
-      const deltaX = Math.abs(e.touches[0].clientX - touchStartX.current);
-      const deltaY = Math.abs(e.touches[0].clientY - touchStartY.current);
-      
-      if (deltaX > deltaY && deltaX > 10) {
-        isDragging.current = true;
-        lastX.current = e.touches[0].clientX;
-      } else {
-        return; // Allow vertical scrolling
-      }
+    const deltaX = Math.abs(e.touches[0].clientX - touchStartX.current);
+    const deltaY = Math.abs(e.touches[0].clientY - touchStartY.current);
+    
+    // Only drag if horizontal movement is greater than vertical (swipe gesture)
+    if (deltaX > deltaY && deltaX > 10) {
+      e.preventDefault();
+      const currentX = e.touches[0].clientX;
+      const moveDelta = currentX - lastX.current;
+      rotationRef.current += moveDelta * 0.3;
+      setRotation(rotationRef.current);
+      lastX.current = currentX;
     }
-    
-    // Rotate based on horizontal movement
-    e.preventDefault();
-    e.stopPropagation();
-    const currentX = e.touches[0].clientX;
-    const moveDelta = currentX - lastX.current;
-    rotationRef.current += moveDelta * 0.3;
-    setRotation(rotationRef.current);
-    lastX.current = currentX;
   };
 
   const handleTouchEnd = () => {
@@ -523,7 +499,7 @@ const CircularGallery = () => {
   };
 
   return (
-    <div className="relative min-h-[50vh] flex items-center justify-center overflow-x-hidden overflow-y-visible">
+    <div className="relative min-h-[70vh] flex items-center justify-center overflow-visible py-12 md:py-16" style={{ position: 'relative' }}>
       {/* Center Text */}
       <div className="absolute z-10 text-center pointer-events-none">
         <h2 className="text-xl md:text-2xl font-light text-foreground mb-2">
@@ -533,7 +509,7 @@ const CircularGallery = () => {
           Creative Technology.
         </p>
         <p className="mt-4 font-mono text-xs text-muted-foreground uppercase tracking-widest">
-          Swipe to explore
+          Drag to explore
         </p>
       </div>
 
@@ -546,8 +522,8 @@ const CircularGallery = () => {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="relative w-[500px] h-[500px] sm:w-[600px] sm:h-[600px] md:w-[720px] md:h-[720px] lg:w-[820px] lg:h-[820px] cursor-grab active:cursor-grabbing mx-auto"
-        style={{ perspective: "1000px" }}
+        className="relative w-[680px] h-[680px] sm:w-[720px] sm:h-[720px] md:w-[820px] md:h-[820px] cursor-grab active:cursor-grabbing mx-auto"
+        style={{ perspective: "1000px", touchAction: "pan-x pan-y" }}
       >
         {techTopics.map((topic, index) => (
           <FlipCard
@@ -574,17 +550,17 @@ const CircularGallery = () => {
 
 const ExplorePage = () => {
   return (
-    <div className="overflow-x-hidden overflow-y-visible">
+    <div className="overflow-visible">
       {/* Header */}
-      <div className="mb-0 pt-4">
-        <div className="flex items-center gap-4 mb-2">
-          <span className="lab-label">Tech Stack</span>
+      <div className="mb-8 pt-8">
+        <div className="flex items-center gap-4 mb-6">
+          <span className="lab-label">Tech Radar</span>
           <div className="flex-1 h-px bg-border" />
-          <span className="font-mono text-xs text-muted-foreground">INTERACTIVE GALLERY</span>
+          <span className="font-mono text-xs text-muted-foreground">CIRCULAR GALLERY</span>
         </div>
-        <h1 className="lab-title mb-2">explore.</h1>
+        <h1 className="lab-title mb-4">explore.</h1>
         <p className="text-muted-foreground max-w-2xl">
-          Swipe to rotate the gallery. Hover over cards to flip them. Click to expand and read in detail.
+          Drag to rotate the gallery. Hover over cards to flip them. Click to expand and read in detail.
         </p>
       </div>
 

@@ -904,3 +904,4 @@ const animationDuration = isMobile ? 0.3 : 0.5;
 
 This system provides a cohesive motion language while maintaining performance and accessibility.
 
+

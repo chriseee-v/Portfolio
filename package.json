@@ -9,7 +9,9 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "push": "bash push.sh"
+    "push": "bash push.sh",
+    "test:email": "node scripts/test-email.js",
+    "test:email:prod": "API_BASE_URL=https://your-domain.vercel.app node scripts/test-email.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

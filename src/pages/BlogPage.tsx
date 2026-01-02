@@ -1,8 +1,6 @@
+import { useState } from "react";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
-import { useInView } from "react-intersection-observer";
 import blogsData from "@/data/blogs.json";
-import { sectionVariants, staggerContainer, staggerItem } from "@/lib/motion";
 
 // Type definition for blog posts
 type BlogPost = {
@@ -17,19 +15,94 @@ type BlogPost = {
 
 const posts = blogsData as BlogPost[];
 
-const BlogPage = () => {
-  const { ref: headerRef, inView: headerInView } = useInView({ threshold: 0.3, triggerOnce: true });
+// Email validation regex
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const BlogPage = () => {
+  const [email, setEmail] = useState("");
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate email
+    if (!email.trim()) {
+      setError("Please enter an email address");
+      return;
+    }
+    
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+    
+    // Clear error and start loading
+    setError("");
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      // Handle network errors
+      if (!response) {
+        throw new Error('Network error: Could not reach the server. Make sure Vercel dev server is running (vercel dev)');
+      }
+
+      // Check if response has content
+      const contentType = response.headers.get('content-type');
+      const text = await response.text();
+      
+      // If response is empty, it might be a 404 or server error
+      if (!text) {
+        if (response.status === 404) {
+          throw new Error('API endpoint not found. Make sure to run "vercel dev" for local development.');
+        }
+        throw new Error(`Empty response from server (Status: ${response.status})`);
+      }
+
+      // Try to parse as JSON
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (parseError) {
+        // If it's not JSON, show the text response
+        throw new Error(`Server returned non-JSON response: ${text.substring(0, 100)}`);
+      }
+
+      // Check if response is ok
+      if (!response.ok) {
+        throw new Error(data.error || `Server error: ${response.status} ${response.statusText}`);
+      }
+
+      // Success - set subscribed state
+      setIsSubscribed(true);
+    } catch (err: any) {
+      // Provide helpful error messages
+      let errorMessage = err.message || 'Something went wrong. Please try again.';
+      
+      // Add helpful hints for common errors
+      if (err.message?.includes('Failed to fetch') || err.message?.includes('Network error')) {
+        errorMessage = 'Cannot connect to server. For local development, run "vercel dev" in a separate terminal.';
+      }
+      
+      setError(errorMessage);
+      setIsSubscribed(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <div>
       {/* Header */}
-      <motion.div 
-        ref={headerRef}
-        className="mb-12 pt-8"
-        variants={sectionVariants}
-        initial="initial"
-        animate={headerInView ? "animate" : "initial"}
-      >
+      <div className="mb-12 pt-8">
         <div className="flex items-center gap-4 mb-6">
           <span className="lab-label">Thoughts & Writings</span>
           <div className="flex-1 h-px bg-border" />
@@ -39,19 +112,13 @@ const BlogPage = () => {
         <p className="text-muted-foreground max-w-2xl">
           Technical deep-dives, design explorations, and lessons learned from building digital experiences.
         </p>
-      </motion.div>
+      </div>
 
       {/* Posts List */}
-      <motion.div
-        className="space-y-6"
-        variants={staggerContainer}
-        initial="initial"
-        animate={headerInView ? "animate" : "initial"}
-      >
+      <div className="space-y-6">
         {posts.map((post) => (
-          <motion.article
+          <article
             key={post.id}
-            variants={staggerItem}
             onClick={() => post.url && window.open(post.url, '_blank')}
             className="group p-6 rounded-xl border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-md cursor-pointer relative overflow-hidden"
           >
@@ -96,25 +163,50 @@ const BlogPage = () => {
               <span className="text-sm font-medium">Read article</span>
               <ArrowRight className="w-4 h-4" />
             </div>
-          </motion.article>
+          </article>
         ))}
-      </motion.div>
+      </div>
 
       {/* Newsletter CTA */}
-      <section className="mt-16 p-8 rounded-2xl bg-muted/30 border border-border">
+      <section className="mt-16 p-6 md:p-8 rounded-2xl bg-muted/30 border border-border">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          <div>
+          <div className="w-full md:w-auto">
             <h3 className="text-lg font-semibold mb-2">Stay in the loop</h3>
             <p className="text-sm text-muted-foreground">Get notified when new articles are published.</p>
           </div>
-          <div className="flex gap-3 w-full md:w-auto">
-            <input
-              type="email"
-              placeholder="your@email.com"
-              className="flex-1 md:w-64 px-4 py-2 rounded-full border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-            />
-            <button className="lab-button-primary px-6">Subscribe</button>
-          </div>
+          <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <div className="flex-1 md:w-64">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setError("");
+                }}
+                placeholder="your@email.com"
+                disabled={isSubscribed}
+                className={`w-full px-4 py-2 rounded-full border bg-card text-sm focus:outline-none focus:ring-2 min-w-0 ${
+                  error 
+                    ? "border-destructive focus:ring-destructive/50" 
+                    : "border-border focus:ring-primary/50"
+                } ${isSubscribed ? "opacity-50 cursor-not-allowed" : ""}`}
+              />
+              {error && (
+                <p className="mt-1 text-xs text-destructive ml-4">{error}</p>
+              )}
+            </div>
+            <button 
+              type="submit"
+              disabled={isSubscribed || isLoading}
+              className={`px-6 whitespace-nowrap flex-shrink-0 transition-colors ${
+                isSubscribed 
+                  ? "lab-button-primary bg-green-600 hover:bg-green-600 cursor-default" 
+                  : "lab-button-primary"
+              } ${isLoading ? "opacity-50 cursor-wait" : ""}`}
+            >
+              {isLoading ? "Subscribing..." : isSubscribed ? "Subscribed" : "Subscribe"}
+            </button>
+          </form>
         </div>
       </section>
     </div>

@@ -33,3 +33,4 @@ export const useCountUp = (end: number, duration = 2, inView: boolean) => {
   return count;
 };
 
+
