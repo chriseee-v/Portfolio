@@ -1,9 +1,43 @@
 import { Resend } from 'resend';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getSubscriptions } from './subscriptions-storage';
 
 // Initialize Resend with API key from environment variable
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Inline storage function to avoid import issues
+interface Subscription {
+  email: string;
+  subscribedAt: string;
+  verified: boolean;
+}
+
+let subscriptionsCache: Subscription[] | null = null;
+
+async function getSubscriptions(): Promise<Subscription[]> {
+  // Try to fetch from external storage
+  const storageUrl = process.env.SUBSCRIPTIONS_STORAGE_URL;
+  
+  if (storageUrl) {
+    try {
+      const response = await fetch(storageUrl, {
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        subscriptionsCache = Array.isArray(data) ? data : [];
+        return subscriptionsCache;
+      }
+    } catch (error) {
+      console.error('Error fetching subscriptions:', error);
+    }
+  }
+  
+  // Return cache or empty array
+  return subscriptionsCache || [];
+}
 
 // Email template matching portfolio design
 function createBlogNotificationEmail(blogPost: {
@@ -166,15 +200,17 @@ export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  // Wrap everything in try-catch to handle any errors
+  try {
+    // Set CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Handle preflight
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+    // Handle preflight
+    if (req.method === 'OPTIONS') {
+      return res.status(200).json({});
+    }
 
   // Only allow POST requests
   if (req.method !== 'POST') {
@@ -258,11 +294,21 @@ export default async function handler(
       errors: errors.length > 0 ? errors : undefined
     });
 
+    } catch (error: any) {
+      console.error('Error sending blog notifications:', error);
+      return res.status(500).json({ 
+        error: 'Internal server error', 
+        details: error?.message || 'Unknown error',
+        stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+      });
+    }
   } catch (error: any) {
-    console.error('Error sending blog notifications:', error);
+    // Top-level error handler
+    console.error('Unhandled error in send-blog-notification handler:', error);
     return res.status(500).json({ 
       error: 'Internal server error', 
-      details: error.message 
+      details: error?.message || 'Unknown error',
+      stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
     });
   }
 }
