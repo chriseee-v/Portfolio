@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug News Cache</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .cache-item { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .expired { background-color: #ffe6e6; }
+        .valid { background-color: #e6ffe6; }
+        button { margin: 5px; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>News Cache Debug</h1>
+    <button onclick="checkCache()">Check Cache</button>
+    <button onclick="clearCache()">Clear All Cache</button>
+    <button onclick="testCache()">Test Cache Write</button>
+    
+    <div id="output"></div>
+
+    <script>
+        const CACHE_KEY_PREFIX = "gemini_news_cache_";
+        const CACHE_DURATION = 8 * 60 * 60 * 1000; // 8 hours
+
+        function checkCache() {
+            const output = document.getElementById('output');
+            output.innerHTML = '<h2>Cache Status:</h2>';
+            
+            const allKeys = Object.keys(localStorage);
+            const cacheKeys = allKeys.filter(key => key.startsWith(CACHE_KEY_PREFIX));
+            
+            if (cacheKeys.length === 0) {
+                output.innerHTML += '<p>No cached news items found.</p>';
+                return;
+            }
+            
+            cacheKeys.forEach(key => {
+                try {
+                    const cached = localStorage.getItem(key);
+                    const data = JSON.parse(cached);
+                    const now = Date.now();
+                    const age = now - data.timestamp;
+                    const isValid = age < CACHE_DURATION;
+                    const ageHours = Math.round(age / (60 * 60 * 1000) * 10) / 10;
+                    
+                    output.innerHTML += `
+                        <div class="cache-item ${isValid ? 'valid' : 'expired'}">
+                            <strong>Key:</strong> ${key}<br>
+                            <strong>Query:</strong> ${data.query}<br>
+                            <strong>Articles:</strong> ${data.articles ? data.articles.length : 0}<br>
+                            <strong>Age:</strong> ${ageHours} hours<br>
+                            <strong>Status:</strong> ${isValid ? 'VALID' : 'EXPIRED'}<br>
+                            <strong>Timestamp:</strong> ${new Date(data.timestamp).toLocaleString()}
+                        </div>
+                    `;
+                } catch (e) {
+                    output.innerHTML += `
+                        <div class="cache-item expired">
+                            <strong>Key:</strong> ${key}<br>
+                            <strong>Error:</strong> ${e.message}
+                        </div>
+                    `;
+                }
+            });
+        }
+        
+        function clearCache() {
+            const allKeys = Object.keys(localStorage);
+            const cacheKeys = allKeys.filter(key => key.startsWith(CACHE_KEY_PREFIX));
+            
+            cacheKeys.forEach(key => localStorage.removeItem(key));
+            
+            document.getElementById('output').innerHTML = `<p>Cleared ${cacheKeys.length} cache items.</p>`;
+        }
+        
+        function testCache() {
+            const testData = {
+                articles: [
+                    {
+                        id: 'test-1',
+                        title: 'Test Article 1',
+                        description: 'This is a test article',
+                        url: 'https://example.com',
+                        publishedAt: new Date().toISOString(),
+                        source: { name: 'Test Source' },
+                        author: 'Test Author'
+                    }
+                ],
+                timestamp: Date.now(),
+                query: 'test',
+                limit: 10
+            };
+            
+            const cacheKey = `${CACHE_KEY_PREFIX}test_10`;
+            localStorage.setItem(cacheKey, JSON.stringify(testData));
+            
+            document.getElementById('output').innerHTML = '<p>Test cache item created. Click "Check Cache" to verify.</p>';
+        }
+        
+        // Auto-check on load
+        window.onload = checkCache;
+    </script>
+</body>
+</html>

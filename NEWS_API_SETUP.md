@@ -36,7 +36,7 @@ VITE_GEMINI_API_KEY=your_api_key_here
 
 ## How It Works
 
-The news feature uses Google Gemini's `gemini-pro` model to:
+The news feature uses Google Gemini's `gemini-2.5-flash` model to:
 - Generate recent technology news articles based on your search query
 - Provide structured article data (title, description, URL, image, etc.)
 - Return articles in a consistent format for display
@@ -56,24 +56,27 @@ The news feature uses Google Gemini's `gemini-pro` model to:
 
 Google Gemini offers different limits based on the model:
 
-### gemini-pro (Currently Used - Recommended)
-- **60 requests per minute**
-- **1,500 requests per day**
-- **32,000 tokens per request**
-- **50 million tokens per day**
-
-### gemini-1.5-flash (Not available in v1beta API)
+### gemini-2.5-flash (Currently Used - Recommended)
 - **15 requests per minute**
 - **1,500 requests per day**
 - **1 million tokens per day**
+- **Stable and production-ready**
 
-### gemini-1.5-pro (Higher quality, lower limits)
+### gemini-2.5-flash-lite (Ultra fast alternative)
+- **15 requests per minute**
+- **1,500 requests per day**
+- **1 million tokens per day**
+- **Optimized for speed and cost**
+
+### gemini-2.5-pro (Advanced thinking model)
 - **2 requests per minute**
 - **50 requests per day**
+- **Higher quality reasoning**
 
-### gemini-2.5-flash-lite (Not recommended - very low limits)
-- **15 requests per minute**
-- **20 requests per day** ⚠️ Very restrictive
+### Legacy models (deprecated or unavailable)
+- `gemini-pro` - Not available in v1beta API
+- `gemini-1.5-flash` - Not available in v1beta API
+- `gemini-2.5-flash-lite-latest` - Very low limits (20 requests/day)
 
 ## Quota Management
 
@@ -110,18 +113,20 @@ This means you've hit the daily request limit. Solutions:
 
 ## Model Selection
 
-The app currently uses `gemini-pro` for the best balance of availability and quota limits. You can modify the model in `src/hooks/use-news.ts`:
+The app currently uses `gemini-2.5-flash` for the best balance of availability, stability, and quota limits. You can modify the model in `src/hooks/use-news.ts`:
 
 ```typescript
 const model = genAI.getGenerativeModel({ 
-  model: "gemini-pro" // Stable and widely available
+  model: "gemini-2.5-flash" // Stable and recommended
 });
 ```
 
-Available models in v1beta API:
-- `gemini-pro` - Recommended, good balance of features and limits
-- `gemini-pro-vision` - For image analysis (not needed for news)
-- `gemini-1.5-pro-latest` - May have different availability
+Available models in v1beta API (as of 2025):
+- `gemini-2.5-flash` - **Recommended** - Stable, good performance and limits
+- `gemini-2.5-flash-lite` - Ultra fast, same limits as flash
+- `gemini-2.5-pro` - Advanced reasoning, lower limits (2 req/min, 50/day)
+- `gemini-3-flash-preview` - Preview model, may have different limits
+- `gemini-3-pro-preview` - Preview model, may have different limits
 
 ## Alternative: Using Traditional News APIs
 
