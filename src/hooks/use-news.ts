@@ -15,7 +15,7 @@ export interface NewsArticle {
 }
 
 const CACHE_KEY_PREFIX = "gemini_news_cache_";
-const CACHE_DURATION = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
+const CACHE_DURATION = 8 * 60 * 60 * 1000; // 8 hours in milliseconds (increased from 4 hours)
 
 interface CachedNews {
   articles: NewsArticle[];
@@ -38,7 +38,7 @@ const useNews = (query: string = "technology", limit: number = 10) => {
       if (cached) {
         const data: CachedNews = JSON.parse(cached);
         const now = Date.now();
-        // Check if cache is still valid (less than 4 hours old)
+        // Check if cache is still valid (less than 8 hours old)
         if (now - data.timestamp < CACHE_DURATION && data.query === query && data.limit === limit) {
           console.log("Using cached news data");
           // Ensure all cached articles have unique IDs
@@ -90,6 +90,109 @@ const useNews = (query: string = "technology", limit: number = 10) => {
     }
   };
 
+  // Find any valid cached news data as fallback
+  const findAnyValidCache = (): NewsArticle[] | null => {
+    try {
+      const keys = Object.keys(localStorage).filter(key => key.startsWith(CACHE_KEY_PREFIX));
+      
+      // Sort by timestamp (newest first)
+      const sortedKeys = keys.sort((a, b) => {
+        try {
+          const dataA = JSON.parse(localStorage.getItem(a) || '{}');
+          const dataB = JSON.parse(localStorage.getItem(b) || '{}');
+          return (dataB.timestamp || 0) - (dataA.timestamp || 0);
+        } catch {
+          return 0;
+        }
+      });
+      
+      // Return the most recent cached data
+      for (const key of sortedKeys) {
+        try {
+          const cached = localStorage.getItem(key);
+          if (cached) {
+            const data: CachedNews = JSON.parse(cached);
+            if (data.articles && data.articles.length > 0) {
+              console.log(`Using fallback cache from: ${data.query}`);
+              return data.articles.slice(0, limit);
+            }
+          }
+        } catch (err) {
+          console.error("Error reading fallback cache:", err);
+        }
+      }
+    } catch (err) {
+      console.error("Error finding fallback cache:", err);
+    }
+    return null;
+  };
+
+  // Generate static fallback news content
+  const generateFallbackNews = (searchQuery: string, articleLimit: number): NewsArticle[] => {
+    const baseTimestamp = Date.now();
+    const fallbackArticles = [
+      {
+        title: "AI and Machine Learning Continue to Transform Industries",
+        description: "Artificial intelligence and machine learning technologies are revolutionizing various sectors, from healthcare to finance, with new applications emerging daily.",
+        source: "Tech News",
+        author: "Technology Reporter"
+      },
+      {
+        title: "Cloud Computing Adoption Reaches New Heights",
+        description: "Organizations worldwide are accelerating their cloud migration strategies, driven by scalability needs and remote work requirements.",
+        source: "Cloud Weekly",
+        author: "Cloud Analyst"
+      },
+      {
+        title: "Cybersecurity Threats Evolve with New Technologies",
+        description: "As technology advances, cybersecurity professionals face new challenges in protecting digital assets and user privacy.",
+        source: "Security Today",
+        author: "Security Expert"
+      },
+      {
+        title: "Open Source Software Drives Innovation",
+        description: "The open source community continues to create powerful tools and frameworks that accelerate software development across industries.",
+        source: "Developer News",
+        author: "Open Source Advocate"
+      },
+      {
+        title: "Mobile Development Trends Shape User Experience",
+        description: "Mobile app development continues to evolve with new frameworks, design patterns, and user experience innovations.",
+        source: "Mobile Tech",
+        author: "Mobile Developer"
+      },
+      {
+        title: "Web Development Frameworks Enhance Productivity",
+        description: "Modern web development frameworks are making it easier for developers to build fast, scalable, and maintainable applications.",
+        source: "Web Dev Weekly",
+        author: "Frontend Developer"
+      },
+      {
+        title: "Data Science and Analytics Drive Business Decisions",
+        description: "Organizations are leveraging data science and analytics to gain insights and make informed business decisions.",
+        source: "Data Science Today",
+        author: "Data Scientist"
+      },
+      {
+        title: "DevOps Practices Improve Software Delivery",
+        description: "DevOps methodologies and tools are helping teams deliver software faster and more reliably than ever before.",
+        source: "DevOps Journal",
+        author: "DevOps Engineer"
+      }
+    ];
+
+    return fallbackArticles.slice(0, articleLimit).map((article, index) => ({
+      id: `fallback-${baseTimestamp}-${index}`,
+      title: article.title,
+      description: article.description,
+      url: `https://www.google.com/search?q=${encodeURIComponent(article.title)}`,
+      urlToImage: "",
+      publishedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(), // Random date within last week
+      source: { name: article.source },
+      author: article.author
+    }));
+  };
+
   const fetchNews = async (forceRefresh: boolean = false) => {
     // Check cache first (unless forcing refresh)
     if (!forceRefresh) {
@@ -118,11 +221,11 @@ const useNews = (query: string = "technology", limit: number = 10) => {
       console.log("Trying Google Gemini...");
       
       const genAI = new GoogleGenerativeAI(apiKey);
-      // Using gemini-2.5-flash with Google Search enabled for real-time news
-      // If this model is not available, try: gemini-1.5-flash, gemini-1.5-pro, or gemini-2.0-flash-exp
+      // Using gemini-1.5-flash which has better rate limits than flash-lite
+      // Fallback models: gemini-1.5-pro, gemini-2.0-flash-exp
       const model = genAI.getGenerativeModel({ 
-        model: "gemini-flash-lite-latest",
-        tools: [{ googleSearch: {} } as any] // Type assertion needed for google_search tool
+        model: "gemini-1.5-flash"
+        // Removed Google Search tool to avoid additional quota usage
       });
 
       // Create a more flexible prompt that doesn't demand real-time search
@@ -306,6 +409,30 @@ const useNews = (query: string = "technology", limit: number = 10) => {
       throw new Error(`Gemini returned invalid or empty article data. Parsed: ${JSON.stringify(parsedArticles).substring(0, 200)}`);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+      
+      // Check if it's a quota error
+      if (errorMessage.includes("quota") || errorMessage.includes("429") || errorMessage.includes("rate limit")) {
+        console.log("Quota exceeded, trying to use cached data from any query...");
+        
+        // Try to find any cached news data as fallback
+        const fallbackArticles = findAnyValidCache();
+        if (fallbackArticles && fallbackArticles.length > 0) {
+          setArticles(fallbackArticles);
+          setActiveProvider("Gemini (Fallback Cache)");
+          setError("API quota exceeded. Showing cached articles. Try again later.");
+          setLoading(false);
+          return;
+        }
+        
+        // If no cache available, provide static fallback content
+        const fallbackNews = generateFallbackNews(query, limit);
+        setArticles(fallbackNews);
+        setActiveProvider("Fallback Content");
+        setError("API quota exceeded. Showing sample articles. Add your API key or try again later.");
+        setLoading(false);
+        return;
+      }
+      
       setError(`Failed to fetch news from Gemini: ${errorMessage}`);
       setArticles([]);
       setLoading(false);

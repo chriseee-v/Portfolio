@@ -36,28 +36,56 @@ VITE_GEMINI_API_KEY=your_api_key_here
 
 ## How It Works
 
-The news feature uses Google Gemini's `gemini-pro` model to:
+The news feature uses Google Gemini's `gemini-1.5-flash` model to:
 - Generate recent technology news articles based on your search query
 - Provide structured article data (title, description, URL, image, etc.)
 - Return articles in a consistent format for display
+- Cache results for 8 hours to reduce API usage
+- Provide fallback content when quota is exceeded
 
 ## Features
 
 - ✅ **No CORS issues** - Works from any domain
-- ✅ **No rate limits** (within Google's free tier limits)
+- ✅ **Smart caching** - 8-hour cache reduces API calls
+- ✅ **Quota-aware fallbacks** - Shows cached or sample content when limits hit
 - ✅ **Flexible queries** - Search for any technology topic
 - ✅ **Structured output** - Returns articles in a consistent format
 - ✅ **Free tier available** - Generous free usage limits
 
 ## Free Tier Limits
 
-Google Gemini offers a free tier with:
-- **60 requests per minute**
-- **1,500 requests per day**
+Google Gemini offers different limits based on the model:
 
-For most portfolio sites, this is more than sufficient.
+### gemini-1.5-flash (Recommended)
+- **15 requests per minute**
+- **1,500 requests per day**
+- **1 million tokens per day**
+
+### gemini-1.5-pro (Higher quality, lower limits)
+- **2 requests per minute**
+- **50 requests per day**
+
+### gemini-2.5-flash-lite (Not recommended - very low limits)
+- **15 requests per minute**
+- **20 requests per day** ⚠️ Very restrictive
+
+## Quota Management
+
+The app includes several features to handle quota limits gracefully:
+
+1. **8-hour caching** - Reduces API calls by caching results
+2. **Fallback to any cached data** - Uses any available cached news when quota exceeded
+3. **Static fallback content** - Shows sample tech news when no cache available
+4. **Clear error messages** - Informs users about quota status
 
 ## Troubleshooting
+
+### "You exceeded your current quota" (429 Error)
+This means you've hit the daily request limit. Solutions:
+- **Wait**: Limits reset daily (usually at midnight UTC)
+- **Use cached data**: The app automatically shows cached articles
+- **Upgrade**: Consider a paid Gemini plan for higher limits
+- **Check usage**: Monitor at [Google AI Studio](https://makersuite.google.com/)
 
 ### "Gemini API key not found"
 - Make sure you've added `VITE_GEMINI_API_KEY` to your `.env` file (local) or Vercel environment variables (production)
@@ -70,9 +98,19 @@ For most portfolio sites, this is more than sufficient.
 - Try refreshing the page
 
 ### Rate Limit Errors
-- You've exceeded the free tier limits
-- Wait a few minutes and try again
-- Consider upgrading to a paid plan if you need higher limits
+- You've exceeded the per-minute limits
+- Wait a minute and try again
+- The app will show cached content automatically
+
+## Model Selection
+
+The app currently uses `gemini-1.5-flash` for the best balance of quality and quota limits. You can modify the model in `src/hooks/use-news.ts`:
+
+```typescript
+const model = genAI.getGenerativeModel({ 
+  model: "gemini-1.5-flash" // or "gemini-1.5-pro" for higher quality
+});
+```
 
 ## Alternative: Using Traditional News APIs
 
