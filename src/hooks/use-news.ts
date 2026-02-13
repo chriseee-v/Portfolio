@@ -221,11 +221,10 @@ const useNews = (query: string = "technology", limit: number = 10) => {
       console.log("Trying Google Gemini...");
       
       const genAI = new GoogleGenerativeAI(apiKey);
-      // Using gemini-1.5-flash which has better rate limits than flash-lite
-      // Fallback models: gemini-1.5-pro, gemini-2.0-flash-exp
+      // Using gemini-pro which is widely available in v1beta API
+      // This model has good rate limits: 60 requests/minute, 1500 requests/day
       const model = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-flash"
-        // Removed Google Search tool to avoid additional quota usage
+        model: "gemini-pro"
       });
 
       // Create a more flexible prompt that doesn't demand real-time search

@@ -36,7 +36,7 @@ VITE_GEMINI_API_KEY=your_api_key_here
 
 ## How It Works
 
-The news feature uses Google Gemini's `gemini-1.5-flash` model to:
+The news feature uses Google Gemini's `gemini-pro` model to:
 - Generate recent technology news articles based on your search query
 - Provide structured article data (title, description, URL, image, etc.)
 - Return articles in a consistent format for display
@@ -56,7 +56,13 @@ The news feature uses Google Gemini's `gemini-1.5-flash` model to:
 
 Google Gemini offers different limits based on the model:
 
-### gemini-1.5-flash (Recommended)
+### gemini-pro (Currently Used - Recommended)
+- **60 requests per minute**
+- **1,500 requests per day**
+- **32,000 tokens per request**
+- **50 million tokens per day**
+
+### gemini-1.5-flash (Not available in v1beta API)
 - **15 requests per minute**
 - **1,500 requests per day**
 - **1 million tokens per day**
@@ -104,13 +110,18 @@ This means you've hit the daily request limit. Solutions:
 
 ## Model Selection
 
-The app currently uses `gemini-1.5-flash` for the best balance of quality and quota limits. You can modify the model in `src/hooks/use-news.ts`:
+The app currently uses `gemini-pro` for the best balance of availability and quota limits. You can modify the model in `src/hooks/use-news.ts`:
 
 ```typescript
 const model = genAI.getGenerativeModel({ 
-  model: "gemini-1.5-flash" // or "gemini-1.5-pro" for higher quality
+  model: "gemini-pro" // Stable and widely available
 });
 ```
+
+Available models in v1beta API:
+- `gemini-pro` - Recommended, good balance of features and limits
+- `gemini-pro-vision` - For image analysis (not needed for news)
+- `gemini-1.5-pro-latest` - May have different availability
 
 ## Alternative: Using Traditional News APIs
 
