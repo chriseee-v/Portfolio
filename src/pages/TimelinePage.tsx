@@ -110,7 +110,7 @@ const TimelinePage = () => {
       {/* Timeline */}
       <div ref={containerRef} className="relative">
         {/* Animated Vertical Line - Full continuous line */}
-        <div className="absolute left-[14px] md:left-1/2 top-0 bottom-0 w-px transform md:-translate-x-1/2 z-0">
+        <div className="absolute left-[6px] md:left-1/2 top-0 bottom-0 w-px transform md:-translate-x-1/2 z-0">
           {/* Background line (full length) */}
           <div className="absolute top-0 bottom-0 w-full bg-border" />
           {/* Animated progress line */}
@@ -125,96 +125,111 @@ const TimelinePage = () => {
 
         {/* Timeline Items */}
         <div className="space-y-12">
-          {experiences.map((exp, index) => (
-            <div
-              key={index}
-              className={`relative flex flex-col md:flex-row items-start gap-8 ${
-                index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
-              }`}
-            >
-                  {/* Node */}
-                  {exp.highlight ? (
-                    <div
-                      className="absolute left-[14px] md:left-1/2 transform md:-translate-x-1/2 -translate-y-0 z-10"
-                      style={{
-                        marginLeft: '-8px', // Center the 16px dot on the 1px line
-                      }}
-                    >
-                      <div 
-                        className="w-4 h-4 rounded-full bg-primary relative scale-130" 
-                        style={{ 
-                          border: 'none', 
-                          boxShadow: 'none', 
-                          background: 'hsl(var(--primary))',
-                          transform: 'scale(1.3)',
-                        }}
+          {experiences.map((exp, index) => {
+            // Calculate if this item should be highlighted based on scroll progress
+            // Each item activates when the line reaches its position
+            const itemProgress = (index / Math.max(experiences.length - 1, 1)) * 100;
+            const isActive = lineProgress >= itemProgress;
+            
+            return (
+              <div
+                key={index}
+                className={`relative flex flex-col md:flex-row items-start gap-8 ${
+                  index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
+                }`}
+              >
+                    {/* Node */}
+                    {exp.highlight ? (
+                      <div
+                        className="absolute left-0 md:left-1/2 transform md:-translate-x-1/2 z-10"
                       >
-                        <motion.div 
-                          className="absolute rounded-full bg-primary/40"
+                        <div 
+                          className={`w-4 h-4 rounded-full relative transition-all duration-500 ${
+                            isActive ? 'bg-primary scale-130' : 'bg-muted'
+                          }`}
                           style={{ 
-                            width: '16px',
-                            height: '16px',
-                            left: '50%',
-                            top: '50%',
-                            marginLeft: '-8px',
-                            marginTop: '-8px',
-                            zIndex: -1,
-                            pointerEvents: 'none',
+                            border: 'none', 
+                            boxShadow: 'none', 
+                            transform: isActive ? 'scale(1.3)' : 'scale(1)',
                           }}
-                          animate={{ 
-                            scale: [1, 3, 1], 
-                            opacity: [0.6, 0, 0.6],
-                          }}
-                          transition={{ 
-                            duration: 2, 
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                          }}
+                        >
+                          {isActive && (
+                            <motion.div 
+                              className="absolute rounded-full bg-primary/40"
+                              style={{ 
+                                width: '16px',
+                                height: '16px',
+                                left: '50%',
+                                top: '50%',
+                                marginLeft: '-8px',
+                                marginTop: '-8px',
+                                zIndex: -1,
+                                pointerEvents: 'none',
+                              }}
+                              initial={{ scale: 1, opacity: 0 }}
+                              animate={{ 
+                                scale: [1, 3, 1], 
+                                opacity: [0.6, 0, 0.6],
+                              }}
+                              transition={{ 
+                                duration: 2, 
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                              }}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        className="absolute left-0 md:left-1/2 transform md:-translate-x-1/2 z-10"
+                      >
+                        <div 
+                          className={`w-4 h-4 rounded-full border-4 border-card relative z-10 transition-all duration-500 ${
+                            isActive ? 'bg-primary' : 'bg-muted'
+                          }`}
                         />
                       </div>
-                    </div>
-                  ) : (
-                    <div
-                      className="absolute left-[14px] md:left-1/2 transform md:-translate-x-1/2 -translate-y-0 z-10"
-                      style={{
-                        marginLeft: '-8px', // Center the 16px dot on the 1px line
-                      }}
+                    )}
+
+                    {/* Year Label */}
+                    <div 
+                      className={`flex-1 ${index % 2 === 0 ? "md:text-right md:pr-12" : "md:pl-12"} pl-12 md:pl-0`}
                     >
-                      <div className="w-4 h-4 rounded-full bg-muted border-4 border-card relative z-10" />
+                      <div className="inline-block">
+                        <span className={`font-mono text-2xl font-bold transition-colors duration-500 ${
+                          isActive ? 'text-primary' : 'text-muted-foreground'
+                        }`}>
+                          {exp.year}
+                        </span>
+                      </div>
                     </div>
-                  )}
 
-                  {/* Year Label */}
-                  <div 
-                    className={`flex-1 ${index % 2 === 0 ? "md:text-right md:pr-12" : "md:pl-12"} pl-12 md:pl-0`}
-                  >
-                    <div className="inline-block">
-                      <span className="font-mono text-2xl font-bold text-primary">{exp.year}</span>
-                    </div>
-                  </div>
-
-                  {/* Content Card */}
-                  <div 
-                    className={`flex-1 pl-12 md:pl-0 ${index % 2 === 0 ? "md:pl-12" : "md:pr-12"}`}
-                  >
-                    <div className="p-6 rounded-xl border border-border hover:border-primary/30 transition-colors bg-card/50">
-                      <h3 className="text-lg font-semibold mb-1">{exp.title}</h3>
-                      <p className="text-sm text-primary font-medium mb-3">{exp.company}</p>
-                      <p className="text-sm text-muted-foreground mb-4">{exp.description}</p>
-                      <div className="flex flex-wrap gap-2">
-                        {exp.technologies.map((tech) => (
-                          <span 
-                            key={tech} 
-                            className="tech-tag text-xs"
-                          >
-                            {tech}
-                          </span>
-                        ))}
+                    {/* Content Card */}
+                    <div 
+                      className={`flex-1 pl-12 md:pl-0 ${index % 2 === 0 ? "md:pl-12" : "md:pr-12"}`}
+                    >
+                      <div className={`p-6 rounded-xl border transition-all duration-500 bg-card/50 ${
+                        isActive ? 'border-primary/30' : 'border-border'
+                      }`}>
+                        <h3 className="text-lg font-semibold mb-1">{exp.title}</h3>
+                        <p className="text-sm text-primary font-medium mb-3">{exp.company}</p>
+                        <p className="text-sm text-muted-foreground mb-4">{exp.description}</p>
+                        <div className="flex flex-wrap gap-2">
+                          {exp.technologies.map((tech) => (
+                            <span 
+                              key={tech} 
+                              className="tech-tag text-xs"
+                            >
+                              {tech}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -234,7 +249,7 @@ const TimelinePage = () => {
           viewport={{ once: true }}
         >
           {[
-            { value: "1+", label: "Years Experience" },
+            { value: "2+", label: "Years Experience" },
             { value: "15+", label: "Projects Delivered" },
             { value: "30+", label: "Technologies" },
             { value: "∞", label: "Innovation" },

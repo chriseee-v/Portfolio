@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { Navigation } from "./components/layout/Navigation";
 import MePage from "./pages/MePage";
 import ProjectsPage from "./pages/ProjectsPage";
+import ProjectDetailPage from "./pages/ProjectDetailPage";
 import TimelinePage from "./pages/TimelinePage";
 import ExplorePage from "./pages/ExplorePage";
 import BlogPage from "./pages/BlogPage";
@@ -138,6 +139,16 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            <Route path="/projects/:id" element={
+              <div className="min-h-screen bg-background">
+                <div className="lab-card min-h-screen">
+                  <Navigation />
+                  <main className="px-6 md:px-8 lg:px-12 py-8">
+                    <ProjectDetailPage />
+                  </main>
+                </div>
+              </div>
+            } />
             <Route path="/*" element={<ScrollableLayout />} />
             <Route path="/404" element={<NotFound />} />
           </Routes>

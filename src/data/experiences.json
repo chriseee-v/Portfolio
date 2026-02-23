@@ -1,10 +1,26 @@
 [
   {
+    "year": "2026",
+    "title": "Looking Forward",
+    "company": "Next Chapter",
+    "description": "Exploring new opportunities in AI and software engineering. Open to roles in machine learning, backend development, and innovative tech solutions.",
+    "technologies": ["AI/ML", "Cloud Architecture", "System Design", "Innovation"],
+    "highlight": true
+  },
+  {
     "year": "2025",
     "title": "Software Development Engineer I",
     "company": "Healthflex",
     "description": "Building AI-powered healthcare solutions with RAG pipelines, computer vision, and real-time analytics. Deployed systems serving 200+ concurrent users across 50+ clinics.",
     "technologies": ["Python", "FastAPI", "OpenCV", "AWS", "Docker", "LangChain"],
+    "highlight": true
+  },
+  {
+    "year": "2025",
+    "title": "Bachelor of Technology - Graduated",
+    "company": "Karunya Institute of Technology",
+    "description": "Completed Computer Science and Engineering degree. Specialized in AI, IoT, and embedded systems. Built multiple award-winning projects including EEG-controlled prosthetic arm and smart streetlight system.",
+    "technologies": ["Machine Learning", "IoT", "Computer Vision", "System Design"],
     "highlight": true
   },
   {
@@ -24,11 +40,11 @@
     "highlight": false
   },
   {
-    "year": "2021-2025",
-    "title": "Bachelor of Technology",
+    "year": "2021",
+    "title": "Bachelor of Technology - Started",
     "company": "Karunya Institute of Technology",
-    "description": "Computer Science and Engineering. Focused on AI, IoT, and embedded systems. Built multiple award-winning projects.",
-    "technologies": ["Data Structures", "Machine Learning", "IoT", "Embedded Systems"],
+    "description": "Began Computer Science and Engineering program. Focused on foundational concepts in data structures, algorithms, and software development.",
+    "technologies": ["Data Structures", "Algorithms", "Programming", "Mathematics"],
     "highlight": false
   }
 ]

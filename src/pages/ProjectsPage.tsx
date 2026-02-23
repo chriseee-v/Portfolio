@@ -49,10 +49,9 @@ const ProjectsPage = () => {
       duration: 0.6,
       ease: "power2.inOut",
       onComplete: () => {
-        // Navigate or open link after transition
-        if (project.url) {
-          window.open(project.url, '_blank', 'noopener,noreferrer');
-        }
+        // Navigate to project detail page
+        navigate(`/projects/${project.id}`);
+        
         // Slide out to the right
         setTimeout(() => {
           gsap.to(overlay, {
@@ -63,7 +62,7 @@ const ProjectsPage = () => {
               document.body.removeChild(overlay);
             }
           });
-        }, 300);
+        }, 100);
       }
     });
   };
