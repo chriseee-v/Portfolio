@@ -1,20 +1,20 @@
-import { useState } from "react";
-import { ExternalLink, Github } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ExternalLink, Github, Timer } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { useNavigate } from "react-router-dom";
 import projectsData from "@/data/projects.json";
-import { staggerContainer, staggerItem, filterTransition, buttonHoverVariants } from "@/lib/motion";
 import { gsap } from "gsap";
 
 const filters = ["All", "AI", "Full Stack", "Computer Vision", "IoT"];
 
-// Type definition for projects
 type Project = {
   id: number;
   title: string;
   role: string;
   year: string;
+  status?: string;
+  startedAt?: string;
   stack: string[];
   category: string;
   description: string;
@@ -24,206 +24,303 @@ type Project = {
 
 const projects = projectsData as Project[];
 
+function useElapsed(startedAt?: string) {
+  const [elapsed, setElapsed] = useState("");
+
+  useEffect(() => {
+    if (!startedAt) return;
+    const start = new Date(startedAt).getTime();
+
+    const tick = () => {
+      const diff = Date.now() - start;
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      setElapsed(`${d}d ${String(h).padStart(2, "0")}h ${String(m).padStart(2, "0")}m ${String(s).padStart(2, "0")}s`);
+    };
+
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [startedAt]);
+
+  return elapsed;
+}
+
+function InProgressCard({ project, onClick }: { project: Project; onClick: (e: React.MouseEvent) => void }) {
+  const elapsed = useElapsed(project.startedAt);
+
+  return (
+    <motion.article
+      layout
+      className="group relative overflow-hidden cursor-pointer md:col-span-2 lg:col-span-3"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.25 }}
+      onClick={onClick}
+      style={{
+        border: "2px solid hsl(var(--primary))",
+        boxShadow: "5px 5px 0px hsl(var(--primary))",
+        background: "hsl(var(--card))",
+      }}
+    >
+      {/* Active pulse bar at top */}
+      <div className="h-1 w-full bg-primary relative overflow-hidden">
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "repeating-linear-gradient(90deg, hsl(var(--primary)) 0, hsl(var(--primary-foreground)/0.3) 12px, hsl(var(--primary)) 24px)",
+            animation: "marquee 2s linear infinite",
+            width: "200%",
+          }}
+        />
+      </div>
+
+      <div className="p-6 grid lg:grid-cols-[1fr_auto] gap-6 items-start">
+        <div>
+          {/* Top meta */}
+          <div className="flex items-center gap-3 mb-4">
+            <span
+              className="font-mono text-[9px] font-bold uppercase tracking-[0.25em] bg-primary text-white px-2 py-1 flex items-center gap-1.5"
+            >
+              <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse inline-block" />
+              IN PROGRESS
+            </span>
+            <span className="font-mono text-xs text-muted-foreground">{project.year}</span>
+            <span
+              className="font-mono text-xs font-bold uppercase tracking-wider px-2 py-1 text-foreground"
+              style={{ border: "1.5px solid hsl(var(--foreground) / 0.3)" }}
+            >
+              {project.category}
+            </span>
+          </div>
+
+          <h3 className="text-2xl font-bold uppercase tracking-tight mb-3 group-hover:text-primary transition-colors">
+            {project.title}
+          </h3>
+
+          <p className="text-sm text-muted-foreground mb-5 max-w-2xl leading-relaxed">
+            {project.description}
+          </p>
+
+          <div className="flex flex-wrap gap-2 mb-5">
+            {project.stack.map((tech) => (
+              <span key={tech} className="tech-tag text-xs">{tech}</span>
+            ))}
+          </div>
+
+          <div className="flex gap-4 items-center pt-4" style={{ borderTop: "1.5px solid hsl(var(--foreground) / 0.15)" }}>
+            {project.github && (
+              <a
+                href={project.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-xs font-mono font-bold uppercase tracking-wider text-foreground/60 hover:text-foreground"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Github className="w-3 h-3" />
+                Code
+              </a>
+            )}
+            <span className="ml-auto text-xs font-mono text-muted-foreground">→ VIEW</span>
+          </div>
+        </div>
+
+        {/* Live timer block */}
+        <div
+          className="shrink-0 flex flex-col items-center justify-center px-6 py-5 bg-primary text-white"
+          style={{ minWidth: "200px", border: "2px solid hsl(var(--foreground))" }}
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <Timer className="w-3.5 h-3.5 text-white/70" />
+            <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-white/70">Building since</span>
+          </div>
+          <div className="font-mono text-[10px] text-white/60 mb-2 uppercase tracking-widest">
+            {project.startedAt ? new Date(project.startedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : ""}
+          </div>
+          <div className="font-mono font-bold text-white text-sm tracking-widest tabular-nums">
+            {elapsed}
+          </div>
+        </div>
+      </div>
+    </motion.article>
+  );
+}
+
 const ProjectsPage = () => {
   const [activeFilter, setActiveFilter] = useState("All");
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true });
   const navigate = useNavigate();
-  
-  // Featured projects (first 2)
-  const featuredIds = [1, 2];
 
-  // Handle card click with smooth left-to-right transition
   const handleCardClick = (e: React.MouseEvent, project: Project) => {
     e.preventDefault();
-    const card = e.currentTarget as HTMLElement;
-    
-    // Create overlay for transition effect
-    const overlay = document.createElement('div');
-    overlay.className = 'fixed inset-0 bg-background z-[9999]';
-    overlay.style.transform = 'translateX(-100%)';
+    const overlay = document.createElement("div");
+    overlay.className = "fixed inset-0 bg-background z-[9999]";
+    overlay.style.transform = "translateX(-100%)";
+    overlay.style.borderRight = "4px solid hsl(var(--primary))";
     document.body.appendChild(overlay);
 
-    // Animate overlay from left to right
     gsap.to(overlay, {
       x: 0,
-      duration: 0.6,
+      duration: 0.5,
       ease: "power2.inOut",
       onComplete: () => {
-        // Navigate to project detail page
         navigate(`/projects/${project.id}`);
-        
-        // Slide out to the right
         setTimeout(() => {
           gsap.to(overlay, {
-            x: '100%',
-            duration: 0.4,
+            x: "100%",
+            duration: 0.35,
             ease: "power2.inOut",
-            onComplete: () => {
-              document.body.removeChild(overlay);
-            }
+            onComplete: () => document.body.removeChild(overlay),
           });
         }, 100);
-      }
+      },
     });
   };
 
-  const filteredProjects = activeFilter === "All" 
-    ? projects 
-    : projects.filter(p => p.category === activeFilter);
+  const filteredProjects =
+    activeFilter === "All"
+      ? projects
+      : projects.filter((p) => p.category === activeFilter);
+
+  const inProgressProjects = filteredProjects.filter((p) => p.status === "in-progress");
+  const completedProjects = filteredProjects.filter((p) => p.status !== "in-progress");
 
   return (
     <div>
       {/* Header */}
-      <div className="mb-12 pt-8">
-        <div className="flex items-center gap-4 mb-6">
-          <span className="lab-label">Selected Work</span>
-          <div className="flex-1 h-px bg-border" />
-          <span className="font-mono text-xs text-muted-foreground">{projects.length} PROJECTS</span>
+      <div className="pt-10" style={{ borderBottom: "2px solid hsl(var(--foreground))" }}>
+        <div className="flex items-stretch mb-0" style={{ borderBottom: "2px solid hsl(var(--foreground))" }}>
+          <span className="lab-label px-0 py-3 self-center">Selected Work</span>
+          <div className="flex-1" />
+          <span
+            className="font-mono text-xs text-muted-foreground px-4 py-3 self-center"
+            style={{ borderLeft: "2px solid hsl(var(--foreground))" }}
+          >
+            {projects.length} PROJECTS
+          </span>
         </div>
-        <h1 className="lab-title mb-4">projects.</h1>
-        <p className="text-muted-foreground max-w-2xl">
+        <h1 className="lab-title py-4">projects<span className="text-primary">.</span></h1>
+        <p className="text-muted-foreground max-w-2xl pb-6 text-sm">
           A collection of experiments, client work, and personal explorations in code and design.
         </p>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-2 mb-12">
+      <div
+        className="flex flex-wrap gap-0 mb-0"
+        style={{ borderBottom: "2px solid hsl(var(--foreground))" }}
+      >
         {filters.map((filter) => (
-          <motion.button
+          <button
             key={filter}
             onClick={() => setActiveFilter(filter)}
-            className={`px-4 py-2 rounded-full text-sm font-medium ${
+            className={`px-5 py-3 font-mono text-xs font-bold uppercase tracking-wider transition-colors duration-150 ${
               activeFilter === filter
                 ? "bg-primary text-primary-foreground"
-                : "bg-muted text-foreground hover:bg-muted/80"
+                : "hover:bg-foreground hover:text-background"
             }`}
-            variants={buttonHoverVariants}
-            whileHover="hover"
-            whileTap="tap"
-            layout
+            style={{ borderRight: "1px solid hsl(var(--foreground) / 0.3)" }}
           >
             {filter}
-          </motion.button>
+          </button>
         ))}
       </div>
 
       {/* Projects Grid */}
       <motion.div
         ref={ref}
-        className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-        variants={staggerContainer}
+        className="grid md:grid-cols-2 lg:grid-cols-3 mt-8 gap-6"
         initial="initial"
         animate={inView ? "animate" : "initial"}
+        variants={{
+          initial: {},
+          animate: { transition: { staggerChildren: 0.07 } },
+        }}
       >
         <AnimatePresence mode="wait">
-          {filteredProjects.map((project, index) => (
+          {/* In-progress projects — full width, shown first */}
+          {inProgressProjects.map((project) => (
+            <InProgressCard
+              key={project.id}
+              project={project}
+              onClick={(e) => handleCardClick(e, project)}
+            />
+          ))}
+
+          {/* Completed projects */}
+          {completedProjects.map((project, index) => (
             <motion.article
               key={project.id}
               layout
-              variants={staggerItem}
               className="project-card group relative overflow-hidden cursor-pointer"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-              whileHover={{ 
-                y: -8, 
-                transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] }
-              }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.25, delay: index * 0.04 }}
               onClick={(e) => handleCardClick(e, project)}
             >
-              {/* Featured badge */}
-              {featuredIds.includes(project.id) && (
-                <motion.div
-                  className="absolute top-2 right-2 z-10"
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ 
-                    delay: 0.5,
-                    type: "spring",
-                    stiffness: 200
-                  }}
-                >
-                  <span className="px-2 py-1 bg-primary text-primary-foreground text-xs font-mono rounded">
-                    NEW
-                  </span>
-                </motion.div>
-              )}
-              
-              {/* Accent Corner */}
-              <div className="absolute top-0 right-0 w-16 h-16">
-                <motion.div 
-                  className="absolute top-4 right-4 w-2 h-2 rounded-full bg-primary"
-                  initial={{ opacity: 0, scale: 0 }}
-                  whileHover={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.2 }}
-                />
+              {/* Top bar */}
+              <div
+                className="flex items-center justify-between mb-4 pb-3"
+                style={{ borderBottom: "2px solid hsl(var(--foreground))" }}
+              >
+                <span className="font-mono text-xs text-muted-foreground font-bold">{project.year}</span>
+                <span className="font-mono text-xs font-bold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-1">
+                  {project.category}
+                </span>
               </div>
 
-              {/* Content */}
-              <div className="space-y-4">
-                <div className="flex items-start justify-between">
-                  <span className="font-mono text-xs text-muted-foreground">{project.year}</span>
-                  <span className="tech-tag">{project.category}</span>
-                </div>
+              <h3 className="text-lg font-bold uppercase tracking-tight mb-3 group-hover:text-primary transition-colors">
+                {project.title}
+              </h3>
 
-                <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
-                  {project.title}
-                </h3>
+              <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                {project.description}
+              </p>
 
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {project.description}
-                </p>
+              <div
+                className="pt-3 pb-3 mb-4"
+                style={{ borderTop: "1.5px solid hsl(var(--foreground) / 0.15)", borderBottom: "1.5px solid hsl(var(--foreground) / 0.15)" }}
+              >
+                <span className="text-xs font-mono font-bold text-foreground/60 uppercase tracking-wide">{project.role}</span>
+              </div>
 
-                <div className="pt-2 border-t border-border/50">
-                  <span className="text-xs font-medium text-foreground/60">{project.role}</span>
-                </div>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {project.stack.map((tech) => (
+                  <span key={tech} className="tech-tag text-xs">{tech}</span>
+                ))}
+              </div>
 
-                <div className="flex flex-wrap gap-2">
-                  {project.stack.map((tech) => (
-                    <motion.span 
-                      key={tech} 
-                      className="tech-tag text-xs"
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ duration: 0.15 }}
-                    >
-                      {tech}
-                    </motion.span>
-                  ))}
-                </div>
-
-                {/* Hover Actions */}
-                <motion.div 
-                  className="flex gap-3 pt-4"
-                  initial={{ opacity: 0 }}
-                  whileHover={{ opacity: 1 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {project.url && (
-                    <motion.a 
-                      href={project.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-sm text-primary hover:underline"
-                      whileHover={{ x: 2 }}
-                    >
-                      <ExternalLink className="w-3 h-3" />
-                      View
-                    </motion.a>
-                  )}
-                  {project.github && (
-                    <motion.a 
-                      href={project.github} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-sm text-foreground/60 hover:text-foreground"
-                      whileHover={{ x: 2 }}
-                    >
-                      <Github className="w-3 h-3" />
-                      Code
-                    </motion.a>
-                  )}
-                </motion.div>
+              {/* Actions */}
+              <div className="flex gap-3 pt-3" style={{ borderTop: "1.5px solid hsl(var(--foreground) / 0.15)" }}>
+                {project.url && (
+                  <a
+                    href={project.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-xs font-mono font-bold uppercase tracking-wider text-primary hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    Live
+                  </a>
+                )}
+                {project.github && (
+                  <a
+                    href={project.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-xs font-mono font-bold uppercase tracking-wider text-foreground/60 hover:text-foreground"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Github className="w-3 h-3" />
+                    Code
+                  </a>
+                )}
+                <span className="ml-auto text-xs font-mono text-muted-foreground">→ VIEW</span>
               </div>
             </motion.article>
           ))}

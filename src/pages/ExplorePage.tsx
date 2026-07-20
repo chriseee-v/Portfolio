@@ -253,25 +253,26 @@ const FlipCard = forwardRef<FlipCardHandle, FlipCardProps>(({ topic, onClick }, 
       >
         {/* Front */}
         <div
-          className={`absolute inset-0 rounded-xl bg-gradient-to-br ${topic.color} shadow-lg flex items-center justify-center`}
-          style={{ backfaceVisibility: "hidden" }}
+          className="absolute inset-0 bg-primary flex items-center justify-center"
+          style={{ backfaceVisibility: "hidden", border: "2px solid hsl(var(--foreground))" }}
         >
           <Icon className="w-8 h-8 text-white" />
         </div>
 
         {/* Back */}
         <div
-          className="absolute inset-0 rounded-xl bg-card border border-border shadow-lg p-2 flex flex-col items-center justify-center"
-          style={{ 
+          className="absolute inset-0 bg-card p-2 flex flex-col items-center justify-center"
+          style={{
             backfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
+            border: "2px solid hsl(var(--foreground))",
           }}
         >
           <Icon className="w-5 h-5 text-primary mb-1" />
-          <span className="text-[10px] font-semibold text-center leading-tight">
+          <span className="text-[10px] font-bold uppercase font-mono text-center leading-tight">
             {topic.title}
           </span>
-          <span className="text-[8px] text-muted-foreground text-center mt-1">
+          <span className="text-[8px] text-muted-foreground text-center mt-1 font-mono uppercase">
             {topic.shortDesc}
           </span>
         </div>
@@ -334,26 +335,27 @@ const ExpandedCard = ({ topic, isClosing, onClose }: ExpandedCardProps) => {
     >
       <div
         ref={contentRef}
-        className="relative w-[90%] max-w-md md:max-w-2xl bg-card rounded-3xl shadow-2xl overflow-hidden my-4 md:my-auto"
+        className="relative w-[90%] max-w-md md:max-w-2xl bg-card overflow-hidden my-4 md:my-auto"
+        style={{ border: "2px solid hsl(var(--foreground))", boxShadow: "6px 6px 0px hsl(var(--foreground))" }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header with gradient */}
-        <div className={`relative h-32 md:h-40 bg-gradient-to-br ${topic.color} p-4 md:p-8 flex items-end`}>
-          <div className="absolute top-2 right-2 md:top-4 md:right-4">
-            <button
-              onClick={onClose}
-              className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
-            >
-              <X className="w-4 h-4 md:w-5 md:h-5 text-white" />
-            </button>
-          </div>
-          <div className="flex items-center gap-2 md:gap-4">
-            <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-white/20 flex items-center justify-center">
-              <Icon className="w-6 h-6 md:w-8 md:h-8 text-white" />
+        {/* Header — solid orange, no gradient */}
+        <div className="relative bg-primary p-4 md:p-8" style={{ borderBottom: "2px solid hsl(var(--foreground))" }}>
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 md:top-4 md:right-4 w-8 h-8 bg-white/15 hover:bg-white/30 flex items-center justify-center transition-colors"
+            style={{ border: "2px solid rgba(255,255,255,0.5)" }}
+          >
+            <X className="w-4 h-4 text-white" />
+          </button>
+          <div className="flex items-center gap-3 md:gap-5">
+            <div className="w-12 h-12 md:w-14 md:h-14 bg-white/15 flex items-center justify-center shrink-0"
+              style={{ border: "2px solid rgba(255,255,255,0.4)" }}>
+              <Icon className="w-6 h-6 md:w-7 md:h-7 text-white" />
             </div>
             <div>
-              <h2 className="text-xl md:text-3xl font-bold text-white">{topic.title}</h2>
-              <p className="text-sm md:text-base text-white/80">{topic.shortDesc}</p>
+              <h2 className="text-xl md:text-2xl font-bold uppercase tracking-tight text-white">{topic.title}</h2>
+              <p className="font-mono text-xs text-white/70 uppercase tracking-widest mt-0.5">{topic.shortDesc}</p>
             </div>
           </div>
         </div>
@@ -369,12 +371,12 @@ const ExpandedCard = ({ topic, isClosing, onClose }: ExpandedCardProps) => {
 
           {/* Technologies */}
           <div>
-            <h3 className="lab-label mb-2 md:mb-3 text-sm md:text-base">Related Technologies</h3>
-            <div className="flex flex-wrap gap-1.5 md:gap-2">
+            <h3 className="lab-label mb-2 md:mb-3">RELATED TECHNOLOGIES</h3>
+            <div className="flex flex-wrap gap-2">
               {topic.technologies.map((tech) => (
                 <span
                   key={tech}
-                  className={`px-2.5 py-1 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-medium bg-gradient-to-r ${topic.color} text-white`}
+                  className="tech-tag"
                 >
                   {tech}
                 </span>
@@ -383,13 +385,14 @@ const ExpandedCard = ({ topic, isClosing, onClose }: ExpandedCardProps) => {
           </div>
 
           {/* Action */}
-          <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div className="mt-6 md:mt-8 pt-4 md:pt-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3"
+            style={{ borderTop: "2px solid hsl(var(--foreground))" }}>
             <span className="font-mono text-xs text-muted-foreground">
               TOPIC #{topic.id.toString().padStart(2, '0')}
             </span>
-            <button className="lab-button-primary text-sm md:text-base px-4 py-2">
-              Explore Projects
-            </button>
+            <a href="/projects" className="lab-button-primary text-sm">
+              EXPLORE PROJECTS
+            </a>
           </div>
         </div>
       </div>
@@ -552,14 +555,16 @@ const ExplorePage = () => {
   return (
     <div className="overflow-visible">
       {/* Header */}
-      <div className="mb-8 pt-8">
-        <div className="flex items-center gap-4 mb-6">
-          <span className="lab-label">Tech Radar</span>
-          <div className="flex-1 h-px bg-border" />
-          <span className="font-mono text-xs text-muted-foreground">CIRCULAR GALLERY</span>
+      <div className="pt-10" style={{ borderBottom: "2px solid hsl(var(--foreground))" }}>
+        <div className="flex items-stretch" style={{ borderBottom: "2px solid hsl(var(--foreground))" }}>
+          <span className="lab-label px-0 py-3 self-center">Tech Radar</span>
+          <div className="flex-1" />
+          <span className="font-mono text-xs text-muted-foreground px-4 py-3 self-center" style={{ borderLeft: "2px solid hsl(var(--foreground))" }}>
+            CIRCULAR GALLERY
+          </span>
         </div>
-        <h1 className="lab-title mb-4">explore.</h1>
-        <p className="text-muted-foreground max-w-2xl">
+        <h1 className="lab-title py-4">explore<span className="text-primary">.</span></h1>
+        <p className="text-muted-foreground max-w-2xl pb-6 text-sm">
           Drag to rotate the gallery. Hover over cards to flip them. Click to expand and read in detail.
         </p>
       </div>

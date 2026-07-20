@@ -1,207 +1,200 @@
-import { ExternalLink, Calendar, Clock, Loader2 } from "lucide-react";
+import { ExternalLink, RefreshCw, Loader2, ArrowUpRight, MessageSquare, TrendingUp } from "lucide-react";
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { useInView } from "react-intersection-observer";
-import useNews from "@/hooks/use-news";
-import { sectionVariants, staggerContainer, staggerItem } from "@/lib/motion";
 import { formatDistanceToNow } from "date-fns";
+import useNews from "@/hooks/use-news";
+import type { Feed } from "@/hooks/use-news";
+
+const FEEDS: { id: Feed; label: string }[] = [
+  { id: "top", label: "Top" },
+  { id: "best", label: "Best" },
+  { id: "new", label: "New" },
+  { id: "show", label: "Show HN" },
+  { id: "ask", label: "Ask HN" },
+];
 
 const NewsPage = () => {
-  const [query, setQuery] = useState("technology programming AI");
-  const { articles, loading, error, refetch, activeProvider } = useNews(query, 12);
-  const { ref: headerRef, inView: headerInView } = useInView({ threshold: 0.3, triggerOnce: true });
+  const [activeFeed, setActiveFeed] = useState<Feed>("top");
+  const { articles, loading, error, refetch } = useNews(activeFeed, 12);
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (iso: string) => {
     try {
-      const date = new Date(dateString);
-      return formatDistanceToNow(date, { addSuffix: true });
+      return formatDistanceToNow(new Date(iso), { addSuffix: true });
     } catch {
-      return dateString;
+      return iso;
     }
   };
-
-  const estimateReadTime = (text: string) => {
-    const wordsPerMinute = 200;
-    const words = text.split(/\s+/).length;
-    const minutes = Math.ceil(words / wordsPerMinute);
-    return `${minutes} min`;
-  };
-
-  const popularQueries = [
-    "artificial intelligence",
-    "web development",
-    "cybersecurity",
-    "machine learning",
-    "cloud computing",
-  ];
 
   return (
     <div>
       {/* Header */}
-      <motion.div 
-        ref={headerRef}
-        className="mb-12 pt-8"
-        variants={sectionVariants}
-        initial="initial"
-        animate={headerInView ? "animate" : "initial"}
-      >
-        <div className="flex items-center gap-4 mb-6">
-          <span className="lab-label">Tech News</span>
-          <div className="flex-1 h-px bg-border" />
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-xs text-muted-foreground">
-              {loading ? "LOADING..." : `${articles.length} ARTICLES`}
-            </span>
-            {activeProvider && (
-              <>
-                <span className="text-muted-foreground">•</span>
-                <span className="font-mono text-xs text-primary" title={`Using ${activeProvider}`}>
-                  {activeProvider}
-                </span>
-              </>
+      <div className="pt-10" style={{ borderBottom: "2px solid hsl(var(--foreground))" }}>
+        {/* Top meta bar */}
+        <div className="flex items-stretch" style={{ borderBottom: "2px solid hsl(var(--foreground))" }}>
+          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground self-center py-3">
+            Hacker News
+          </span>
+          <div className="flex-1" />
+          <div className="flex items-center gap-3 px-4 py-3" style={{ borderLeft: "2px solid hsl(var(--foreground))" }}>
+            {loading ? (
+              <Loader2 className="w-3 h-3 animate-spin text-primary" />
+            ) : (
+              <span className="font-mono text-xs text-primary font-bold">{articles.length} STORIES</span>
             )}
+            <button
+              onClick={refetch}
+              disabled={loading}
+              className="w-7 h-7 flex items-center justify-center hover:bg-primary hover:text-white transition-colors disabled:opacity-40"
+              style={{ border: "1.5px solid hsl(var(--foreground))" }}
+              title="Refresh"
+            >
+              <RefreshCw className="w-3 h-3" />
+            </button>
           </div>
         </div>
-        <h1 className="lab-title mb-4">news.</h1>
-        <p className="text-muted-foreground max-w-2xl mb-6">
-          Latest technology news, programming updates, and industry insights from around the web.
-        </p>
 
-        {/* Search/Filter */}
-        <div className="mb-6">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search news topics..."
-            className="w-full px-4 py-2 rounded-full border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                refetch();
-              }
-            }}
-          />
-        </div>
+        <h1
+          className="font-bold lowercase leading-none py-4 text-foreground"
+          style={{ fontSize: "clamp(3rem, 8vw, 6rem)", letterSpacing: "-0.04em" }}
+        >
+          news<span className="text-primary">.</span>
+        </h1>
 
-        {/* Popular Queries */}
-        <div className="flex flex-wrap gap-2">
-          <span className="text-xs text-muted-foreground font-mono">POPULAR:</span>
-          {popularQueries.map((q) => (
+        {/* Feed selector — brutalist tab bar */}
+        <div className="flex overflow-x-auto pb-0" style={{ borderTop: "2px solid hsl(var(--foreground))" }}>
+          {FEEDS.map((f, i) => (
             <button
-              key={q}
-              onClick={() => {
-                setQuery(q);
+              key={f.id}
+              onClick={() => setActiveFeed(f.id)}
+              className={`px-5 py-3 font-mono text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-colors duration-100 ${
+                activeFeed === f.id
+                  ? "bg-primary text-white"
+                  : "text-muted-foreground hover:bg-foreground hover:text-background"
+              }`}
+              style={{
+                borderRight: i < FEEDS.length - 1 ? "2px solid hsl(var(--foreground))" : "none",
               }}
-              className="px-3 py-1 rounded-full text-xs bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
             >
-              {q}
+              {f.label}
             </button>
           ))}
         </div>
-      </motion.div>
+      </div>
 
-      {/* Loading State */}
+      {/* Loading */}
       {loading && (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
-          <span className="ml-2 text-muted-foreground">Loading news...</span>
+        <div className="flex items-center gap-3 py-12">
+          <Loader2 className="w-5 h-5 animate-spin text-primary" />
+          <span className="font-mono text-sm text-muted-foreground uppercase tracking-widest">
+            Fetching from Hacker News...
+          </span>
         </div>
       )}
 
-      {/* Error State */}
+      {/* Error */}
       {error && !loading && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm mb-6"
-        >
-          <p className="font-semibold mb-2">All news APIs failed</p>
-          <p className="text-xs mb-2">{error}</p>
-          <p className="text-xs opacity-80">
-            The system tried multiple providers with automatic fallback. Check console for details. 
-            Add API keys to your .env file for better results. See NEWS_API_SETUP.md for instructions.
-          </p>
-        </motion.div>
-      )}
-
-      {/* Empty State */}
-      {!loading && articles.length === 0 && (
-        <div className="p-8 rounded-xl bg-muted/30 border border-border text-center">
-          <p className="text-muted-foreground mb-4">No news articles found.</p>
-          <p className="text-sm text-muted-foreground">
-            Try a different search query or check your API configuration.
-          </p>
+        <div className="py-8 px-4 mt-6" style={{ border: "2px solid hsl(var(--foreground))", boxShadow: "4px 4px 0 hsl(var(--foreground))" }}>
+          <p className="font-mono text-sm font-bold text-foreground uppercase">{error}</p>
+          <button onClick={refetch} className="lab-button-outline mt-4 text-xs">
+            Retry
+          </button>
         </div>
       )}
 
-      {/* News Grid */}
+      {/* Stories grid */}
       {!loading && articles.length > 0 && (
-        <motion.div
-          key="news-grid"
-          className="grid md:grid-cols-2 gap-4"
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
-        >
-          {articles.map((article, index) => (
-            <motion.article
+        <div className="mt-0" style={{ borderTop: "2px solid hsl(var(--foreground))" }}>
+          {/* Column headers */}
+          <div
+            className="hidden md:grid grid-cols-[3rem_1fr_8rem_6rem] font-mono text-[10px] uppercase tracking-widest text-muted-foreground"
+            style={{ borderBottom: "1px solid hsl(var(--foreground) / 0.2)" }}
+          >
+            <div className="px-4 py-2 text-center" style={{ borderRight: "1px solid hsl(var(--foreground) / 0.2)" }}>#</div>
+            <div className="px-4 py-2" style={{ borderRight: "1px solid hsl(var(--foreground) / 0.2)" }}>Story</div>
+            <div className="px-4 py-2" style={{ borderRight: "1px solid hsl(var(--foreground) / 0.2)" }}>Source</div>
+            <div className="px-4 py-2">Score</div>
+          </div>
+
+          {articles.map((article, i) => (
+            <a
               key={article.id}
-              variants={staggerItem}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              onClick={() => window.open(article.url, '_blank')}
-              className="group p-5 rounded-xl border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-md cursor-pointer relative overflow-hidden"
+              href={article.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group grid md:grid-cols-[3rem_1fr_8rem_6rem] items-start transition-colors duration-100 hover:bg-primary/5"
+              style={{ borderBottom: "1px solid hsl(var(--foreground) / 0.15)" }}
             >
-                {/* Accent Line */}
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+              {/* Index */}
+              <div
+                className="hidden md:flex items-center justify-center py-4 text-muted-foreground font-mono text-xs font-bold h-full"
+                style={{ borderRight: "1px solid hsl(var(--foreground) / 0.15)" }}
+              >
+                {String(i + 1).padStart(2, "0")}
+              </div>
 
-                <div className="flex gap-4">
-                  {/* Source Badge */}
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-primary/10 text-primary">
-                    <span className="text-xs font-bold">
-                      {article.source.name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <Calendar className="w-3 h-3 text-muted-foreground" />
-                      <span className="font-mono text-xs text-muted-foreground">
-                        {formatDate(article.publishedAt)}
-                      </span>
-                      <span className="text-muted-foreground">•</span>
-                      <span className="text-xs text-muted-foreground">{article.source.name}</span>
-                    </div>
-                    
-                    <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                      {article.title}
-                    </h3>
-                    
-                    <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
-                      {article.description || "No description available."}
-                    </p>
-
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        <span>{estimateReadTime(article.description || article.title)}</span>
-                      </div>
-                    </div>
-
-                    {/* Link */}
-                    <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="inline-flex items-center gap-1 text-xs text-primary">
-                        Read article
-                        <ExternalLink className="w-3 h-3" />
-                      </span>
-                    </div>
-                  </div>
+              {/* Title + meta */}
+              <div className="px-4 py-4 min-w-0" style={{ borderRight: "1px solid hsl(var(--foreground) / 0.15)" }}>
+                <div className="flex items-start gap-2">
+                  <span className="md:hidden font-mono text-[10px] text-muted-foreground mr-1 mt-0.5 shrink-0">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <p className="font-bold text-sm text-foreground group-hover:text-primary transition-colors leading-snug line-clamp-2">
+                    {article.title}
+                  </p>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-              </motion.article>
-            ))}
-        </motion.div>
+                <div className="flex items-center gap-4 mt-2">
+                  <span className="font-mono text-[10px] text-muted-foreground">
+                    {formatDate(article.publishedAt)}
+                  </span>
+                  <span className="flex items-center gap-1 font-mono text-[10px] text-muted-foreground md:hidden">
+                    <TrendingUp className="w-3 h-3 text-primary" />
+                    {article.score}
+                  </span>
+                  {article.commentCount > 0 && (
+                    <span className="flex items-center gap-1 font-mono text-[10px] text-muted-foreground">
+                      <MessageSquare className="w-3 h-3" />
+                      {article.commentCount}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Source */}
+              <div
+                className="hidden md:flex items-center px-4 py-4 h-full"
+                style={{ borderRight: "1px solid hsl(var(--foreground) / 0.15)" }}
+              >
+                <span className="font-mono text-[10px] text-muted-foreground truncate">
+                  {article.source.name}
+                </span>
+              </div>
+
+              {/* Score */}
+              <div className="hidden md:flex items-center gap-1.5 px-4 py-4 h-full">
+                <TrendingUp className="w-3 h-3 text-primary shrink-0" />
+                <span className="font-mono text-xs font-bold text-foreground">{article.score}</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
+
+      {/* Footer link */}
+      {!loading && articles.length > 0 && (
+        <div className="flex justify-between items-center py-4 mt-0" style={{ borderTop: "2px solid hsl(var(--foreground))" }}>
+          <span className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
+            Powered by Hacker News API
+          </span>
+          <a
+            href="https://news.ycombinator.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider hover:text-primary transition-colors"
+          >
+            View on HN
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
       )}
     </div>
   );

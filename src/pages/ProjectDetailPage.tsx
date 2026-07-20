@@ -56,76 +56,65 @@ const ProjectDetailPage = () => {
       className="min-h-screen pb-20"
     >
       {/* Back Button */}
-      <motion.button
+      <button
         onClick={() => navigate("/projects")}
-        className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8 group"
-        variants={buttonHoverVariants}
-        whileHover="hover"
-        whileTap="tap"
+        className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest font-bold mb-8 px-4 py-2 hover:bg-foreground hover:text-background transition-colors duration-150"
+        style={{ border: "2px solid hsl(var(--foreground))", boxShadow: "2px 2px 0px hsl(var(--foreground))" }}
       >
-        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+        <ArrowLeft className="w-4 h-4" />
         Back to Projects
-      </motion.button>
+      </button>
 
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="mb-12"
+        className="mb-12 pb-8"
+        style={{ borderBottom: "2px solid hsl(var(--foreground))" }}
       >
-        <div className="flex items-start justify-between mb-6">
-          <div className="flex-1">
-            <span className="tech-tag mb-4 inline-block">{project.category}</span>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">{project.title}</h1>
-            
-            <div className="flex flex-wrap gap-6 text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                <span>{project.year}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <User className="w-4 h-4" />
-                <span>{project.role}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Tag className="w-4 h-4" />
-                <span>{project.stack.length} Technologies</span>
-              </div>
-            </div>
+        <span className="tech-tag mb-4 inline-block">{project.category}</span>
+        <h1 className="text-4xl md:text-5xl font-bold uppercase mb-4 mt-2">{project.title}</h1>
+
+        <div className="flex flex-wrap gap-6 text-muted-foreground font-mono text-xs mb-6">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-3 h-3" />
+            <span>{project.year}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <User className="w-3 h-3" />
+            <span>{project.role}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Tag className="w-3 h-3" />
+            <span>{project.stack.length} Technologies</span>
           </div>
         </div>
 
         {/* Action Buttons */}
         {(project.url || project.github) && (
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
             {project.url && (
-              <motion.a
+              <a
                 href={project.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-                variants={buttonHoverVariants}
-                whileHover="hover"
-                whileTap="tap"
+                className="lab-button-primary"
               >
                 <ExternalLink className="w-4 h-4" />
                 View Live Project
-              </motion.a>
+              </a>
             )}
             {project.github && (
-              <motion.a
+              <a
                 href={project.github}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-6 py-3 bg-muted text-foreground rounded-lg hover:bg-muted/80 transition-colors"
-                variants={buttonHoverVariants}
-                whileHover="hover"
-                whileTap="tap"
+                className="lab-button-outline"
               >
                 <Github className="w-4 h-4" />
                 View Source Code
-              </motion.a>
+              </a>
             )}
           </div>
         )}
@@ -142,7 +131,7 @@ const ProjectDetailPage = () => {
             transition={{ delay: 0.2 }}
             className="project-card"
           >
-            <h2 className="text-2xl font-semibold mb-4">Overview</h2>
+            <h2 className="text-xl font-bold uppercase tracking-tight mb-4">Overview</h2>
             <p className="text-foreground/80 leading-relaxed text-lg">
               {project.longDescription || project.description}
             </p>
@@ -156,7 +145,7 @@ const ProjectDetailPage = () => {
               transition={{ delay: 0.3 }}
               className="project-card"
             >
-              <h2 className="text-2xl font-semibold mb-4">Key Features</h2>
+              <h2 className="text-xl font-bold uppercase tracking-tight mb-4">Key Features</h2>
               <ul className="space-y-3">
                 {project.features.map((feature, index) => (
                   <motion.li
@@ -166,7 +155,7 @@ const ProjectDetailPage = () => {
                     transition={{ delay: 0.3 + index * 0.1 }}
                     className="flex items-start gap-3"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                    <span className="w-2 h-2 bg-primary mt-2 flex-shrink-0" />
                     <span className="text-foreground/80">{feature}</span>
                   </motion.li>
                 ))}
@@ -182,7 +171,7 @@ const ProjectDetailPage = () => {
               transition={{ delay: 0.4 }}
               className="project-card"
             >
-              <h2 className="text-2xl font-semibold mb-4">Challenges & Solutions</h2>
+              <h2 className="text-xl font-bold uppercase tracking-tight mb-4">Challenges & Solutions</h2>
               <ul className="space-y-3">
                 {project.challenges.map((challenge, index) => (
                   <motion.li
@@ -192,7 +181,7 @@ const ProjectDetailPage = () => {
                     transition={{ delay: 0.4 + index * 0.1 }}
                     className="flex items-start gap-3"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                    <span className="w-2 h-2 bg-primary mt-2 flex-shrink-0" />
                     <span className="text-foreground/80">{challenge}</span>
                   </motion.li>
                 ))}
@@ -208,7 +197,7 @@ const ProjectDetailPage = () => {
               transition={{ delay: 0.5 }}
               className="project-card bg-primary/5 border-primary/20"
             >
-              <h2 className="text-2xl font-semibold mb-4">Impact & Results</h2>
+              <h2 className="text-xl font-bold uppercase tracking-tight mb-4">Impact & Results</h2>
               <ul className="space-y-3">
                 {project.impact.map((item, index) => (
                   <motion.li
@@ -218,7 +207,7 @@ const ProjectDetailPage = () => {
                     transition={{ delay: 0.5 + index * 0.1 }}
                     className="flex items-start gap-3"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                    <span className="w-2 h-2 bg-primary mt-2 flex-shrink-0" />
                     <span className="text-foreground/90 font-medium">{item}</span>
                   </motion.li>
                 ))}
@@ -236,7 +225,7 @@ const ProjectDetailPage = () => {
             transition={{ delay: 0.2 }}
             className="project-card"
           >
-            <h3 className="text-lg font-semibold mb-4">Tech Stack</h3>
+            <h3 className="text-base font-bold uppercase tracking-tight mb-4">Tech Stack</h3>
             <div className="flex flex-wrap gap-2">
               {project.stack.map((tech, index) => (
                 <motion.span
@@ -260,7 +249,7 @@ const ProjectDetailPage = () => {
             transition={{ delay: 0.3 }}
             className="project-card"
           >
-            <h3 className="text-lg font-semibold mb-4">Project Info</h3>
+            <h3 className="text-base font-bold uppercase tracking-tight mb-4">Project Info</h3>
             <div className="space-y-3 text-sm">
               <div>
                 <span className="text-muted-foreground">Year</span>

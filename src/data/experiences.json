@@ -1,10 +1,10 @@
 [
   {
     "year": "2026",
-    "title": "Looking Forward",
-    "company": "Next Chapter",
-    "description": "Exploring new opportunities in AI and software engineering. Open to roles in machine learning, backend development, and innovative tech solutions.",
-    "technologies": ["AI/ML", "Cloud Architecture", "System Design", "Innovation"],
+    "title": "Applied AI Engineer",
+    "company": "Healthflex",
+    "description": "Transitioned into a dedicated AI engineering role, leading development of production-grade AI systems — agent pipelines, MCP integrations, multimodal models, and real-time inference infrastructure across the platform.",
+    "technologies": ["LangGraph", "MCP SDK", "Anthropic Claude", "Gemini 2.0", "RAG", "pgvector", "TypeScript", "FastAPI"],
     "highlight": true
   },
   {

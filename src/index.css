@@ -1,14 +1,15 @@
 @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* LAB. Design System - Futuristic Fashion-Tech Portfolio */
+/* LAB. Design System - Brutalist Portfolio */
 
 @layer base {
   :root {
-    --background: 0 0% 92%;
+    --background: 0 0% 93%;
     --foreground: 0 0% 5%;
 
     --card: 0 0% 100%;
@@ -20,11 +21,11 @@
     --primary: 14 100% 55%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 15%;
+    --secondary: 0 0% 10%;
     --secondary-foreground: 0 0% 100%;
 
     --muted: 0 0% 88%;
-    --muted-foreground: 0 0% 45%;
+    --muted-foreground: 0 0% 40%;
 
     --accent: 14 100% 55%;
     --accent-foreground: 0 0% 100%;
@@ -32,11 +33,12 @@
     --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 88%;
+    --border: 0 0% 10%;
     --input: 0 0% 88%;
     --ring: 14 100% 55%;
 
-    --radius: 1rem;
+    /* Brutalist: zero border radius */
+    --radius: 0rem;
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 0 0% 5%;
@@ -44,7 +46,7 @@
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 95%;
     --sidebar-accent-foreground: 0 0% 5%;
-    --sidebar-border: 0 0% 88%;
+    --sidebar-border: 0 0% 10%;
     --sidebar-ring: 14 100% 55%;
 
     --chart-1: 14 100% 55%;
@@ -53,27 +55,29 @@
     --chart-4: 0 0% 60%;
     --chart-5: 0 0% 80%;
 
-    --shadow-sm: 0 2px 8px 0 hsl(0 0% 0% / 0.04);
-    --shadow: 0 4px 16px 0 hsl(0 0% 0% / 0.06);
-    --shadow-md: 0 8px 24px 0 hsl(0 0% 0% / 0.08);
-    --shadow-lg: 0 16px 48px 0 hsl(0 0% 0% / 0.1);
-    --shadow-xl: 0 24px 64px 0 hsl(0 0% 0% / 0.12);
+    /* Brutalist offset shadows */
+    --shadow-sm: 2px 2px 0px 0px hsl(0 0% 5%);
+    --shadow: 4px 4px 0px 0px hsl(0 0% 5%);
+    --shadow-md: 4px 4px 0px 0px hsl(0 0% 5%);
+    --shadow-lg: 6px 6px 0px 0px hsl(0 0% 5%);
+    --shadow-xl: 8px 8px 0px 0px hsl(0 0% 5%);
 
     --font-sans: 'Space Grotesk', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
+    --font-hand: 'Caveat', cursive;
 
     --spacing: 0.25rem;
   }
 
   .dark {
-    --background: 0 0% 8%;
-    --foreground: 0 0% 98%;
+    --background: 0 0% 7%;
+    --foreground: 0 0% 93%;
 
-    --card: 0 0% 12%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 11%;
+    --card-foreground: 0 0% 93%;
 
     --popover: 0 0% 12%;
-    --popover-foreground: 0 0% 98%;
+    --popover-foreground: 0 0% 95%;
 
     --primary: 14 100% 55%;
     --primary-foreground: 0 0% 100%;
@@ -81,7 +85,7 @@
     --secondary: 0 0% 85%;
     --secondary-foreground: 0 0% 5%;
 
-    --muted: 0 0% 20%;
+    --muted: 0 0% 18%;
     --muted-foreground: 0 0% 65%;
 
     --accent: 14 100% 55%;
@@ -90,9 +94,15 @@
     --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 20%;
+    --border: 0 0% 90%;
     --input: 0 0% 20%;
     --ring: 14 100% 55%;
+
+    --shadow-sm: 2px 2px 0px 0px hsl(0 0% 90%);
+    --shadow: 4px 4px 0px 0px hsl(0 0% 90%);
+    --shadow-md: 4px 4px 0px 0px hsl(0 0% 90%);
+    --shadow-lg: 6px 6px 0px 0px hsl(0 0% 90%);
+    --shadow-xl: 8px 8px 0px 0px hsl(0 0% 90%);
   }
 }
 
@@ -118,6 +128,18 @@
     overscroll-behavior-x: none;
   }
 
+  /* Grain texture overlay — fixed, non-interactive */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 99999;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+  }
+
   #root {
     overflow-x: hidden;
     width: 100%;
@@ -125,7 +147,6 @@
     position: relative;
   }
 
-  /* Prevent horizontal scrolling on all containers */
   div, section, main, article, aside, header, footer {
     max-width: 100%;
     box-sizing: border-box;
@@ -134,26 +155,76 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-sans tracking-tight;
   }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--foreground));
+    border: 2px solid hsl(var(--background));
+  }
 }
 
 @layer components {
+  /* Brutalist card: sharp corners, thick border, offset shadow */
   .lab-card {
-    @apply bg-card rounded-2xl shadow-lg relative overflow-hidden;
+    @apply bg-card relative overflow-hidden;
+    border: 2px solid hsl(var(--foreground));
+    box-shadow: var(--shadow-xl);
   }
 
+  /* Brutalist primary button */
   .lab-button-primary {
-    @apply bg-primary text-primary-foreground px-6 py-3 rounded-full font-medium 
-           transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95;
+    @apply bg-primary text-primary-foreground px-6 py-3 font-bold uppercase tracking-wider
+           transition-all duration-150 active:translate-x-[3px] active:translate-y-[3px]
+           inline-flex items-center gap-2;
+    border: 2px solid hsl(var(--foreground));
+    box-shadow: 4px 4px 0px 0px hsl(var(--foreground));
+  }
+  .lab-button-primary:hover {
+    box-shadow: 2px 2px 0px 0px hsl(var(--foreground));
+    transform: translate(2px, 2px);
+  }
+  .lab-button-primary:active {
+    box-shadow: none;
+    transform: translate(4px, 4px);
   }
 
+  /* Brutalist secondary button */
   .lab-button-secondary {
-    @apply bg-secondary text-secondary-foreground px-6 py-3 rounded-full font-medium
-           transition-all duration-300 hover:shadow-md hover:scale-105 active:scale-95;
+    @apply bg-foreground text-background px-6 py-3 font-bold uppercase tracking-wider
+           transition-all duration-150 inline-flex items-center gap-2;
+    border: 2px solid hsl(var(--foreground));
+    box-shadow: 4px 4px 0px 0px hsl(var(--primary));
+  }
+  .lab-button-secondary:hover {
+    box-shadow: 2px 2px 0px 0px hsl(var(--primary));
+    transform: translate(2px, 2px);
+  }
+  .lab-button-secondary:active {
+    box-shadow: none;
+    transform: translate(4px, 4px);
   }
 
+  /* Brutalist outline button */
   .lab-button-outline {
-    @apply border border-foreground/20 bg-transparent text-foreground px-6 py-3 rounded-full font-medium
-           transition-all duration-300 hover:bg-foreground hover:text-background active:scale-95;
+    @apply bg-transparent text-foreground px-6 py-3 font-bold uppercase tracking-wider
+           transition-all duration-150 inline-flex items-center gap-2;
+    border: 2px solid hsl(var(--foreground));
+    box-shadow: 4px 4px 0px 0px hsl(var(--foreground));
+  }
+  .lab-button-outline:hover {
+    @apply bg-foreground text-background;
+    box-shadow: 2px 2px 0px 0px hsl(var(--primary));
+    transform: translate(2px, 2px);
+  }
+  .lab-button-outline:active {
+    box-shadow: none;
+    transform: translate(4px, 4px);
   }
 
   .lab-label {
@@ -161,13 +232,21 @@
   }
 
   .lab-title {
-    @apply text-5xl md:text-7xl lg:text-8xl font-bold lowercase tracking-tight;
+    @apply text-5xl md:text-7xl lg:text-8xl font-bold lowercase tracking-tight leading-none;
   }
 
+  /* Brutalist nav link */
   .lab-nav-link {
-    @apply text-sm font-medium text-foreground/70 hover:text-foreground transition-colors duration-200
-           relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-px after:bg-primary
-           after:transition-all after:duration-300 hover:after:w-full;
+    @apply text-sm font-bold uppercase tracking-wider text-foreground/70 hover:text-foreground
+           transition-colors duration-150 relative;
+  }
+  .lab-nav-link::after {
+    content: '';
+    @apply absolute -bottom-1 left-0 w-0 h-[2px] bg-primary transition-all duration-200;
+  }
+  .lab-nav-link:hover::after,
+  .lab-nav-link.active::after {
+    @apply w-full;
   }
 
   .lab-vertical-text {
@@ -176,20 +255,41 @@
     text-orientation: mixed;
   }
 
+  /* Brutalist project card */
   .project-card {
-    @apply bg-card rounded-xl p-6 transition-all duration-300 
-           hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1 cursor-pointer;
+    @apply bg-card p-6 cursor-pointer transition-all duration-150;
+    border: 2px solid hsl(var(--foreground));
+    box-shadow: 5px 5px 0px 0px hsl(var(--foreground));
+  }
+  .project-card:hover {
+    box-shadow: 2px 2px 0px 0px hsl(var(--primary));
+    transform: translate(3px, 3px);
   }
 
+  /* Brutalist timeline node */
   .timeline-node {
-    @apply w-4 h-4 rounded-full bg-primary relative
-           before:absolute before:inset-0 before:rounded-full before:bg-primary/30 
-           before:animate-ping before:animation-duration-2000;
+    @apply w-4 h-4 bg-primary relative;
+    border: 2px solid hsl(var(--foreground));
   }
 
+  /* Brutalist tech tag */
   .tech-tag {
-    @apply px-3 py-1 rounded-full text-xs font-mono bg-muted text-foreground/80
-           transition-colors duration-200 hover:bg-primary hover:text-primary-foreground;
+    @apply px-2 py-1 text-xs font-mono bg-muted text-foreground uppercase tracking-wide
+           transition-all duration-150 cursor-default;
+    border: 1.5px solid hsl(var(--foreground));
+  }
+  .tech-tag:hover {
+    @apply bg-primary text-primary-foreground;
+  }
+
+  /* Brutalist divider */
+  .brut-divider {
+    @apply w-full h-[2px] bg-foreground my-0;
+  }
+
+  /* Brutalist section marker */
+  .brut-section-num {
+    @apply font-mono text-xs text-muted-foreground uppercase tracking-widest;
   }
 }
 
@@ -204,11 +304,41 @@
 
   @keyframes float {
     0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
+    50% { transform: translateY(-16px); }
   }
 
   .animate-pulse-slow {
     animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Brutalist marquee scroll */
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* Skills column vertical scroll — each column scrolls independently */
+  @keyframes scroll-col-0 {
+    0%   { transform: translateY(0); }
+    100% { transform: translateY(-50%); }
+  }
+  @keyframes scroll-col-1 {
+    0%   { transform: translateY(0); }
+    100% { transform: translateY(-50%); }
+  }
+  @keyframes scroll-col-2 {
+    0%   { transform: translateY(0); }
+    100% { transform: translateY(-50%); }
+  }
+  @keyframes scroll-col-3 {
+    0%   { transform: translateY(0); }
+    100% { transform: translateY(-50%); }
+  }
+
+  .animate-marquee {
+    animation: marquee 25s linear infinite;
+    display: flex;
+    width: max-content;
   }
 
   .perspective-1000 {
@@ -219,7 +349,6 @@
     transform-style: preserve-3d;
   }
 
-  /* Smooth Scroll Transitions - Dogstudio inspired */
   .smooth-scroll-container {
     overflow: hidden;
     height: 100vh;
@@ -237,24 +366,20 @@
     transform: translateZ(0);
   }
 
-  /* Parallax elements */
   [data-parallax] {
     will-change: transform;
     backface-visibility: hidden;
   }
 
-  /* Enhanced scrollbar styling */
   .smooth-scroll-container::-webkit-scrollbar {
     width: 0px;
     background: transparent;
   }
 
-  /* Fade in on scroll */
   .fade-in-on-scroll {
     opacity: 0;
     transform: translateY(30px);
-    transition: opacity 0.6s cubic-bezier(0.25, 0.1, 0.25, 1),
-                transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+    transition: opacity 0.5s ease, transform 0.5s ease;
   }
 
   .fade-in-on-scroll.visible {
@@ -267,16 +392,101 @@
     mask-image: linear-gradient(
       to right,
       transparent,
-      black 10%,
-      black 90%,
+      black 5%,
+      black 95%,
       transparent
     );
     -webkit-mask-image: linear-gradient(
       to right,
       transparent,
-      black 10%,
-      black 90%,
+      black 5%,
+      black 95%,
       transparent
     );
+  }
+
+  /* Brutalist border offset shadow utilities */
+  .brut-shadow {
+    box-shadow: 4px 4px 0px 0px hsl(var(--foreground));
+  }
+  .brut-shadow-primary {
+    box-shadow: 4px 4px 0px 0px hsl(var(--primary));
+  }
+  .brut-border {
+    border: 2px solid hsl(var(--foreground));
+  }
+
+  /* Handwritten annotation style */
+  .hand {
+    font-family: var(--font-hand);
+    font-size: 1rem;
+    line-height: 1.3;
+  }
+
+  /* Imperfect shadow — slightly off-axis to feel hand-placed */
+  .shadow-imperfect {
+    box-shadow: 5px 4px 0px 0px hsl(var(--foreground));
+  }
+  .shadow-imperfect-primary {
+    box-shadow: 5px 3px 0px 0px hsl(var(--primary));
+  }
+
+  /* Rough underline using SVG inline */
+  .rough-underline {
+    position: relative;
+    display: inline;
+  }
+  .rough-underline svg {
+    position: absolute;
+    bottom: -6px;
+    left: 0;
+    width: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  /* Sticky-note annotation */
+  .sticky-note {
+    font-family: var(--font-hand);
+    font-size: 0.85rem;
+    background: hsl(54 100% 88%);
+    color: hsl(0 0% 15%);
+    padding: 6px 10px;
+    transform: rotate(-1.8deg);
+    display: inline-block;
+    box-shadow: 2px 3px 0 hsl(0 0% 60%);
+    line-height: 1.35;
+  }
+
+  /* Tape strip */
+  .tape {
+    position: relative;
+  }
+  .tape::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-2deg);
+    width: 48px;
+    height: 18px;
+    background: hsl(54 80% 85% / 0.75);
+    border: 1px solid hsl(54 60% 70% / 0.5);
+    z-index: 1;
+  }
+
+  /* Stamp effect */
+  .stamp {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.35;
+    transform: rotate(-3deg);
+    display: inline-block;
+    border: 2px solid currentColor;
+    padding: 2px 6px;
+    filter: blur(0.3px);
   }
 }

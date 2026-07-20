@@ -2,9 +2,7 @@ import experiencesData from "@/data/experiences.json";
 import { motion } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
-import { sectionVariants, staggerContainer, staggerItem } from "@/lib/motion";
 
-// Type definition for experiences
 type Experience = {
   year: string;
   title: string;
@@ -19,264 +17,210 @@ const experiences = experiencesData as Experience[];
 const TimelinePage = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [lineProgress, setLineProgress] = useState(0);
-  
-  // Use Intersection Observer instead of framer-motion scroll for better compatibility
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
     let rafId: number | null = null;
     let isActive = false;
-
     let lastProgress = 0;
+
     const updateProgress = () => {
       if (!isActive) return;
-      
       const rect = container.getBoundingClientRect();
       const windowHeight = window.innerHeight;
-      const containerTop = rect.top;
-      const containerHeight = rect.height;
-      
-      // Calculate how much of the container has scrolled past the top of viewport
-      const scrolledPast = Math.max(0, windowHeight - containerTop);
-      const progress = Math.min(100, Math.max(0, (scrolledPast / (containerHeight + windowHeight)) * 100));
-      
-      // Only update if change is significant (reduce flickering)
+      const scrolledPast = Math.max(0, windowHeight - rect.top);
+      const progress = Math.min(100, Math.max(0, (scrolledPast / (rect.height + windowHeight)) * 100));
       if (Math.abs(progress - lastProgress) > 0.5) {
         setLineProgress(progress);
         lastProgress = progress;
       }
-      
-      if (isActive) {
-        rafId = requestAnimationFrame(updateProgress);
-      }
+      if (isActive) rafId = requestAnimationFrame(updateProgress);
     };
-    
-    // Only update when container is in view
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             isActive = true;
-            if (!rafId) {
-              rafId = requestAnimationFrame(updateProgress);
-            }
+            if (!rafId) rafId = requestAnimationFrame(updateProgress);
           } else {
             isActive = false;
-            if (rafId) {
-              cancelAnimationFrame(rafId);
-              rafId = null;
-            }
+            if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
           }
         });
       },
-      { threshold: 0, rootMargin: '-100px' }
+      { threshold: 0, rootMargin: "-100px" }
     );
-    
+
     observer.observe(container);
-    
     return () => {
       observer.disconnect();
       isActive = false;
-      if (rafId) {
-        cancelAnimationFrame(rafId);
-      }
+      if (rafId) cancelAnimationFrame(rafId);
     };
   }, []);
-  
+
   const { ref: headerRef, inView: headerInView } = useInView({ threshold: 0.3, triggerOnce: true });
-  
+
   return (
     <div>
       {/* Header */}
-      <motion.div 
+      <motion.div
         ref={headerRef}
-        className="mb-16 pt-8"
-        variants={sectionVariants}
-        initial="initial"
-        animate={headerInView ? "animate" : "initial"}
+        className="pt-10"
+        style={{ borderBottom: "2px solid hsl(var(--foreground))" }}
+        initial={{ opacity: 0, y: 24 }}
+        animate={headerInView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.5 }}
       >
-        <div className="flex items-center gap-4 mb-6">
-          <span className="lab-label">Career Path</span>
-          <div className="flex-1 h-px bg-border" />
-          <span className="font-mono text-xs text-muted-foreground">{experiences.length} EXPERIENCES</span>
+        <div
+          className="flex items-stretch"
+          style={{ borderBottom: "2px solid hsl(var(--foreground))" }}
+        >
+          <span className="lab-label px-0 py-3 self-center">Career Path</span>
+          <div className="flex-1" />
+          <span
+            className="font-mono text-xs text-muted-foreground px-4 py-3 self-center"
+            style={{ borderLeft: "2px solid hsl(var(--foreground))" }}
+          >
+            {experiences.length} EXPERIENCES
+          </span>
         </div>
-        <h1 className="lab-title mb-4">timeline.</h1>
-        <p className="text-muted-foreground max-w-2xl">
+        <h1 className="lab-title py-4">timeline<span className="text-primary">.</span></h1>
+        <p className="text-muted-foreground max-w-2xl pb-6 text-sm">
           A visual history of experiments, roles, and continuous evolution in tech.
         </p>
       </motion.div>
 
       {/* Timeline */}
-      <div ref={containerRef} className="relative">
-        {/* Animated Vertical Line - Full continuous line */}
-        <div className="absolute left-[6px] md:left-1/2 top-0 bottom-0 w-px transform md:-translate-x-1/2 z-0">
-          {/* Background line (full length) */}
-          <div className="absolute top-0 bottom-0 w-full bg-border" />
-          {/* Animated progress line */}
+      <div ref={containerRef} className="relative mt-12">
+        {/* Animated Vertical Line */}
+        <div className="absolute left-[7px] md:left-1/2 top-0 bottom-0 w-[2px] transform md:-translate-x-1/2 z-0">
+          <div className="absolute top-0 bottom-0 w-full bg-border opacity-40" />
           <div
             className="absolute top-0 left-0 w-full bg-primary transition-all duration-150 ease-linear"
-            style={{
-              height: `${lineProgress}%`,
-              willChange: 'height',
-            }}
+            style={{ height: `${lineProgress}%`, willChange: "height" }}
           />
         </div>
 
-        {/* Timeline Items */}
-        <div className="space-y-12">
+        <div className="space-y-10">
           {experiences.map((exp, index) => {
-            // Calculate if this item should be highlighted based on scroll progress
-            // Each item activates when the line reaches its position
             const itemProgress = (index / Math.max(experiences.length - 1, 1)) * 100;
             const isActive = lineProgress >= itemProgress;
-            
+
             return (
               <div
                 key={index}
-                className={`relative flex flex-col md:flex-row items-start gap-8 ${
+                className={`relative flex flex-col md:flex-row items-start gap-6 ${
                   index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
                 }`}
               >
-                    {/* Node */}
-                    {exp.highlight ? (
-                      <div
-                        className="absolute left-0 md:left-1/2 transform md:-translate-x-1/2 z-10"
-                      >
-                        <div 
-                          className={`w-4 h-4 rounded-full relative transition-all duration-500 ${
-                            isActive ? 'bg-primary scale-130' : 'bg-muted'
-                          }`}
-                          style={{ 
-                            border: 'none', 
-                            boxShadow: 'none', 
-                            transform: isActive ? 'scale(1.3)' : 'scale(1)',
-                          }}
-                        >
-                          {isActive && (
-                            <motion.div 
-                              className="absolute rounded-full bg-primary/40"
-                              style={{ 
-                                width: '16px',
-                                height: '16px',
-                                left: '50%',
-                                top: '50%',
-                                marginLeft: '-8px',
-                                marginTop: '-8px',
-                                zIndex: -1,
-                                pointerEvents: 'none',
-                              }}
-                              initial={{ scale: 1, opacity: 0 }}
-                              animate={{ 
-                                scale: [1, 3, 1], 
-                                opacity: [0.6, 0, 0.6],
-                              }}
-                              transition={{ 
-                                duration: 2, 
-                                repeat: Infinity,
-                                ease: "easeInOut"
-                              }}
-                            />
-                          )}
-                        </div>
-                      </div>
-                    ) : (
-                      <div
-                        className="absolute left-0 md:left-1/2 transform md:-translate-x-1/2 z-10"
-                      >
-                        <div 
-                          className={`w-4 h-4 rounded-full border-4 border-card relative z-10 transition-all duration-500 ${
-                            isActive ? 'bg-primary' : 'bg-muted'
-                          }`}
-                        />
-                      </div>
+                {/* Node */}
+                <div className="absolute left-0 md:left-1/2 transform md:-translate-x-1/2 z-10 top-6">
+                  <div
+                    className="w-4 h-4 transition-all duration-500"
+                    style={{
+                      background: isActive ? "hsl(var(--primary))" : "hsl(var(--muted))",
+                      border: "2px solid hsl(var(--foreground))",
+                      boxShadow: isActive ? "2px 2px 0px hsl(var(--foreground))" : "none",
+                    }}
+                  >
+                    {exp.highlight && isActive && (
+                      <motion.div
+                        className="absolute inset-0 bg-primary"
+                        initial={{ scale: 1, opacity: 0 }}
+                        animate={{ scale: [1, 2.5, 1], opacity: [0.5, 0, 0.5] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        style={{ zIndex: -1 }}
+                      />
                     )}
+                  </div>
+                </div>
 
-                    {/* Year Label */}
-                    <div 
-                      className={`flex-1 ${index % 2 === 0 ? "md:text-right md:pr-12" : "md:pl-12"} pl-12 md:pl-0`}
-                    >
-                      <div className="inline-block">
-                        <span className={`font-mono text-2xl font-bold transition-colors duration-500 ${
-                          isActive ? 'text-primary' : 'text-muted-foreground'
-                        }`}>
-                          {exp.year}
-                        </span>
-                      </div>
-                    </div>
+                {/* Year */}
+                <div
+                  className={`flex-1 pl-10 md:pl-0 ${
+                    index % 2 === 0 ? "md:text-right md:pr-12" : "md:pl-12"
+                  } pt-4`}
+                >
+                  <span
+                    className={`font-mono text-3xl font-bold transition-colors duration-500 ${
+                      isActive ? "text-primary" : "text-muted-foreground"
+                    }`}
+                  >
+                    {exp.year}
+                  </span>
+                </div>
 
-                    {/* Content Card */}
-                    <div 
-                      className={`flex-1 pl-12 md:pl-0 ${index % 2 === 0 ? "md:pl-12" : "md:pr-12"}`}
-                    >
-                      <div className={`p-6 rounded-xl border transition-all duration-500 bg-card/50 ${
-                        isActive ? 'border-primary/30' : 'border-border'
-                      }`}>
-                        <h3 className="text-lg font-semibold mb-1">{exp.title}</h3>
-                        <p className="text-sm text-primary font-medium mb-3">{exp.company}</p>
-                        <p className="text-sm text-muted-foreground mb-4">{exp.description}</p>
-                        <div className="flex flex-wrap gap-2">
-                          {exp.technologies.map((tech) => (
-                            <span 
-                              key={tech} 
-                              className="tech-tag text-xs"
-                            >
-                              {tech}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
+                {/* Content Card */}
+                <div
+                  className={`flex-1 pl-10 md:pl-0 ${
+                    index % 2 === 0 ? "md:pl-12" : "md:pr-12"
+                  }`}
+                >
+                  <div
+                    className="p-5 bg-card transition-all duration-500"
+                    style={{
+                      border: "2px solid hsl(var(--foreground))",
+                      boxShadow: isActive
+                        ? "4px 4px 0px hsl(var(--primary))"
+                        : "4px 4px 0px hsl(var(--foreground))",
+                    }}
+                  >
+                    <h3 className="font-bold uppercase tracking-tight mb-1">{exp.title}</h3>
+                    <p className="text-sm font-mono font-bold text-primary mb-3 uppercase tracking-wider">{exp.company}</p>
+                    <p className="text-sm text-muted-foreground mb-4">{exp.description}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {exp.technologies.map((tech) => (
+                        <span key={tech} className="tech-tag text-xs">{tech}</span>
+                      ))}
                     </div>
                   </div>
+                </div>
+              </div>
             );
           })}
         </div>
       </div>
 
       {/* Stats */}
-      <motion.section 
-        className="mt-20 pt-12 border-t border-border"
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
-        transition={{ duration: 0.7 }}
+      <section
+        className="mt-16"
+        style={{ borderTop: "2px solid hsl(var(--foreground))" }}
       >
-        <motion.div 
-          className="grid grid-cols-2 md:grid-cols-4 gap-8"
-          variants={staggerContainer}
-          initial="initial"
-          whileInView="animate"
-          viewport={{ once: true }}
+        <div
+          className="flex items-stretch"
+          style={{ borderBottom: "2px solid hsl(var(--foreground))" }}
         >
+          <span className="lab-label px-0 py-3 self-center">By The Numbers</span>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4">
           {[
             { value: "2+", label: "Years Experience" },
             { value: "15+", label: "Projects Delivered" },
             { value: "30+", label: "Technologies" },
             { value: "∞", label: "Innovation" },
-          ].map((stat, index) => (
-            <motion.div 
-              key={stat.label} 
-              className="text-center"
-              variants={staggerItem}
+          ].map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              className="flex flex-col items-start p-6"
+              style={{
+                borderRight: i < 3 ? "2px solid hsl(var(--foreground))" : "none",
+              }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1, duration: 0.4 }}
             >
-              <motion.div 
-                className="text-4xl font-bold text-primary mb-2"
-                initial={{ scale: 0 }}
-                whileInView={{ scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ 
-                  delay: index * 0.1,
-                  type: "spring",
-                  stiffness: 200
-                }}
-              >
-                {stat.value}
-              </motion.div>
-              <div className="text-sm text-muted-foreground">{stat.label}</div>
+              <span className="text-5xl font-bold text-primary font-mono mb-2">{stat.value}</span>
+              <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">{stat.label}</span>
             </motion.div>
           ))}
-        </motion.div>
-      </motion.section>
+        </div>
+      </section>
     </div>
   );
 };

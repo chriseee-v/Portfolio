@@ -13,6 +13,7 @@ import ExplorePage from "./pages/ExplorePage";
 import BlogPage from "./pages/BlogPage";
 import NewsPage from "./pages/NewsPage";
 import ConnectPage from "./pages/ConnectPage";
+import AdminPage from "./pages/AdminPage";
 import NotFound from "./pages/NotFound";
 import { useEffect, useRef, useState } from "react";
 
@@ -108,17 +109,17 @@ const ScrollableLayout = () => {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden overflow-x-hidden">
-      {/* Main Content Card */}
       <div className="relative z-10 min-h-screen flex flex-col">
         <div className="flex-1 flex flex-col w-full">
-          <div className="flex-1 lab-card flex flex-col overflow-hidden">
+          <div className="flex-1 flex flex-col overflow-hidden" style={{ border: "2px solid hsl(var(--foreground))", margin: "0" }}>
             <Navigation />
-            <main ref={containerRef} className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth">
+            <main ref={containerRef} className="flex-1 overflow-y-auto overflow-x-hidden">
               {pages.map(({ path, component: Component }) => (
-                <div 
+                <div
                   key={path}
-                  ref={setPageRef(path)} 
-                  className="min-h-screen px-6 md:px-8 lg:px-12 pb-8 overflow-x-hidden"
+                  ref={setPageRef(path)}
+                  className="min-h-screen px-6 md:px-10 lg:px-14 pb-12 overflow-x-hidden"
+                  style={{ borderBottom: "2px solid hsl(var(--foreground))" }}
                 >
                   <Component />
                 </div>
@@ -139,11 +140,12 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            <Route path="/admin" element={<AdminPage />} />
             <Route path="/projects/:id" element={
               <div className="min-h-screen bg-background">
-                <div className="lab-card min-h-screen">
+                <div className="min-h-screen" style={{ border: "2px solid hsl(var(--foreground))" }}>
                   <Navigation />
-                  <main className="px-6 md:px-8 lg:px-12 py-8">
+                  <main className="px-6 md:px-10 lg:px-14 py-10">
                     <ProjectDetailPage />
                   </main>
                 </div>
