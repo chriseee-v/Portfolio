@@ -1,16 +1,71 @@
 [
   {
+    "id": 12,
+    "title": "Replay — Browser Automation Platform",
+    "role": "Full Stack Developer",
+    "year": "2025",
+    "status": "in-progress",
+    "startedAt": "2026-07-15T00:00:00Z",
+    "stack": [
+      "Next.js",
+      "TypeScript",
+      "Browserbase",
+      "Stagehand",
+      "ReactFlow",
+      "Liveblocks",
+      "Trigger.dev",
+      "Neon",
+      "Drizzle",
+      "Clerk"
+    ],
+    "category": "Full Stack",
+    "description": "Visual browser automation platform with a ReactFlow canvas, Browserbase-powered headless execution, live session replay via HLS, and real-time collaborative workflows via Liveblocks.",
+    "longDescription": "Replay is a browser automation platform built around a visual workflow canvas (ReactFlow). Users compose automation workflows by connecting nodes on the canvas — each node maps to a browser action (navigate, click, fill, extract). Workflows execute against Browserbase headless browsers with Stagehand for AI-assisted interactions. Sessions are fully observable via HLS replay streams. Liveblocks enables real-time multiplayer on the canvas. Background tasks run via Trigger.dev with a registry-driven node executor pattern.",
+    "features": [
+      "Visual workflow canvas powered by ReactFlow with registry-driven node system",
+      "Browserbase headless browser execution with Stagehand AI-assistance",
+      "Session replay via HLS playlist — full browser recording observability",
+      "Real-time collaborative canvas with Liveblocks multiplayer",
+      "Trigger.dev background job execution for long-running automations",
+      "Neon PostgreSQL + Drizzle ORM with schema-derived types",
+      "Clerk authentication with Next.js App Router"
+    ],
+    "challenges": [
+      "Registry-driven node executor pattern — missing executor is a compile error",
+      "HLS session replay proxied server-side to protect Browserbase API keys",
+      "Real-time multiplayer canvas state sync via Liveblocks",
+      "Drizzle schema as single source of truth for all database types"
+    ],
+    "impact": [
+      "Currently in active development",
+      "Zero-code browser automation via visual canvas",
+      "Full session observability with replay playback",
+      "Multiplayer workflow collaboration"
+    ],
+    "url": "",
+    "github": ""
+  },
+  {
     "id": 1,
     "title": "Clinical Auditor",
     "role": "AI Engineer",
     "year": "2025",
-    "stack": ["Python", "MongoDB", "Google VertexAI", "Gemini", "ReAct", "ETL"],
+    "stack": [
+      "Python",
+      "FastAPI",
+      "MongoDB",
+      "Google VertexAI",
+      "Gemini",
+      "ReAct",
+      "ETL"
+    ],
     "category": "AI",
     "description": "Production-grade agentic clinical intelligence platform with multi-agent architecture for rehab data analysis. Automated return-to-sport readiness adjudication with phase-state inference.",
-    "longDescription": "Architected a production-grade agentic clinical intelligence platform using Python, MongoDB, and Google VertexAI (Gemini). Designed a ReAct-based multi-agent architecture with deterministic orchestration where specialized agents perform layered reasoning over aggregated, chronologically normalized multi-source rehab data.",
+    "longDescription": "Architected a production-grade agentic clinical intelligence platform using Python, MongoDB, and Google VertexAI (Gemini). Designed a ReAct-based multi-agent architecture with deterministic orchestration where specialized agents perform layered reasoning over aggregated, chronologically normalized multi-source rehab data. Includes a queue-based audit orchestrator with MongoDB change-stream watchers running across three concurrent microservices.",
     "features": [
       "ReAct-based multi-agent architecture with deterministic orchestration (temperature=0)",
       "Specialized agents: Evidence-Based Audit, Phase Intelligence, Biomechanics Analyzer",
+      "MongoDB change-stream watcher triggering audit queue across 3 concurrent services",
       "MongoDB-backed ETL aggregation pipeline with event deduplication",
       "Metadata enrichment and cross-source timeline fusion (clinical + VALD time-series)",
       "Dynamic phase-state inference and protocol gate validation",
@@ -18,8 +73,8 @@
     ],
     "challenges": [
       "Designed layered reasoning system over multi-source rehab data",
+      "Built queue-based orchestrator with scheduler loop and Ops FastAPI on :5003",
       "Implemented event deduplication and metadata enrichment pipeline",
-      "Built cross-source timeline fusion combining clinical and VALD time-series data",
       "Created deterministic orchestration with temperature=0 for consistent results"
     ],
     "impact": [
@@ -33,10 +88,18 @@
   },
   {
     "id": 2,
-    "title": "Clinician Agent for Stance Health",
+    "title": "Clinician Agent — Stance Health",
     "role": "AI Developer",
     "year": "2025",
-    "stack": ["RAG", "Redis", "Phoenix Tracer", "Docker", "AWS"],
+    "stack": [
+      "Python",
+      "RAG",
+      "Redis",
+      "Phoenix Tracer",
+      "Docker",
+      "AWS",
+      "LangChain"
+    ],
     "category": "AI",
     "description": "RAG-powered agent that reduced form-filling time by 40% for physiotherapy workflows. Scaled to 200+ concurrent users across 50+ clinics.",
     "longDescription": "Developed an intelligent RAG-powered agent system for Stance Health that revolutionized physiotherapy workflows by automating form-filling processes. The system leverages advanced retrieval-augmented generation to understand clinical context and automatically populate patient documentation, reducing administrative burden on clinicians.",
@@ -65,74 +128,177 @@
   },
   {
     "id": 3,
-    "title": "MCP Server & Client",
+    "title": "Clinical MCP Server",
     "role": "Backend Developer",
     "year": "2025",
-    "stack": ["ChromaDB", "Flask", "LangChain", "BGE"],
+    "stack": [
+      "TypeScript",
+      "Node.js",
+      "MCP SDK",
+      "MongoDB",
+      "Express",
+      "Zod"
+    ],
     "category": "AI",
-    "description": "Medical knowledge retrieval system with 95% accuracy. Processes 5,000+ queries daily with 99% API uptime.",
-    "longDescription": "Built a high-performance medical knowledge retrieval system using ChromaDB vector database and BGE embeddings. The system provides accurate medical information retrieval for healthcare professionals, processing thousands of queries daily with exceptional accuracy and reliability.",
+    "description": "Self-describing MCP server that gives AI agents a bank of clinical and business intake questions, with intelligent question routing based on case context.",
+    "longDescription": "Built an intelligent, self-describing MCP server using the Model Context Protocol SDK that provides AI agents with dynamic clinical and business intake question banks. The server exposes tools for question recommendation based on patient case context, workflow guidance retrieval, and form JSON generation. All agent instructions are sent during the MCP handshake — nothing is hard-coded on the agent side.",
     "features": [
-      "ChromaDB vector database for semantic search",
-      "BGE embeddings for medical domain understanding",
-      "Flask REST API with comprehensive documentation",
-      "LangChain integration for advanced query processing",
-      "Real-time query optimization and caching",
-      "Multi-tenant architecture for clinic isolation"
+      "Self-describing MCP server — agent learns everything from the server during handshake",
+      "get_workflow_guidance tool returns full playbook on demand including JSON output contract",
+      "recommend_questions uses case description + situations tags to rank by relevance",
+      "MongoDB-backed question pool with conditions and dependency tracking",
+      "Express REST bridge + Zod schema validation for all tool inputs",
+      "Frontend form JSON generation from selected questions"
     ],
     "challenges": [
-      "Achieved 95% retrieval accuracy through fine-tuned BGE embeddings",
-      "Optimized ChromaDB indexing for sub-100ms query response times",
-      "Implemented robust error handling maintaining 99% API uptime",
-      "Designed scalable architecture handling 5,000+ daily queries"
+      "Designed MCP protocol handshake that eliminates hard-coded agent-side logic",
+      "Built dynamic question ranking system using situations metadata tags",
+      "Implemented Zod schema validation for all MCP tool inputs",
+      "Structured form JSON contract for seamless frontend rendering"
     ],
     "impact": [
-      "95% accuracy in medical knowledge retrieval",
-      "5,000+ queries processed daily",
-      "99% API uptime with automated monitoring",
-      "Sub-100ms average query response time"
+      "Zero hard-coded logic on agent side — fully self-describing server",
+      "Dynamic question routing adapts to each patient case",
+      "Reusable across multiple agent implementations",
+      "Sub-100ms question recommendation response time"
     ],
     "url": "",
     "github": ""
   },
   {
     "id": 4,
-    "title": "Exercise Monitoring System",
-    "role": "Computer Vision Engineer",
+    "title": "Skillsync — AI Resume Optimizer",
+    "role": "Full Stack AI Developer",
     "year": "2025",
-    "stack": ["OpenCV", "Pose Estimation", "DINO", "SAM 2"],
-    "category": "Computer Vision",
-    "description": "Real-time pose estimation system that improved form accuracy by 35%. Processes 500+ video frames per second.",
-    "longDescription": "Developed a cutting-edge computer vision system for real-time exercise monitoring and form correction. The system uses advanced pose estimation algorithms combined with DINO and SAM 2 for accurate body tracking and movement analysis, providing instant feedback to users and physiotherapists.",
+    "stack": [
+      "Python",
+      "LangChain",
+      "Google Gemini",
+      "FastAPI",
+      "React",
+      "TypeScript",
+      "Vite"
+    ],
+    "category": "AI",
+    "description": "AI-powered resume optimization platform using LangChain chains and Gemini 2.0 Flash to analyze job postings, identify skill gaps, and generate ATS-optimized resumes on demand.",
+    "longDescription": "Skillsync is an intelligent resume optimization platform that uses LangChain and Google Gemini AI to analyze job postings and tailor resumes with deep reasoning. The backend orchestrates multi-step LangChain chains for job analysis, resume parsing, gap identification, and LaTeX resume generation. Features real-time SSE progress streaming and ATS keyword optimization.",
     "features": [
-      "Real-time pose estimation with 30+ keypoint tracking",
-      "DINO-based object detection for equipment recognition",
-      "SAM 2 integration for precise body segmentation",
-      "Multi-angle video processing support",
-      "Automated form correction suggestions",
-      "Performance analytics and progress tracking"
+      "LangChain multi-step chain: job analysis → resume parse → gap analysis → optimization",
+      "Google Gemini 2.0 Flash for deep reasoning and analysis",
+      "On-demand LaTeX resume generation from templates",
+      "Real-time SSE progress streaming to React frontend",
+      "ATS keyword matching and formatting optimization",
+      "PDF OCR for resume extraction and skill parsing",
+      "Model usage tracking with cost analytics"
     ],
     "challenges": [
-      "Optimized OpenCV pipeline to process 500+ FPS on standard hardware",
-      "Integrated DINO and SAM 2 models for enhanced accuracy",
-      "Developed real-time feedback system with <50ms latency",
-      "Implemented robust tracking across varying lighting conditions"
+      "Orchestrated multi-step LangChain pipeline with state management across chain steps",
+      "Implemented SSE streaming for real-time progress visibility",
+      "Built robust PDF OCR pipeline for accurate resume extraction",
+      "Designed LaTeX templating system for formatted resume generation"
     ],
     "impact": [
-      "35% improvement in exercise form accuracy",
-      "500+ frames per second processing capability",
-      "Real-time feedback with <50ms latency",
-      "Deployed in 20+ physiotherapy clinics"
+      "End-to-end resume tailoring in under 60 seconds",
+      "ATS optimization increasing keyword match rate",
+      "Supports multiple resume templates and job types",
+      "Real-time workflow visibility with step-by-step progress"
     ],
     "url": "",
     "github": ""
   },
   {
     "id": 5,
+    "title": "Codeshipp — AI Coding CLI",
+    "role": "Open Source Developer",
+    "year": "2025",
+    "stack": [
+      "TypeScript",
+      "Node.js",
+      "Anthropic SDK",
+      "MCP",
+      "Firecrawl",
+      "gRPC",
+      "VS Code"
+    ],
+    "category": "Full Stack",
+    "description": "Open-source coding-agent CLI supporting Anthropic, OpenAI, Gemini, Ollama, Codex, and GitHub Models. Features MCP integration, slash commands, and a VS Code extension.",
+    "longDescription": "Codeshipp is an open-source coding-agent CLI for cloud and local model providers. Built in TypeScript with the Anthropic SDK at its core, it enables a terminal-first AI workflow with prompts, tools, agents, MCP server support, slash commands, and streaming output. Supports OpenAI-compatible APIs, Gemini, GitHub Models, Codex OAuth, Ollama, and Atomic Chat backends from a single unified interface.",
+    "features": [
+      "Multi-provider support: Anthropic, OpenAI, Gemini, Ollama, Codex, GitHub Models",
+      "Model Context Protocol (MCP) client integration",
+      "Terminal-first workflow: streaming output, slash commands, agents",
+      "VS Code extension for in-editor AI assistance",
+      "Firecrawl integration for web context retrieval",
+      "gRPC + proto-loader for high-performance tool communication",
+      "Orama semantic search for code navigation"
+    ],
+    "challenges": [
+      "Unified multi-provider interface with consistent streaming behavior",
+      "MCP client implementation with full protocol handshake support",
+      "VS Code extension bridging CLI agent to editor context",
+      "Robust error handling across provider-specific API differences"
+    ],
+    "impact": [
+      "Open-source with active GitHub community",
+      "Supports 6+ AI providers from a single CLI",
+      "VS Code extension for seamless developer workflow",
+      "Full MCP compatibility for tool-augmented agents"
+    ],
+    "url": "",
+    "github": "https://github.com/chriseee-v/codeship-your-coding-companion"
+  },
+  {
+    "id": 6,
+    "title": "Meta & Google Insights Agent",
+    "role": "AI/ML Engineer",
+    "year": "2025",
+    "stack": [
+      "Python",
+      "Anthropic Claude",
+      "Meta Ads API",
+      "Slack API",
+      "FastAPI",
+      "MCP"
+    ],
+    "category": "AI",
+    "description": "Autonomous scheduled agent that pulls daily Meta Ads performance and CRM Conversion API health, reasons over a fixed question set, and posts structured digests to Slack.",
+    "longDescription": "Built a fully autonomous marketing analytics agent that runs on a daily schedule without human intervention. The agent pulls Meta Ads performance data and CRM Conversion API health metrics, applies structured reasoning over a fixed prompt set, and posts a formatted digest to Slack. Failures automatically DM the on-call user. Integrates Meta Ads MCP for direct API access without custom connectors.",
+    "features": [
+      "Fully autonomous scheduled execution — zero human intervention",
+      "Meta Ads MCP integration for direct API access",
+      "Structured reasoning over fixed question set for consistent daily analysis",
+      "Slack digest posting with formatted performance summary",
+      "Automated failure DMs to on-call user with error context",
+      "CRM Conversion API health monitoring alongside ad metrics"
+    ],
+    "challenges": [
+      "Designed reliable scheduling without drift across time zones",
+      "Implemented Meta Ads MCP for structured API access",
+      "Built failure notification flow that distinguishes API errors from data anomalies",
+      "Structured prompt set for reproducible daily insights"
+    ],
+    "impact": [
+      "Daily marketing analytics delivered to Slack automatically",
+      "Zero-touch operation with automated failure alerting",
+      "Consistent analysis framework via fixed question set",
+      "CRM health + ad performance correlated in single digest"
+    ],
+    "url": "",
+    "github": ""
+  },
+  {
+    "id": 7,
     "title": "Healthflex One-View",
     "role": "Full Stack Developer",
     "year": "2025",
-    "stack": ["FastAPI", "WebSocket", "MongoDB", "Plotly"],
+    "stack": [
+      "FastAPI",
+      "WebSocket",
+      "MongoDB",
+      "Plotly",
+      "Pandas",
+      "Python"
+    ],
     "category": "Full Stack",
     "description": "Real-time athlete analytics platform integrating VALD data. Reduced data latency by 50% for 100+ users.",
     "longDescription": "Created a comprehensive real-time analytics platform for athlete performance monitoring, integrating data from VALD performance testing equipment. The platform provides coaches and physiotherapists with instant insights into athlete metrics, injury risk assessment, and performance trends through interactive visualizations.",
@@ -142,7 +308,7 @@
       "MongoDB for flexible athlete data storage",
       "Interactive Plotly dashboards for data visualization",
       "VALD equipment integration for performance metrics",
-      "Automated injury risk assessment algorithms"
+      "Pandas ETL pipeline with file-lock concurrency control"
     ],
     "challenges": [
       "Implemented WebSocket architecture reducing data latency by 50%",
@@ -160,11 +326,94 @@
     "github": ""
   },
   {
-    "id": 6,
+    "id": 8,
+    "title": "Exercise Monitoring System",
+    "role": "Computer Vision Engineer",
+    "year": "2025",
+    "stack": [
+      "OpenCV",
+      "Pose Estimation",
+      "DINO",
+      "SAM 2",
+      "Florence-2",
+      "Python"
+    ],
+    "category": "Computer Vision",
+    "description": "Real-time pose estimation system that improved form accuracy by 35%. Processes 500+ video frames per second.",
+    "longDescription": "Developed a cutting-edge computer vision system for real-time exercise monitoring and form correction. The system uses advanced pose estimation algorithms combined with DINO and SAM 2 for accurate body tracking and movement analysis, providing instant feedback to users and physiotherapists.",
+    "features": [
+      "Real-time pose estimation with 30+ keypoint tracking",
+      "DINO-based object detection for equipment recognition",
+      "SAM 2 integration for precise body segmentation",
+      "Florence-2 for enhanced visual understanding",
+      "Multi-angle video processing support",
+      "Automated form correction suggestions"
+    ],
+    "challenges": [
+      "Optimized OpenCV pipeline to process 500+ FPS on standard hardware",
+      "Integrated DINO and SAM 2 models for enhanced accuracy",
+      "Developed real-time feedback system with <50ms latency",
+      "Implemented robust tracking across varying lighting conditions"
+    ],
+    "impact": [
+      "35% improvement in exercise form accuracy",
+      "500+ frames per second processing capability",
+      "Real-time feedback with <50ms latency",
+      "Deployed in 20+ physiotherapy clinics"
+    ],
+    "url": "",
+    "github": ""
+  },
+  {
+    "id": 9,
+    "title": "Health Customer Agent",
+    "role": "AI Developer",
+    "year": "2025",
+    "stack": [
+      "Python",
+      "MongoDB",
+      "FastAPI",
+      "LangChain",
+      "Pydantic"
+    ],
+    "category": "AI",
+    "description": "Deterministic patient interview orchestrator with a MongoDB-backed question pool. Rule-based system selects questions based on patient data without LLM decision-making.",
+    "longDescription": "Implemented a deterministic question pool management system for the HealthAgent that manages patient interviews without AI-driven orchestration. The system uses MongoDB to store questions with conditions, dependencies, and situational context. A rule-based orchestrator selects and sequences questions based on patient data deterministically, ensuring consistent and auditable interview flows.",
+    "features": [
+      "Deterministic rule-based orchestrator — no LLM for question selection",
+      "MongoDB question collection with conditions, dependencies, and context tags",
+      "Question sequencing based on patient data state machine",
+      "Structured communication protocol between orchestrator and agent",
+      "Pydantic schema validation for all question/response payloads",
+      "Auditable decision trail for clinical compliance"
+    ],
+    "challenges": [
+      "Designed rule-based orchestration that scales without AI inference overhead",
+      "Built state machine for question dependency resolution",
+      "Implemented Pydantic validation for strict payload contracts",
+      "Created auditable decision trail for clinical compliance requirements"
+    ],
+    "impact": [
+      "Deterministic, auditable patient interview flows",
+      "Zero AI inference cost for orchestration decisions",
+      "Consistent interview quality across all patient sessions",
+      "Fully compliant clinical documentation pipeline"
+    ],
+    "url": "",
+    "github": ""
+  },
+  {
+    "id": 10,
     "title": "EEG-Controlled Prosthetic Arm",
     "role": "IoT & ML Engineer",
     "year": "2024",
-    "stack": ["Python", "Scikit-Learn", "Raspberry Pi", "3D Printing"],
+    "stack": [
+      "Python",
+      "Scikit-Learn",
+      "Raspberry Pi",
+      "3D Printing",
+      "NumPy"
+    ],
     "category": "AI",
     "description": "Brain-controlled prosthetic arm with 85% action accuracy. Patent pending for commercial development.",
     "longDescription": "Pioneered an innovative brain-computer interface system that enables users to control a prosthetic arm using EEG signals. The project combines machine learning, IoT hardware, and custom 3D-printed mechanical components to create an affordable and accessible prosthetic solution. Currently patent pending for commercial development.",
@@ -192,11 +441,17 @@
     "github": ""
   },
   {
-    "id": 7,
+    "id": 11,
     "title": "Smart Streetlight Management",
     "role": "IoT Developer",
     "year": "2024",
-    "stack": ["Arduino", "LoRaWAN", "Python", "Firebase"],
+    "stack": [
+      "Arduino",
+      "LoRaWAN",
+      "Python",
+      "Firebase",
+      "IoT"
+    ],
     "category": "IoT",
     "description": "IoT solution for centralized streetlight control. Reduced maintenance response times by 20%. Smart India Hackathon 24' Semi-Finalist.",
     "longDescription": "Developed a comprehensive IoT-based smart streetlight management system for municipal infrastructure. The solution enables centralized monitoring and control of streetlights across large areas using LoRaWAN technology, significantly reducing energy consumption and maintenance costs. Recognized as a Semi-Finalist in Smart India Hackathon 2024.",
@@ -224,4 +479,3 @@
     "github": ""
   }
 ]
-
