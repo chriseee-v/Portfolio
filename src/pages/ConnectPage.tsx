@@ -307,10 +307,10 @@ const ConnectPage = () => {
           >
             <div className="flex items-center gap-3 mb-2">
               <div className="w-3 h-3 bg-green-500 animate-pulse" style={{ border: "1px solid hsl(var(--foreground))" }} />
-              <span className="font-bold uppercase text-sm tracking-wider">Currently Employed</span>
+              <span className="font-bold uppercase text-sm tracking-wider">Open to Opportunities</span>
             </div>
             <p className="text-sm text-muted-foreground font-mono">
-              SDE @ Healthflex. Open to interesting opportunities and collaborations.
+              Former SDE @ Healthflex. Currently pursuing a Master&apos;s in Advanced Data Science and AI at the University of Liverpool.
             </p>
           </div>
         </div>
