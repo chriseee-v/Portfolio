@@ -81,12 +81,10 @@ export function ProjectsMarquee({ projects, onProjectClick }: { projects: Projec
   const columns = [0, 1, 2, 3].map((column) => projects.filter((_, index) => index % 4 === column));
 
   return (
-    <div className="relative h-[min(78vh,760px)] min-h-[34rem] w-full overflow-hidden bg-background [perspective:900px]">
-      <div className="absolute inset-0" style={{ transform: "translateX(-3%) translateY(0) translateZ(-80px) rotateX(8deg) rotateY(-6deg) rotateZ(2deg)", transformStyle: "preserve-3d" }}>
-        <div className="flex h-full w-full items-center md:hidden">
-          <Marquee vertical pauseOnHover repeat={3} className="h-full w-full">
-            {projects.map((project) => <ProjectMarqueeCard key={project.id} project={project} onClick={onProjectClick} />)}
-          </Marquee>
+    <div className="relative w-full overflow-visible bg-background md:h-[min(78vh,760px)] md:min-h-[34rem] md:overflow-hidden md:[perspective:900px]">
+      <div className="relative w-full md:absolute md:inset-0 md:[transform:translateX(-3%)_translateY(0)_translateZ(-80px)_rotateX(8deg)_rotateY(-6deg)_rotateZ(2deg)]" style={{ transformStyle: "preserve-3d" }}>
+        <div className="grid w-full grid-cols-1 gap-4 p-3 md:hidden">
+          {projects.map((project) => <ProjectMarqueeCard key={project.id} project={project} onClick={onProjectClick} />)}
         </div>
         <div className="hidden h-full w-full items-center gap-3 md:flex">
           {columns.map((column, index) => (
