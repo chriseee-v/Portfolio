@@ -2,7 +2,7 @@ import heroFigure from "@/assets/hero-figure.png";
 import { ArrowRight, Download, ArrowUpRight } from "lucide-react";
 
 const specRows = [
-  { key: "ROLE", val: "Applied AI Engineer @ Healthflex" },
+  { key: "ROLE", val: "Former Applied AI Engineer @ Healthflex" },
   { key: "FOCUS", val: "AI · IoT · Full Stack" },
   { key: "LOCATION", val: "Liverpool, UK" },
   { key: "STATUS", val: "Open to Opportunities" },
