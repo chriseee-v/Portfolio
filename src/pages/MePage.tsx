@@ -239,7 +239,7 @@ const MePage = () => {
                 View Projects
                 <ArrowRight className="w-4 h-4" />
               </a>
-              <a href="/Chris_Resume.pdf" download className="lab-button-outline">
+              <a href="/Chris_technical.pdf" download className="lab-button-outline">
                 Download CV
                 <Download className="w-4 h-4" />
               </a>

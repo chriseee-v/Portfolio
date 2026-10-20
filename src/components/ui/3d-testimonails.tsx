@@ -78,26 +78,13 @@ function ProjectMarqueeCard({ project, onClick }: { project: ProjectMarqueeItem;
 }
 
 export function ProjectsMarquee({ projects, onProjectClick }: { projects: ProjectMarqueeItem[]; onProjectClick: (project: ProjectMarqueeItem) => void }) {
-  const columns = [0, 1, 2, 3].map((column) => projects.filter((_, index) => index % 4 === column));
+  const uniqueProjects = Array.from(new Map(projects.map((project) => [project.id, project])).values());
 
   return (
-    <div className="relative w-full overflow-visible bg-background md:h-[min(78vh,760px)] md:min-h-[34rem] md:overflow-hidden md:[perspective:900px]">
-      <div className="relative w-full md:absolute md:inset-0 md:[transform:translateX(-3%)_translateY(0)_translateZ(-80px)_rotateX(8deg)_rotateY(-6deg)_rotateZ(2deg)]" style={{ transformStyle: "preserve-3d" }}>
-        <div className="grid w-full grid-cols-1 gap-4 p-3 md:hidden">
-          {projects.map((project) => <ProjectMarqueeCard key={project.id} project={project} onClick={onProjectClick} />)}
-        </div>
-        <div className="hidden h-full w-full items-center gap-3 md:flex">
-          {columns.map((column, index) => (
-            <Marquee key={index} vertical pauseOnHover reverse={index % 2 === 1} repeat={3} className="h-full w-1/4">
-              {column.map((project) => <ProjectMarqueeCard key={project.id} project={project} onClick={onProjectClick} />)}
-            </Marquee>
-          ))}
-        </div>
-      </div>
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-1/5 bg-gradient-to-b from-background to-transparent" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-1/5 bg-gradient-to-t from-background to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-1/6 bg-gradient-to-r from-background to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-1/6 bg-gradient-to-l from-background to-transparent" />
+    <div className="relative grid w-full grid-cols-1 items-start gap-4 bg-background p-3 md:grid-cols-4 md:gap-5 md:p-5">
+      {uniqueProjects.map((project) => (
+        <ProjectMarqueeCard key={project.id} project={project} onClick={onProjectClick} />
+      ))}
     </div>
   );
 }
