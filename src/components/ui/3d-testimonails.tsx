@@ -77,14 +77,45 @@ function ProjectMarqueeCard({ project, onClick }: { project: ProjectMarqueeItem;
   );
 }
 
-export function ProjectsMarquee({ projects, onProjectClick }: { projects: ProjectMarqueeItem[]; onProjectClick: (project: ProjectMarqueeItem) => void }) {
-  const uniqueProjects = Array.from(new Map(projects.map((project) => [project.id, project])).values());
+function VerticalProjectColumn({ projects, onProjectClick, reverse = false }: { projects: ProjectMarqueeItem[]; onProjectClick: (project: ProjectMarqueeItem) => void; reverse?: boolean }) {
+  const shouldAutoScroll = projects.length >= 3;
+  const cards = shouldAutoScroll ? [...projects, ...projects] : projects;
 
   return (
-    <div className="relative grid w-full grid-cols-1 items-start gap-4 bg-background p-3 md:grid-cols-4 md:gap-5 md:p-5">
-      {uniqueProjects.map((project) => (
-        <ProjectMarqueeCard key={project.id} project={project} onClick={onProjectClick} />
-      ))}
+    <div className="h-full min-h-0 overflow-hidden">
+      <div
+        className={cn(
+          "flex flex-col gap-4 p-2",
+          shouldAutoScroll && "animate-marquee-vertical-seamless",
+          reverse && shouldAutoScroll && "[animation-direction:reverse]",
+        )}
+      >
+        {cards.map((project, index) => (
+          <ProjectMarqueeCard key={`${project.id}-${index}`} project={project} onClick={onProjectClick} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function ProjectsMarquee({ projects, onProjectClick }: { projects: ProjectMarqueeItem[]; onProjectClick: (project: ProjectMarqueeItem) => void }) {
+  const uniqueProjects = Array.from(new Map(projects.map((project) => [project.id, project])).values());
+  const columns = [0, 1, 2, 3].map((column) => uniqueProjects.filter((_, index) => index % 4 === column));
+
+  return (
+    <div className="relative h-[min(78vh,760px)] min-h-[34rem] w-full overflow-hidden bg-background [perspective:1000px]">
+      <div className="absolute inset-0 grid grid-cols-1 gap-2 p-2 md:grid-cols-4 md:gap-3 md:p-3" style={{ transform: "translateZ(-40px) rotateX(5deg) rotateY(-4deg) rotateZ(1deg)", transformStyle: "preserve-3d" }}>
+        <div className="h-full md:hidden">
+          <VerticalProjectColumn projects={uniqueProjects} onProjectClick={onProjectClick} />
+        </div>
+        {columns.map((column, index) => (
+          <div key={index} className="hidden h-full md:block">
+            <VerticalProjectColumn projects={column} onProjectClick={onProjectClick} reverse={index % 2 === 1} />
+          </div>
+        ))}
+      </div>
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-1/6 bg-gradient-to-b from-background to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-1/6 bg-gradient-to-t from-background to-transparent" />
     </div>
   );
 }

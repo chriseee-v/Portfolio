@@ -340,6 +340,16 @@
     to { transform: translateY(calc(-100% - var(--gap))); }
   }
 
+  @keyframes marquee-vertical-seamless {
+    from { transform: translateY(0); }
+    to { transform: translateY(calc(-50% - 0.5rem)); }
+  }
+
+  .animate-marquee-vertical-seamless {
+    animation: marquee-vertical-seamless 34s linear infinite;
+    will-change: transform;
+  }
+
   .animate-marquee-vertical {
     animation: marquee-vertical var(--duration) linear infinite;
   }
