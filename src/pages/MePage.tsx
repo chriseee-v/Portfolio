@@ -4,14 +4,14 @@ import { ArrowRight, Download, ArrowUpRight } from "lucide-react";
 const specRows = [
   { key: "ROLE", val: "Applied AI Engineer @ Healthflex" },
   { key: "FOCUS", val: "AI · IoT · Full Stack" },
-  { key: "LOCATION", val: "Bangalore, India" },
+  { key: "LOCATION", val: "Liverpool, UK" },
   { key: "STATUS", val: "Open to Opportunities" },
 ];
 
 const skillCols = [
   {
     label: "AI & Agents",
-    speed: 28,
+    speed: 20,
     items: [
       "LangChain / LangGraph",
       "Anthropic Claude API",
@@ -32,7 +32,7 @@ const skillCols = [
   },
   {
     label: "Full Stack",
-    speed: 34,
+    speed: 25,
     items: [
       "Next.js 15 App Router",
       "React 19",
@@ -53,7 +53,7 @@ const skillCols = [
   },
   {
     label: "CV & IoT",
-    speed: 22,
+    speed: 16,
     items: [
       "OpenCV",
       "SAM 2 (Segment Anything)",
@@ -74,7 +74,7 @@ const skillCols = [
   },
   {
     label: "Cloud & DevOps",
-    speed: 30,
+    speed: 22,
     items: [
       "AWS (EC2, S3, Lambda)",
       "Vercel / Edge",
@@ -115,7 +115,7 @@ const RoughUnderline = ({ color = "hsl(14 100% 55%)" }: { color?: string }) => (
 
 const MePage = () => {
   return (
-    <div className="-mx-6 md:-mx-10 lg:-mx-14 text-foreground">
+    <div className="-mx-6 w-screen max-w-none md:-mx-10 lg:-mx-14 text-foreground">
 
       {/* ── Top Metadata Bar ── */}
       <div
@@ -132,17 +132,17 @@ const MePage = () => {
           className="hidden md:block px-4 py-2 text-muted-foreground"
           style={{ borderRight: "1px solid hsl(var(--foreground) / 0.25)" }}
         >
-          BANGALORE, INDIA
+          LIVERPOOL, UK
         </span>
-        <div className="ml-auto flex">
+          <div className="ml-auto flex w-full md:w-auto">
           <span
-            className="px-4 py-2 text-primary font-bold"
+            className="flex-1 px-2 py-2 text-center text-primary font-bold md:flex-none md:px-4"
             style={{ borderLeft: "1px solid hsl(var(--foreground) / 0.25)" }}
           >
             ■ AVAILABLE
           </span>
           <span
-            className="px-4 py-2 text-muted-foreground"
+            className="flex-1 px-2 py-2 text-center text-muted-foreground md:flex-none md:px-4"
             style={{ borderLeft: "1px solid hsl(var(--foreground) / 0.25)" }}
           >
             v2.0.25
@@ -151,7 +151,7 @@ const MePage = () => {
       </div>
 
       {/* ── Main Hero Row ── */}
-      <div className="flex" style={{ minHeight: "82vh" }}>
+      <div className="relative flex flex-col lg:flex-row" style={{ minHeight: "82vh" }}>
 
         {/* Orange Sidebar */}
         <div
@@ -172,8 +172,7 @@ const MePage = () => {
 
         {/* ── Text Column ── */}
         <div
-          className="flex-1 flex flex-col justify-between p-8 lg:p-12"
-          style={{ borderRight: "2px solid hsl(var(--foreground))" }}
+          className="relative z-10 order-2 flex w-full flex-col justify-between border-x-0 p-6 sm:p-8 lg:order-none lg:flex-1 lg:border-r-2 lg:p-12"
         >
           {/* Headline */}
           <div>
@@ -273,6 +272,18 @@ const MePage = () => {
           </div>
         </div>
 
+        {/* Mobile hero image — the desktop composition keeps its dedicated side panel. */}
+        <div
+          className="pointer-events-none absolute inset-0 z-0 order-1 block w-full overflow-hidden opacity-20 lg:order-none lg:hidden"
+        >
+          <img
+            src={heroFigure}
+            alt="Chris Thomas Varghese"
+            className="absolute inset-0 h-full w-full object-cover"
+              style={{ objectPosition: "35% center", filter: "contrast(1.08) saturate(1.1)" }}
+          />
+        </div>
+
         {/* ── Image Panel ── */}
         <div
           className="hidden lg:flex relative overflow-hidden shrink-0"
@@ -290,7 +301,7 @@ const MePage = () => {
             className="absolute inset-0 w-full h-full"
             style={{
               objectFit: "cover",
-              objectPosition: "top center",
+              objectPosition: "center",
               filter: "contrast(1.08) saturate(1.1)",
             }}
           />
@@ -401,47 +412,32 @@ const MePage = () => {
       </div>
 
       {/* ── Skills / Capabilities — Scrolling Columns ── */}
-      <div>
-        {/* Column headers */}
-        <div className="grid grid-cols-2 lg:grid-cols-4">
-          {skillCols.map((col, i) => (
-            <div
-              key={col.label}
-              className="px-6 py-3 font-mono text-xs font-bold uppercase tracking-wider bg-foreground text-background"
-              style={{
-                borderRight: i < skillCols.length - 1 ? "2px solid hsl(var(--background))" : "none",
-              }}
-            >
+      <div className="grid grid-cols-2 overflow-hidden border-b-2 border-foreground lg:grid-cols-4">
+        {skillCols.map((col, colIdx) => (
+          <div
+            key={col.label}
+            className="relative min-w-0 overflow-hidden border-b border-foreground/15 lg:border-b-0"
+            style={{
+              borderRight: colIdx < skillCols.length - 1 ? "1px solid hsl(var(--foreground) / 0.15)" : "none",
+            }}
+          >
+            <div className="min-h-[42px] bg-foreground px-3 py-3 font-mono text-[10px] font-bold uppercase tracking-wider text-background sm:px-6 sm:text-xs">
               {col.label}
             </div>
-          ))}
-        </div>
-
-        {/* Scrolling ticker columns */}
-        <div
-          className="grid grid-cols-2 lg:grid-cols-4 overflow-hidden"
-          style={{ height: "220px", borderBottom: "2px solid hsl(var(--foreground))" }}
-        >
-          {skillCols.map((col, colIdx) => (
-            <div
-              key={col.label}
-              className="overflow-hidden relative"
-              style={{
-                borderRight: colIdx < skillCols.length - 1 ? "1px solid hsl(var(--foreground) / 0.15)" : "none",
-              }}
-            >
+            <div className="relative h-[180px] overflow-hidden">
               {/* Fade masks top/bottom */}
               <div
-                className="absolute inset-x-0 top-0 z-10 pointer-events-none"
+                className="absolute inset-x-0 top-0 z-10 hidden pointer-events-none md:block"
                 style={{ height: "36px", background: "linear-gradient(to bottom, hsl(var(--background)), transparent)" }}
               />
               <div
-                className="absolute inset-x-0 bottom-0 z-10 pointer-events-none"
+                className="absolute inset-x-0 bottom-0 z-10 hidden pointer-events-none md:block"
                 style={{ height: "36px", background: "linear-gradient(to top, hsl(var(--background)), transparent)" }}
               />
 
               {/* Scrolling content — duplicated for seamless loop */}
               <div
+              className="skill-column-scroll h-[180px]"
                 style={{
                   animation: `scroll-col-${colIdx} ${col.speed}s linear infinite`,
                   willChange: "transform",
@@ -460,8 +456,8 @@ const MePage = () => {
                 ))}
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
 
       {/* ── Mission Statement ── */}

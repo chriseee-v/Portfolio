@@ -335,11 +335,21 @@
     100% { transform: translateY(-50%); }
   }
 
+  @keyframes marquee-vertical {
+    from { transform: translateY(0); }
+    to { transform: translateY(calc(-100% - var(--gap))); }
+  }
+
+  .animate-marquee-vertical {
+    animation: marquee-vertical var(--duration) linear infinite;
+  }
+
   .animate-marquee {
     animation: marquee 25s linear infinite;
     display: flex;
     width: max-content;
   }
+
 
   .perspective-1000 {
     perspective: 1000px;

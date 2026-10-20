@@ -16,6 +16,7 @@ import ConnectPage from "./pages/ConnectPage";
 import AdminPage from "./pages/AdminPage";
 import NotFound from "./pages/NotFound";
 import { useEffect, useRef, useState } from "react";
+import { ScrollContainerContext } from "./contexts/ScrollContainerContext";
 
 const queryClient = new QueryClient();
 
@@ -113,18 +114,15 @@ const ScrollableLayout = () => {
         <div className="flex-1 flex flex-col w-full">
           <div className="flex-1 flex flex-col overflow-hidden" style={{ border: "2px solid hsl(var(--foreground))", margin: "0" }}>
             <Navigation />
-            <main ref={containerRef} className="flex-1 overflow-y-auto overflow-x-hidden">
-              {pages.map(({ path, component: Component }) => (
-                <div
-                  key={path}
-                  ref={setPageRef(path)}
-                  className="min-h-screen px-6 md:px-10 lg:px-14 pb-12 overflow-x-hidden"
-                  style={{ borderBottom: "2px solid hsl(var(--foreground))" }}
-                >
-                  <Component />
-                </div>
-              ))}
-            </main>
+            <ScrollContainerContext.Provider value={containerRef}>
+              <main ref={containerRef} className="flex-1 overflow-y-auto overflow-x-hidden">
+                {pages.map(({ path, component: Component }) => (
+                  <div key={path} ref={setPageRef(path)} className="min-h-screen px-6 md:px-10 lg:px-14 pb-12 overflow-x-clip" style={{ borderBottom: "2px solid hsl(var(--foreground))" }}>
+                    <Component />
+                  </div>
+                ))}
+              </main>
+            </ScrollContainerContext.Provider>
           </div>
         </div>
       </div>

@@ -260,7 +260,7 @@ const ConnectPage = () => {
               style={{ borderBottom: "1px solid hsl(var(--foreground) / 0.2)" }}
             >
               <MapPin className="w-5 h-5 text-primary shrink-0" />
-              <span className="font-mono text-sm">Bangalore, Karnataka</span>
+              <span className="font-mono text-sm">Liverpool, UK</span>
             </div>
             <div
               className="flex items-center gap-4 py-4 px-0"

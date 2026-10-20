@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { ExternalLink, Github, Timer } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useInView } from "react-intersection-observer";
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import projectsData from "@/data/projects.json";
 import { gsap } from "gsap";
+import { ProjectsMarquee } from "@/components/ui/3d-testimonails";
 
 const filters = ["All", "AI", "Full Stack", "Computer Vision", "IoT"];
 
@@ -78,7 +78,7 @@ function InProgressCard({ project, onClick }: { project: Project; onClick: (e: R
         />
       </div>
 
-      <div className="p-6 grid lg:grid-cols-[1fr_auto] gap-6 items-start">
+      <div className="p-4 md:p-6 grid lg:grid-cols-[1fr_auto] gap-5 md:gap-6 items-start">
         <div>
           {/* Top meta */}
           <div className="flex items-center gap-3 mb-4">
@@ -97,7 +97,7 @@ function InProgressCard({ project, onClick }: { project: Project; onClick: (e: R
             </span>
           </div>
 
-          <h3 className="text-2xl font-bold uppercase tracking-tight mb-3 group-hover:text-primary transition-colors">
+          <h3 className="text-xl md:text-2xl font-bold uppercase tracking-tight mb-3 group-hover:text-primary transition-colors">
             {project.title}
           </h3>
 
@@ -130,8 +130,8 @@ function InProgressCard({ project, onClick }: { project: Project; onClick: (e: R
 
         {/* Live timer block */}
         <div
-          className="shrink-0 flex flex-col items-center justify-center px-6 py-5 bg-primary text-white"
-          style={{ minWidth: "200px", border: "2px solid hsl(var(--foreground))" }}
+          className="shrink-0 w-full lg:w-auto flex flex-col items-center justify-center px-4 md:px-6 py-5 bg-primary text-white"
+          style={{ minWidth: "0", border: "2px solid hsl(var(--foreground))" }}
         >
           <div className="flex items-center gap-2 mb-3">
             <Timer className="w-3.5 h-3.5 text-white/70" />
@@ -151,7 +151,6 @@ function InProgressCard({ project, onClick }: { project: Project; onClick: (e: R
 
 const ProjectsPage = () => {
   const [activeFilter, setActiveFilter] = useState("All");
-  const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true });
   const navigate = useNavigate();
 
   const handleCardClick = (e: React.MouseEvent, project: Project) => {
@@ -185,9 +184,6 @@ const ProjectsPage = () => {
       ? projects
       : projects.filter((p) => p.category === activeFilter);
 
-  const inProgressProjects = filteredProjects.filter((p) => p.status === "in-progress");
-  const completedProjects = filteredProjects.filter((p) => p.status !== "in-progress");
-
   return (
     <div>
       {/* Header */}
@@ -210,14 +206,14 @@ const ProjectsPage = () => {
 
       {/* Filters */}
       <div
-        className="flex flex-wrap gap-0 mb-0"
+        className="grid grid-cols-2 sm:flex gap-0 mb-0"
         style={{ borderBottom: "2px solid hsl(var(--foreground))" }}
       >
         {filters.map((filter) => (
           <button
             key={filter}
             onClick={() => setActiveFilter(filter)}
-            className={`px-5 py-3 font-mono text-xs font-bold uppercase tracking-wider transition-colors duration-150 ${
+            className={`w-full px-3 sm:px-5 py-3 font-mono text-xs font-bold uppercase tracking-wider transition-colors duration-150 ${
               activeFilter === filter
                 ? "bg-primary text-primary-foreground"
                 : "hover:bg-foreground hover:text-background"
@@ -229,103 +225,14 @@ const ProjectsPage = () => {
         ))}
       </div>
 
-      {/* Projects Grid */}
-      <motion.div
-        ref={ref}
-        className="grid md:grid-cols-2 lg:grid-cols-3 mt-8 gap-6"
-        initial="initial"
-        animate={inView ? "animate" : "initial"}
-        variants={{
-          initial: {},
-          animate: { transition: { staggerChildren: 0.07 } },
-        }}
-      >
-        <AnimatePresence mode="wait">
-          {/* In-progress projects — full width, shown first */}
-          {inProgressProjects.map((project) => (
-            <InProgressCard
-              key={project.id}
-              project={project}
-              onClick={(e) => handleCardClick(e, project)}
-            />
-          ))}
+      {/* Animated project marquee */}
+      <div className="mt-8 -mx-6 w-screen max-w-none md:-mx-10 lg:-mx-14">
+        <ProjectsMarquee
+          projects={filteredProjects}
+          onProjectClick={(project) => handleCardClick({ preventDefault: () => undefined } as React.MouseEvent, project)}
+        />
+      </div>
 
-          {/* Completed projects */}
-          {completedProjects.map((project, index) => (
-            <motion.article
-              key={project.id}
-              layout
-              className="project-card group relative overflow-hidden cursor-pointer"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.25, delay: index * 0.04 }}
-              onClick={(e) => handleCardClick(e, project)}
-            >
-              {/* Top bar */}
-              <div
-                className="flex items-center justify-between mb-4 pb-3"
-                style={{ borderBottom: "2px solid hsl(var(--foreground))" }}
-              >
-                <span className="font-mono text-xs text-muted-foreground font-bold">{project.year}</span>
-                <span className="font-mono text-xs font-bold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-1">
-                  {project.category}
-                </span>
-              </div>
-
-              <h3 className="text-lg font-bold uppercase tracking-tight mb-3 group-hover:text-primary transition-colors">
-                {project.title}
-              </h3>
-
-              <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                {project.description}
-              </p>
-
-              <div
-                className="pt-3 pb-3 mb-4"
-                style={{ borderTop: "1.5px solid hsl(var(--foreground) / 0.15)", borderBottom: "1.5px solid hsl(var(--foreground) / 0.15)" }}
-              >
-                <span className="text-xs font-mono font-bold text-foreground/60 uppercase tracking-wide">{project.role}</span>
-              </div>
-
-              <div className="flex flex-wrap gap-2 mb-4">
-                {project.stack.map((tech) => (
-                  <span key={tech} className="tech-tag text-xs">{tech}</span>
-                ))}
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-3 pt-3" style={{ borderTop: "1.5px solid hsl(var(--foreground) / 0.15)" }}>
-                {project.url && (
-                  <a
-                    href={project.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-xs font-mono font-bold uppercase tracking-wider text-primary hover:underline"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <ExternalLink className="w-3 h-3" />
-                    Live
-                  </a>
-                )}
-                {project.github && (
-                  <a
-                    href={project.github}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-xs font-mono font-bold uppercase tracking-wider text-foreground/60 hover:text-foreground"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Github className="w-3 h-3" />
-                    Code
-                  </a>
-                )}
-                <span className="ml-auto text-xs font-mono text-muted-foreground">→ VIEW</span>
-              </div>
-            </motion.article>
-          ))}
-        </AnimatePresence>
-      </motion.div>
     </div>
   );
 };

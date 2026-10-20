@@ -1,13 +1,15 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Save, LogOut, Plus, Trash2, ChevronDown, ChevronUp, Github, CheckCircle, AlertCircle, Loader2, Eye, EyeOff, RefreshCw } from "lucide-react";
 import projectsData from "@/data/projects.json";
+import experiencesData from "@/data/experiences.json";
+import blogsData from "@/data/blogs.json";
 import { commitFile, validateToken } from "@/lib/github-cms";
 
 const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || "thechris241103@gmail.com";
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || "";
 const SESSION_KEY = "lab_admin_session";
 
-// GitHub config — baked in at build time via .env.local
+// GitHub config â€” baked in at build time via .env.local
 const ENV_GH_TOKEN = import.meta.env.VITE_GH_TOKEN || "";
 const ENV_GH_OWNER = import.meta.env.VITE_GH_OWNER || "";
 const ENV_GH_REPO  = import.meta.env.VITE_GH_REPO  || "";
@@ -33,7 +35,26 @@ type Project = {
   github?: string;
 };
 
-// ─── Auth ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Data Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+type Experience = {
+  year: string;
+  title: string;
+  company: string;
+  description?: string;
+  technologies?: string[];
+  highlight?: boolean;
+};
+type BlogPost = {
+  id: number;
+  title: string;
+  date: string;
+  readTime: string;
+  tags?: string[];
+  summary?: string;
+  url?: string;
+};
+
+// â”€â”€â”€ Auth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function LoginScreen({ onLogin }: { onLogin: () => void }) {
   const [email, setEmail] = useState("");
@@ -114,7 +135,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
   );
 }
 
-// ─── GitHub Settings ──────────────────────────────────────────────────────────
+// â”€â”€â”€ GitHub Settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function GitHubSettings({ onClose }: { onClose: () => void }) {
   const [token, setToken] = useState(() => ghToken());
@@ -141,12 +162,12 @@ function GitHubSettings({ onClose }: { onClose: () => void }) {
             <Github className="w-4 h-4" />
             <span className="font-mono text-sm font-bold uppercase tracking-widest">GitHub Settings</span>
           </div>
-          <button onClick={onClose} className="font-mono text-xs text-muted-foreground hover:text-foreground">✕</button>
+          <button onClick={onClose} className="font-mono text-xs text-muted-foreground hover:text-foreground">âœ•</button>
         </div>
 
         <div className="p-5 space-y-0" style={{ border: "none" }}>
           <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest mb-4">
-            Changes commit directly to your repo → Vercel auto-redeploys.
+            Changes commit directly to your repo â†’ Vercel auto-redeploys.
             Use a fine-grained PAT with Contents write on this repo only.
           </p>
 
@@ -181,7 +202,7 @@ function GitHubSettings({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ─── Project Editor ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Project Editor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function ProjectEditor({
   project,
@@ -213,7 +234,7 @@ function ProjectEditor({
         <div className="flex items-center gap-3 min-w-0">
           {project.status === "in-progress" && (
             <span className="font-mono text-[8px] bg-primary text-white px-2 py-0.5 uppercase tracking-widest shrink-0">
-              ● LIVE
+              â— LIVE
             </span>
           )}
           <span className="font-bold uppercase text-sm truncate">{project.title || "Untitled"}</span>
@@ -260,7 +281,7 @@ function ProjectEditor({
               }`}
               style={{ border: "1.5px solid hsl(var(--foreground) / 0.4)" }}
             >
-              {project.status === "in-progress" ? "● In Progress" : "Completed"}
+              {project.status === "in-progress" ? "â— In Progress" : "Completed"}
             </button>
             {project.status === "in-progress" && (
               <input
@@ -332,10 +353,218 @@ function ProjectEditor({
   );
 }
 
-// ─── Main Admin Panel ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Experience Editor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function ExperienceEditor({
+  experience,
+  onChange,
+  onDelete,
+}: {
+  experience: Experience;
+  onChange: (e: Experience) => void;
+  onDelete: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const update = (key: keyof Experience, value: unknown) =>
+    onChange({ ...experience, [key]: value });
+
+  return (
+    <div
+      className="mb-4"
+      style={{
+        border: `2px solid ${experience.highlight ? "hsl(var(--primary))" : "hsl(var(--foreground))"}`,
+      }}
+    >
+      <div
+        className="flex items-center justify-between px-4 py-3 cursor-pointer select-none"
+        style={{ borderBottom: open ? "2px solid hsl(var(--foreground))" : "none" }}
+        onClick={() => setOpen(!open)}
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          {experience.highlight && (
+            <span className="font-mono text-[8px] bg-primary text-white px-2 py-0.5 uppercase tracking-widest shrink-0">
+              â— LIVE
+            </span>
+          )}
+          <span className="font-bold uppercase text-sm truncate">{experience.title || "Untitled"}</span>
+          <span className="font-mono text-[10px] text-muted-foreground shrink-0">{experience.year}</span>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            className="p-1 text-muted-foreground hover:text-red-500 transition-colors"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+          {open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        </div>
+      </div>
+
+      {open && (
+        <div className="p-4 space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            {(["year", "title", "company"] as const).map((key) => (
+              <div key={key}>
+                <label className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground block mb-1">{key}</label>
+                <input
+                  type="text"
+                  value={(experience[key] as string) || ""}
+                  onChange={(e) => update(key, e.target.value)}
+                  className="w-full px-3 py-2 bg-background font-mono text-sm focus:outline-none"
+                  style={{ border: "1.5px solid hsl(var(--foreground) / 0.4)" }}
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <label className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Highlight</label>
+            <button
+              onClick={() => update("highlight", !experience.highlight)}
+              className={`font-mono text-xs px-3 py-1 uppercase tracking-widest transition-colors ${
+                experience.highlight ? "bg-primary text-white" : "bg-muted text-muted-foreground"
+              }`}
+              style={{ border: "1.5px solid hsl(var(--foreground) / 0.4)" }}
+            >
+              {experience.highlight ? "Yes" : "No"}
+            </button>
+          </div>
+
+          <div>
+            <label className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground block mb-1">Description</label>
+            <textarea
+              value={experience.description || ""}
+              onChange={(e) => update("description", e.target.value)}
+              rows={3}
+              className="w-full px-3 py-2 bg-background font-mono text-sm focus:outline-none resize-y"
+              style={{ border: "1.5px solid hsl(var(--foreground) / 0.4)" }}
+            />
+          </div>
+
+          <div>
+            <label className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground block mb-1">
+              Technologies (comma-separated)
+            </label>
+            <input
+              type="text"
+              value={experience.technologies?.join(", ") || ""}
+              onChange={(e) =>
+                update("technologies", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))
+              }
+              className="w-full px-3 py-2 bg-background font-mono text-sm focus:outline-none"
+              style={{ border: "1.5px solid hsl(var(--foreground) / 0.4)" }}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// â”€â”€â”€ Blog Editor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function BlogEditor({
+  post,
+  onChange,
+  onDelete,
+}: {
+  post: BlogPost;
+  onChange: (p: BlogPost) => void;
+  onDelete: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const update = (key: keyof BlogPost, value: unknown) =>
+    onChange({ ...post, [key]: value });
+
+  return (
+    <div
+      className="mb-4"
+      style={{ border: "2px solid hsl(var(--foreground))" }}
+    >
+      <div
+        className="flex items-center justify-between px-4 py-3 cursor-pointer select-none"
+        style={{ borderBottom: open ? "2px solid hsl(var(--foreground))" : "none" }}
+        onClick={() => setOpen(!open)}
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="font-bold uppercase text-sm truncate">{post.title || "Untitled"}</span>
+          <span className="font-mono text-[10px] text-muted-foreground shrink-0">{post.id}</span>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            className="p-1 text-muted-foreground hover:text-red-500 transition-colors"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+          {open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        </div>
+      </div>
+
+      {open && (
+        <div className="p-4 space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            {(["id", "title", "date", "readTime"] as const).map((key) => (
+              <div key={key}>
+                <label className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground block mb-1">{key}</label>
+                <input
+                  type={key === "id" ? "number" : "text"}
+                  value={(post[key] as string | number | undefined) ?? ""}
+                  onChange={(e) =>
+                    update(key, key === "id" ? Number(e.target.value) : e.target.value)
+                  }
+                  className="w-full px-3 py-2 bg-background font-mono text-sm focus:outline-none"
+                  style={{ border: "1.5px solid hsl(var(--foreground) / 0.4)" }}
+                />
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <label className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground block mb-1">Tags (comma-separated)</label>
+            <input
+              type="text"
+              value={post.tags?.join(", ") || ""}
+              onChange={(e) =>
+                update("tags", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))
+              }
+              className="w-full px-3 py-2 bg-background font-mono text-sm focus:outline-none"
+              style={{ border: "1.5px solid hsl(var(--foreground) / 0.4)" }}
+            />
+          </div>
+
+          <div>
+            <label className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground block mb-1">Summary</label>
+            <textarea
+              value={post.summary || ""}
+              onChange={(e) => update("summary", e.target.value)}
+              rows={3}
+              className="w-full px-3 py-2 bg-background font-mono text-sm focus:outline-none resize-y"
+              style={{ border: "1.5px solid hsl(var(--foreground) / 0.4)" }}
+            />
+          </div>
+
+          <div>
+            <label className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground block mb-1">URL</label>
+            <input
+              type="url"
+              value={post.url || ""}
+              onChange={(e) => update("url", e.target.value)}
+              className="w-full px-3 py-2 bg-background font-mono text-sm focus:outline-none"
+              style={{ border: "1.5px solid hsl(var(--foreground) / 0.4)" }}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// â”€â”€â”€ Main Admin Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function AdminPanel({ onLogout }: { onLogout: () => void }) {
+  const [section, setSection] = useState<"projects" | "timeline" | "blog">("projects");
   const [projects, setProjects] = useState<Project[]>(() => projectsData as Project[]);
+  const [experiences, setExperiences] = useState<Experience[]>(() => experiencesData as Experience[]);
+  const [blogs, setBlogs] = useState<BlogPost[]>(() => blogsData as BlogPost[]);
   const [showGHSettings, setShowGHSettings] = useState(false);
   const [pushStatus, setPushStatus] = useState<"idle" | "pushing" | "success" | "error">("idle");
   const [pushMsg, setPushMsg] = useState("");
@@ -357,14 +586,14 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
     ]);
   };
 
-  const pushToGitHub = async () => {
+  const pushProjects = async () => {
     if (!ghConfigured()) {
       setShowGHSettings(true);
       return;
     }
 
     setPushStatus("pushing");
-    setPushMsg("Committing to GitHub…");
+    setPushMsg("Committing to GitHubâ€¦");
 
     const content = JSON.stringify(projects, null, 2) + "\n";
     const result = await commitFile(
@@ -378,7 +607,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
 
     if (result.ok) {
       setPushStatus("success");
-      setPushMsg("Pushed! Vercel is rebuilding…");
+      setPushMsg("Pushed! Vercel is rebuildingâ€¦");
     } else {
       setPushStatus("error");
       setPushMsg(result.error || "Push failed");
@@ -386,6 +615,103 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
 
     setTimeout(() => { setPushStatus("idle"); setPushMsg(""); }, 5000);
   };
+
+  const pushExperiences = async () => {
+    if (!ghConfigured()) {
+      setShowGHSettings(true);
+      return;
+    }
+
+    setPushStatus("pushing");
+    setPushMsg("Committing to GitHubâ€¦");
+
+    const content = JSON.stringify(experiences, null, 2) + "\n";
+    const result = await commitFile(
+      ghToken(),
+      ghOwner(),
+      ghRepo(),
+      "src/data/experiences.json",
+      content,
+      "cms: update experiences / timeline"
+    );
+
+    if (result.ok) {
+      setPushStatus("success");
+      setPushMsg("Pushed! Vercel is rebuildingâ€¦");
+    } else {
+      setPushStatus("error");
+      setPushMsg(result.error || "Push failed");
+    }
+
+    setTimeout(() => { setPushStatus("idle"); setPushMsg(""); }, 5000);
+  };
+
+  const pushBlogs = async () => {
+    if (!ghConfigured()) {
+      setShowGHSettings(true);
+      return;
+    }
+
+    setPushStatus("pushing");
+    setPushMsg("Committing to GitHubâ€¦");
+
+    const content = JSON.stringify(blogs, null, 2) + "\n";
+    const result = await commitFile(
+      ghToken(),
+      ghOwner(),
+      ghRepo(),
+      "src/data/blogs.json",
+      content,
+      "cms: update blog posts"
+    );
+
+    if (result.ok) {
+      setPushStatus("success");
+      setPushMsg("Pushed! Vercel is rebuildingâ€¦");
+    } else {
+      setPushStatus("error");
+      setPushMsg(result.error || "Push failed");
+    }
+
+    setTimeout(() => { setPushStatus("idle"); setPushMsg(""); }, 5000);
+  };
+
+  const addExperience = () => {
+    setExperiences([
+      {
+        year: new Date().getFullYear().toString(),
+        title: "New Experience",
+        company: "",
+        description: "",
+        technologies: [],
+        highlight: false,
+      },
+      ...experiences,
+    ]);
+  };
+
+  const addBlog = () => {
+    const newId = Math.max(0, ...blogs.map((b) => b.id)) + 1;
+    setBlogs([
+      {
+        id: newId,
+        title: "New Blog Post",
+        date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+        readTime: "5 min",
+        tags: [],
+        summary: "",
+        url: "",
+      },
+      ...blogs,
+    ]);
+  };
+
+  const activePush =
+    section === "projects"
+      ? pushProjects
+      : section === "timeline"
+      ? pushExperiences
+      : pushBlogs;
 
   return (
     <div className="min-h-screen bg-background">
@@ -404,7 +730,12 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
         <div className="flex-1 flex items-center px-6 gap-2">
           {pushStatus === "idle" && (
             <span className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
-              {projects.length} projects · {ghConfigured() ? `${ghOwner()}/${ghRepo()}` : "GitHub not configured"}
+              {section === "projects"
+                ? `${projects.length} projects`
+                : section === "timeline"
+                ? `${experiences.length} experiences`
+                : `${blogs.length} posts`}{" "}
+              Â· {ghConfigured() ? `${ghOwner()}/${ghRepo()}` : "GitHub not configured"}
             </span>
           )}
           {pushStatus === "pushing" && (
@@ -435,7 +766,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
             <span className="hidden sm:inline">GitHub</span>
           </button>
           <button
-            onClick={pushToGitHub}
+            onClick={activePush}
             disabled={pushStatus === "pushing"}
             className="px-4 flex items-center gap-2 font-mono text-xs font-bold bg-primary text-white hover:opacity-90 transition-opacity disabled:opacity-50"
             style={{ borderLeft: "2px solid hsl(var(--foreground))" }}
@@ -459,31 +790,87 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
         </div>
       </div>
 
-      {/* Content */}
+       {/* Section tabs */}
+      <div className="max-w-4xl mx-auto px-6 pt-6">
+        <div className="flex gap-0 mb-0" style={{ borderBottom: "2px solid hsl(var(--foreground))" }}>
+          {[
+            { key: "projects", label: "Projects" },
+            { key: "timeline", label: "Timeline" },
+            { key: "blog", label: "Blog" },
+          ].map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setSection(t.key as "projects" | "timeline" | "blog")}
+              className={`px-4 py-2 font-mono text-xs font-bold uppercase tracking-widest transition-colors ${
+                section === t.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-foreground hover:text-background"
+              }`}
+              style={{ borderRight: "2px solid hsl(var(--foreground))" }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+       {/* Content */}
       <div className="max-w-4xl mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="font-bold uppercase tracking-tight text-xl">Projects</h2>
-          <button onClick={addProject} className="lab-button-primary text-sm">
+          <h2 className="font-bold uppercase tracking-tight text-xl">
+            {section === "projects" ? "Projects" : section === "timeline" ? "Timeline / Experiences" : "Blog Posts"}
+          </h2>
+          <button
+            onClick={() => {
+              if (section === "projects") addProject();
+              else if (section === "timeline") addExperience();
+              else addBlog();
+            }}
+            className="lab-button-primary text-sm"
+          >
             <Plus className="w-4 h-4" />
-            Add Project
+            {section === "projects" ? "Add Project" : section === "timeline" ? "Add Experience" : "Add Blog Post"}
           </button>
         </div>
 
-        {projects.map((p) => (
-          <ProjectEditor
-            key={p.id}
-            project={p}
-            onChange={(updated) =>
-              setProjects(projects.map((x) => (x.id === updated.id ? updated : x)))
-            }
-            onDelete={() => setProjects(projects.filter((x) => x.id !== p.id))}
-          />
-        ))}
+        {section === "projects" &&
+          projects.map((p) => (
+            <ProjectEditor
+              key={p.id}
+              project={p}
+              onChange={(updated) =>
+                setProjects(projects.map((x) => (x.id === updated.id ? updated : x)))
+              }
+              onDelete={() => setProjects(projects.filter((x) => x.id !== p.id))}
+            />
+          ))}
+
+        {section === "timeline" &&
+          experiences.map((exp, index) => (
+            <ExperienceEditor
+              key={index}
+              experience={exp}
+              onChange={(updated) =>
+                setExperiences(experiences.map((x, i) => (i === index ? updated : x)))
+              }
+              onDelete={() => setExperiences(experiences.filter((_, i) => i !== index))}
+            />
+          ))}
+
+        {section === "blog" &&
+          blogs.map((post) => (
+            <BlogEditor
+              key={post.id}
+              post={post}
+              onChange={(updated) =>
+                setBlogs(blogs.map((x) => (x.id === updated.id ? updated : x)))
+              }
+              onDelete={() => setBlogs(blogs.filter((x) => x.id !== post.id))}
+            />
+          ))}
 
         {/* Push CTA at bottom */}
         <div className="pt-6 flex gap-4 items-center" style={{ borderTop: "2px solid hsl(var(--foreground))" }}>
           <button
-            onClick={pushToGitHub}
+            onClick={activePush}
             disabled={pushStatus === "pushing"}
             className="lab-button-primary disabled:opacity-50"
           >
@@ -496,16 +883,17 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
           </button>
           {!ghConfigured() && (
             <span className="font-mono text-xs text-muted-foreground">
-              ← Configure GitHub first
+              Configure GitHub first
             </span>
           )}
         </div>
       </div>
     </div>
+
   );
 }
 
-// ─── Entry ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Entry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const AdminPage = () => {
   const [authed, setAuthed] = useState(() => sessionStorage.getItem(SESSION_KEY) === "1");

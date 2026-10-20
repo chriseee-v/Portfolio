@@ -1,6 +1,8 @@
-import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from "react";
+import React, { useRef, useEffect, useState, useContext, forwardRef, useImperativeHandle } from "react";
 import gsap from "gsap";
 import { X, Cpu, Globe, Layers, Zap, Box, Code, Database, Cloud, Sparkles, Palette, Terminal, Wifi } from "lucide-react";
+import GlassFolder, { type FolderFile } from "@/components/ui/glass-folder-cards";
+import { ScrollContainerContext } from "@/contexts/ScrollContainerContext";
 
 const techTopics = [
   { 
@@ -329,28 +331,30 @@ const ExpandedCard = ({ topic, isClosing, onClose }: ExpandedCardProps) => {
   return (
     <div
       ref={modalRef}
-      className="absolute inset-0 z-50 flex items-start md:items-center justify-center p-2 md:p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-start md:items-center justify-center overscroll-contain p-3 md:p-4 overflow-y-auto"
+      onWheel={(event) => event.stopPropagation()}
+      onTouchMove={(event) => event.stopPropagation()}
       onClick={onClose}
-      style={{ minHeight: '100%' }}
+      style={{ minHeight: '100%', background: "hsl(var(--foreground) / 0.16)", backdropFilter: "blur(3px)" }}
     >
       <div
         ref={contentRef}
-        className="relative w-[90%] max-w-md md:max-w-2xl bg-card overflow-hidden my-4 md:my-auto"
-        style={{ border: "2px solid hsl(var(--foreground))", boxShadow: "6px 6px 0px hsl(var(--foreground))" }}
+        className="relative my-4 max-h-[calc(100svh-1.5rem)] w-[calc(100%-1rem)] max-w-lg overflow-y-auto rounded-sm backdrop-blur-2xl md:my-auto md:w-[90%]"
+        style={{ background: "hsl(var(--background) / 0.56)", border: "1px solid hsl(0 0% 100% / 0.58)", backdropFilter: "blur(22px) saturate(1.25)", boxShadow: "8px 8px 0 hsl(var(--foreground) / 0.26), inset 0 1px 0 hsl(0 0% 100% / 0.3), 0 18px 60px hsl(0 0% 0% / 0.28)" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header — solid orange, no gradient */}
-        <div className="relative bg-primary p-4 md:p-8" style={{ borderBottom: "2px solid hsl(var(--foreground))" }}>
+        <div className="relative p-4 backdrop-blur-xl md:p-8" style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.7), hsl(var(--primary) / 0.42))", borderBottom: "1px solid hsl(0 0% 100% / 0.55)", backdropFilter: "blur(16px) saturate(1.3)", boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.35), inset 0 -1px 0 hsl(0 0% 0% / 0.18)" }}>
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 md:top-4 md:right-4 w-8 h-8 bg-white/15 hover:bg-white/30 flex items-center justify-center transition-colors"
-            style={{ border: "2px solid rgba(255,255,255,0.5)" }}
+            className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center bg-white/10 backdrop-blur-md transition-colors hover:bg-white/25 md:top-4 md:right-4"
+            style={{ border: "1px solid rgba(255,255,255,0.62)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.35)" }}
           >
             <X className="w-4 h-4 text-white" />
           </button>
           <div className="flex items-center gap-3 md:gap-5">
-            <div className="w-12 h-12 md:w-14 md:h-14 bg-white/15 flex items-center justify-center shrink-0"
-              style={{ border: "2px solid rgba(255,255,255,0.4)" }}>
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center bg-white/10 backdrop-blur-md md:h-14 md:w-14"
+              style={{ border: "1px solid rgba(255,255,255,0.58)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.35)" }}>
               <Icon className="w-6 h-6 md:w-7 md:h-7 text-white" />
             </div>
             <div>
@@ -361,7 +365,7 @@ const ExpandedCard = ({ topic, isClosing, onClose }: ExpandedCardProps) => {
         </div>
 
         {/* Content */}
-        <div className="p-4 md:p-8">
+        <div className="p-4 md:p-8" style={{ background: "hsl(var(--background) / 0.38)" }}>
           <p className="text-base md:text-lg text-muted-foreground mb-4 md:mb-6">
             {topic.description}
           </p>
@@ -376,7 +380,8 @@ const ExpandedCard = ({ topic, isClosing, onClose }: ExpandedCardProps) => {
               {topic.technologies.map((tech) => (
                 <span
                   key={tech}
-                  className="tech-tag"
+                  className="tech-tag backdrop-blur-md"
+                  style={{ background: "hsl(var(--foreground) / 0.08)", borderColor: "hsl(var(--foreground) / 0.42)", boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.28)" }}
                 >
                   {tech}
                 </span>
@@ -390,7 +395,7 @@ const ExpandedCard = ({ topic, isClosing, onClose }: ExpandedCardProps) => {
             <span className="font-mono text-xs text-muted-foreground">
               TOPIC #{topic.id.toString().padStart(2, '0')}
             </span>
-            <a href="/projects" className="lab-button-primary text-sm">
+            <a href="/projects" className="lab-button-primary text-sm backdrop-blur-md" style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.78), hsl(var(--primary) / 0.48))", borderColor: "hsl(0 0% 100% / 0.65)", boxShadow: "4px 4px 0 hsl(var(--foreground) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.35)" }}>
               EXPLORE PROJECTS
             </a>
           </div>
@@ -400,143 +405,24 @@ const ExpandedCard = ({ topic, isClosing, onClose }: ExpandedCardProps) => {
   );
 };
 
-const CircularGallery = () => {
-  const cardsRef = useRef<(FlipCardHandle | null)[]>([]);
+const SimpleTechGrid = () => {
   const [selectedCard, setSelectedCard] = useState<TopicType | null>(null);
   const [isClosing, setIsClosing] = useState(false);
-  const [rotation, setRotation] = useState(0);
-  const rotationRef = useRef(0);
-  const isDragging = useRef(false);
-  const lastX = useRef(0);
-
-  const radius = 280;
-  const cardCount = techTopics.length;
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (!isDragging.current && !selectedCard) {
-        rotationRef.current += 0.15;
-        setRotation(rotationRef.current);
-      }
-    }, 50);
-
-    return () => clearInterval(interval);
-  }, [selectedCard]);
-
-  useEffect(() => {
-    cardsRef.current.forEach((card, index) => {
-      if (!card) return;
-      const angle = (index / cardCount) * Math.PI * 2 + (rotation * Math.PI) / 180;
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius;
-      const cardRotation = (angle * 180) / Math.PI + 90;
-
-      card.setPosition(x, y, cardRotation);
-    });
-  }, [rotation, cardCount]);
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    isDragging.current = true;
-    lastX.current = e.clientX;
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging.current) return;
-    const deltaX = e.clientX - lastX.current;
-    rotationRef.current += deltaX * 0.3;
-    setRotation(rotationRef.current);
-    lastX.current = e.clientX;
-  };
-
-  const handleMouseUp = () => {
-    isDragging.current = false;
-  };
-
-  const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
-  const isCardTouch = useRef(false);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-    isCardTouch.current = (e.target as HTMLElement).closest('.flip-card') !== null;
-    
-    if (!isCardTouch.current) {
-      isDragging.current = true;
-      lastX.current = e.touches[0].clientX;
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging.current || isCardTouch.current) return;
-    
-    const deltaX = Math.abs(e.touches[0].clientX - touchStartX.current);
-    const deltaY = Math.abs(e.touches[0].clientY - touchStartY.current);
-    
-    // Only drag if horizontal movement is greater than vertical (swipe gesture)
-    if (deltaX > deltaY && deltaX > 10) {
-      e.preventDefault();
-      const currentX = e.touches[0].clientX;
-      const moveDelta = currentX - lastX.current;
-      rotationRef.current += moveDelta * 0.3;
-      setRotation(rotationRef.current);
-      lastX.current = currentX;
-    }
-  };
-
-  const handleTouchEnd = () => {
-    isDragging.current = false;
-    isCardTouch.current = false;
-  };
-
-  const handleCardClick = (topic: TopicType) => {
-    setSelectedCard(topic);
-  };
-
   const handleClose = () => {
     setIsClosing(true);
-    setTimeout(() => {
-      setSelectedCard(null);
-      setIsClosing(false);
-    }, 400);
+    setTimeout(() => { setSelectedCard(null); setIsClosing(false); }, 400);
   };
-
   return (
-    <div className="relative min-h-[70vh] flex items-center justify-center overflow-visible py-12 md:py-16" style={{ position: 'relative' }}>
-      {/* Center Text */}
-      <div className="absolute z-10 text-center pointer-events-none">
-        <h2 className="text-xl md:text-2xl font-light text-foreground mb-2">
-          The future is built on
-        </h2>
-        <p className="text-2xl md:text-3xl font-bold text-primary">
-          Creative Technology.
-        </p>
-        <p className="mt-4 font-mono text-xs text-muted-foreground uppercase tracking-widest">
-          Drag to explore
-        </p>
-      </div>
-
-      {/* Circular Gallery */}
-      <div
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        className="relative w-[680px] h-[680px] sm:w-[720px] sm:h-[720px] md:w-[820px] md:h-[820px] cursor-grab active:cursor-grabbing mx-auto"
-        style={{ perspective: "1000px", touchAction: "pan-x pan-y" }}
-      >
-        {techTopics.map((topic, index) => (
-          <FlipCard
-            key={topic.id}
-            ref={(el) => (cardsRef.current[index] = el)}
-            topic={topic}
-            index={index}
-            onClick={() => handleCardClick(topic)}
-          />
-        ))}
+    <div className="py-8 md:py-12">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {techTopics.map((topic) => {
+          const Icon = topic.icon;
+          return <button key={topic.id} type="button" onClick={() => setSelectedCard(topic)} className="text-left bg-card p-5 transition-transform hover:-translate-y-1" style={{ border: "2px solid hsl(var(--foreground))", boxShadow: "4px 4px 0 hsl(var(--foreground))" }}>
+            <div className="flex items-center gap-3 mb-4"><span className="w-10 h-10 bg-primary flex items-center justify-center shrink-0"><Icon className="w-5 h-5 text-white" /></span><span className="font-bold uppercase tracking-tight">{topic.title}</span></div>
+            <p className="text-sm text-muted-foreground">{topic.description}</p>
+            <span className="inline-block mt-4 font-mono text-[10px] uppercase tracking-widest text-primary">Read more →</span>
+          </button>;
+        })}
       </div>
 
       {/* Expanded Card Modal */}
@@ -551,26 +437,62 @@ const CircularGallery = () => {
   );
 };
 
+const ExploreFolderGallery = () => {
+  const [selectedCard, setSelectedCard] = useState<TopicType | null>(null);
+  const [isClosing, setIsClosing] = useState(false);
+  const scrollContainerRef = useContext(ScrollContainerContext);
+
+  useEffect(() => {
+    if (!selectedCard) return;
+    const scrollContainer = scrollContainerRef?.current;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousContainerOverflow = scrollContainer?.style.overflowY;
+    document.body.style.overflow = "hidden";
+    if (scrollContainer) scrollContainer.style.overflowY = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      if (scrollContainer) scrollContainer.style.overflowY = previousContainerOverflow ?? "";
+    };
+  }, [selectedCard, scrollContainerRef]);
+  const findTopic = (file: FolderFile) => techTopics.find((topic) => topic.title === file.name);
+  const openTopic = (file: FolderFile) => {
+    const topic = findTopic(file);
+    if (topic) setSelectedCard(topic);
+  };
+  const closeTopic = () => {
+    setIsClosing(true);
+    setTimeout(() => { setSelectedCard(null); setIsClosing(false); }, 400);
+  };
+  const folders = [
+    { label: "AI & Intelligence", tone: "light" as const, files: techTopics.slice(0, 4).map((topic) => ({ name: topic.title, meta: topic.shortDesc })) },
+    { label: "Systems & Cloud", tone: "dark" as const, files: techTopics.slice(3, 7).map((topic) => ({ name: topic.title, meta: topic.shortDesc })) },
+    { label: "Vision & Devices", tone: "light" as const, files: techTopics.slice(7, 12).map((topic) => ({ name: topic.title, meta: topic.shortDesc })) },
+  ];
+
+  return (
+    <div className="relative py-10 md:py-16">
+      <div className="relative grid grid-cols-1 items-end justify-items-center gap-12 md:grid-cols-2 xl:grid-cols-3">
+        {folders.map((folder) => <GlassFolder key={folder.label} {...folder} onFileSelect={openTopic} />)}
+      </div>
+      <p className="mt-10 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Hover to lift · Click to open · Select a file</p>
+      {selectedCard && <ExpandedCard topic={selectedCard} isClosing={isClosing} onClose={closeTopic} />}
+    </div>
+  );
+};
+
 const ExplorePage = () => {
   return (
     <div className="overflow-visible">
       {/* Header */}
       <div className="pt-10" style={{ borderBottom: "2px solid hsl(var(--foreground))" }}>
-        <div className="flex items-stretch" style={{ borderBottom: "2px solid hsl(var(--foreground))" }}>
-          <span className="lab-label px-0 py-3 self-center">Tech Radar</span>
-          <div className="flex-1" />
-          <span className="font-mono text-xs text-muted-foreground px-4 py-3 self-center" style={{ borderLeft: "2px solid hsl(var(--foreground))" }}>
-            CIRCULAR GALLERY
-          </span>
-        </div>
         <h1 className="lab-title py-4">explore<span className="text-primary">.</span></h1>
         <p className="text-muted-foreground max-w-2xl pb-6 text-sm">
-          Drag to rotate the gallery. Hover over cards to flip them. Click to expand and read in detail.
+          Explore the folders to browse the systems, tools, and experiments behind the work.
         </p>
       </div>
 
-      {/* Circular Gallery */}
-      <CircularGallery />
+      <ExploreFolderGallery />
     </div>
   );
 };

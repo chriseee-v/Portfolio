@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Calendar, Clock, ArrowRight, ExternalLink, Loader2 } from "lucide-react";
+import { Calendar, Clock, ArrowRight, ExternalLink } from "lucide-react";
 import blogsData from "@/data/blogs.json";
 import { useTechNews } from "@/hooks/use-tech-news";
 
@@ -16,15 +15,7 @@ type BlogPost = {
 
 const posts = blogsData as BlogPost[];
 
-// Email validation regex
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 const BlogPage = () => {
-  const [email, setEmail] = useState("");
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  
   // Fetch latest tech news
   const { articles: techNews, loading: newsLoading, error: newsError } = useTechNews('javascript', 8);
   
@@ -34,81 +25,6 @@ const BlogPage = () => {
     ...techNews.map(article => ({ ...article, source: 'tech-news' as const }))
   ];
 
-  const handleSubscribe = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validate email
-    if (!email.trim()) {
-      setError("Please enter an email address");
-      return;
-    }
-    
-    if (!emailRegex.test(email)) {
-      setError("Please enter a valid email address");
-      return;
-    }
-    
-    // Clear error and start loading
-    setError("");
-    setIsLoading(true);
-    
-    try {
-      const response = await fetch('/api/subscribe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      // Handle network errors
-      if (!response) {
-        throw new Error('Network error: Could not reach the server. Make sure Vercel dev server is running (vercel dev)');
-      }
-
-      // Check if response has content
-      const contentType = response.headers.get('content-type');
-      const text = await response.text();
-      
-      // If response is empty, it might be a 404 or server error
-      if (!text) {
-        if (response.status === 404) {
-          throw new Error('API endpoint not found. Make sure to run "vercel dev" for local development.');
-        }
-        throw new Error(`Empty response from server (Status: ${response.status})`);
-      }
-
-      // Try to parse as JSON
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch (parseError) {
-        // If it's not JSON, show the text response
-        throw new Error(`Server returned non-JSON response: ${text.substring(0, 100)}`);
-      }
-
-      // Check if response is ok
-      if (!response.ok) {
-        throw new Error(data.error || `Server error: ${response.status} ${response.statusText}`);
-      }
-
-      // Success - set subscribed state
-      setIsSubscribed(true);
-    } catch (err: any) {
-      // Provide helpful error messages
-      let errorMessage = err.message || 'Something went wrong. Please try again.';
-      
-      // Add helpful hints for common errors
-      if (err.message?.includes('Failed to fetch') || err.message?.includes('Network error')) {
-        errorMessage = 'Cannot connect to server. For local development, run "vercel dev" in a separate terminal.';
-      }
-      
-      setError(errorMessage);
-      setIsSubscribed(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
   return (
     <div>
       {/* Header */}
@@ -238,36 +154,6 @@ const BlogPage = () => {
         </div>
       )}
 
-      {/* Newsletter CTA */}
-      <section className="mt-12 p-6 md:p-8" style={{ border: "2px solid hsl(var(--foreground))", boxShadow: "6px 6px 0px hsl(var(--primary))" }}>
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="w-full md:w-auto">
-            <h3 className="text-lg font-bold uppercase tracking-wider mb-1">Stay in the loop</h3>
-            <p className="text-sm text-muted-foreground font-mono">Get notified when new articles are published.</p>
-          </div>
-          <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-            <div className="flex-1 md:w-64">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => { setEmail(e.target.value); setError(""); }}
-                placeholder="your@email.com"
-                disabled={isSubscribed}
-                className={`w-full px-4 py-2 bg-background font-mono text-sm focus:outline-none min-w-0 ${isSubscribed ? "opacity-50 cursor-not-allowed" : ""}`}
-                style={{ border: error ? "2px solid hsl(var(--destructive))" : "2px solid hsl(var(--foreground))" }}
-              />
-              {error && <p className="mt-1 text-xs text-destructive font-mono">✕ {error}</p>}
-            </div>
-            <button
-              type="submit"
-              disabled={isSubscribed || isLoading}
-              className={`lab-button-primary whitespace-nowrap flex-shrink-0 ${isSubscribed ? "opacity-75 cursor-default" : ""} ${isLoading ? "opacity-50 cursor-wait" : ""}`}
-            >
-              {isLoading ? "Subscribing..." : isSubscribed ? "✓ Subscribed" : "Subscribe"}
-            </button>
-          </form>
-        </div>
-      </section>
     </div>
   );
 };

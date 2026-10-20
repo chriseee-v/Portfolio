@@ -20,11 +20,11 @@ export const Navigation = () => {
 
   return (
     <nav className="w-full py-0 relative z-50" style={{ borderBottom: "2px solid hsl(var(--foreground))" }}>
-      <div className="flex items-stretch">
+      <div className="grid grid-cols-[72px_1fr_48px_48px] items-stretch md:flex">
         {/* Logo block */}
         <Link
           to="/"
-          className="flex items-center px-6 py-4 font-mono font-bold text-sm uppercase tracking-widest hover:bg-primary hover:text-primary-foreground transition-colors duration-150"
+          className="flex w-[72px] items-center justify-center px-2 py-4 font-mono font-bold text-sm uppercase tracking-widest hover:bg-primary hover:text-primary-foreground transition-colors duration-150 md:w-auto md:justify-start md:px-6"
           style={{ borderRight: "2px solid hsl(var(--foreground))" }}
         >
           LAB.
@@ -54,7 +54,7 @@ export const Navigation = () => {
         {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
-          className="hidden md:flex items-center px-5 py-4 font-mono text-xs uppercase tracking-widest font-bold hover:bg-foreground hover:text-background transition-colors duration-150"
+          className="col-start-3 flex w-12 items-center justify-center px-2 py-4 font-mono text-xs uppercase tracking-widest font-bold hover:bg-foreground hover:text-background transition-colors duration-150 md:col-auto md:w-auto md:justify-start md:px-5"
           style={{ borderLeft: "2px solid hsl(var(--foreground))" }}
           aria-label="Toggle theme"
         >
@@ -64,7 +64,7 @@ export const Navigation = () => {
         {/* Mobile Menu Button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden flex items-center px-5 py-4 ml-auto hover:bg-foreground hover:text-background transition-colors duration-150"
+          className="col-start-4 flex w-12 items-center justify-center px-2 py-4 ml-0 hover:bg-foreground hover:text-background transition-colors duration-150"
           style={{ borderLeft: "2px solid hsl(var(--foreground))" }}
         >
           {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}

@@ -161,12 +161,11 @@ const TimelinePage = () => {
                   }`}
                 >
                   <div
-                    className="p-5 bg-card transition-all duration-500"
+                    className="rounded-sm border border-foreground/25 bg-card/55 p-5 backdrop-blur-xl transition-all duration-500"
                     style={{
-                      border: "2px solid hsl(var(--foreground))",
                       boxShadow: isActive
-                        ? "4px 4px 0px hsl(var(--primary))"
-                        : "4px 4px 0px hsl(var(--foreground))",
+                        ? "5px 5px 0px hsl(var(--primary) / 0.7), inset 0 1px 0 hsl(0 0% 100% / 0.2)"
+                        : "5px 5px 0px hsl(var(--foreground) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.2)",
                     }}
                   >
                     <h3 className="font-bold uppercase tracking-tight mb-1">{exp.title}</h3>
@@ -206,16 +205,16 @@ const TimelinePage = () => {
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
-              className="flex flex-col items-start p-6"
+              className={`flex min-h-[150px] flex-col items-start p-5 md:p-6 ${i % 2 === 0 ? "border-r-2" : ""} ${i < 2 ? "border-b-2 md:border-b-0" : ""}`}
               style={{
-                borderRight: i < 3 ? "2px solid hsl(var(--foreground))" : "none",
+                borderColor: "hsl(var(--foreground))",
               }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1, duration: 0.4 }}
             >
-              <span className="text-5xl font-bold text-primary font-mono mb-2">{stat.value}</span>
+              <span className="text-4xl md:text-5xl font-bold text-primary font-mono mb-2">{stat.value}</span>
               <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">{stat.label}</span>
             </motion.div>
           ))}

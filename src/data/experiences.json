@@ -1,5 +1,13 @@
 [
   {
+    "year": "2026 — Present",
+    "title": "Master's in Advanced Data Science and AI",
+    "company": "University of Liverpool",
+    "description": "Pursuing a master's degree while continuing to build production-grade AI systems, agent workflows, computer vision solutions, and full-stack products across healthcare and emerging technology.",
+    "technologies": ["Artificial Intelligence", "Machine Learning", "Distributed Systems", "Software Engineering"],
+    "highlight": true
+  },
+  {
     "year": "2026",
     "title": "Applied AI Engineer",
     "company": "Healthflex",
